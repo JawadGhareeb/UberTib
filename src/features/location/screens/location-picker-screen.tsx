@@ -1,236 +1,221 @@
+import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
+import { Button, Typography } from 'heroui-native';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProfileLocationMap } from '@/features/auth/components/profile-location-map';
 import type { Coordinate } from '@/features/auth/components/profile-location-map.types';
-import { reverseGeocodeArabic } from '@/features/location/api/reverse-geocode';
 import { getDevelopmentDeviceLocation } from '@/features/location/api/device-location';
+import { reverseGeocodeArabic } from '@/features/location/api/reverse-geocode';
 import { usePreferredLocation } from '@/features/location/state/preferred-location-provider';
-import { useAppDirection } from '@/providers/app-direction-provider';
-import { AppIcon, AppText, Button, Screen } from '@/shared/components/ui';
-import { cn } from '@/shared/utils/cn';
+import { OutlineIcon } from '@/shared/components/media/outline-icon';
+import { useAppTheme } from '@/shared/theme/theme-provider';
 
-const ALEPPO_CENTER: Coordinate = { latitude: 36.2021, longitude: 37.1343 };
-const UNRESOLVED_LABEL = 'موقع محدد على الخريطة';
+const DEFAULT_CENTER: Coordinate = { latitude: 36.2021, longitude: 37.1343 };
+
+function validCoordinate(value: Coordinate) {
+  return (
+    Number.isFinite(value.latitude) &&
+    Number.isFinite(value.longitude) &&
+    Math.abs(value.latitude) <= 90 &&
+    Math.abs(value.longitude) <= 180
+  );
+}
 
 export function LocationPickerScreen() {
   const router = useRouter();
-  const { rowClassName } = useAppDirection();
+  const { colors } = useAppTheme();
   const { location, setLocation } = usePreferredLocation();
-  const [coordinate, setCoordinate] = useState<Coordinate>(
-    location?.coordinate ?? ALEPPO_CENTER,
-  );
+  const [coordinate, setCoordinate] = useState<Coordinate>(location?.coordinate ?? DEFAULT_CENTER);
+  const [selection, setSelection] = useState<{
+    label?: string;
+    source: 'saved' | 'gps' | 'map';
+  } | null>(location ? { label: location.label, source: 'saved' } : null);
+  const [mapReady, setMapReady] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [mapInteractive, setMapInteractive] = useState(false);
-  const [gpsLoading, setGpsLoading] = useState(__DEV__);
-  const [gpsSelected, setGpsSelected] = useState(false);
-  const [recenterToken, setRecenterToken] = useState(0);
-  const manuallySelected = useRef(false);
-  const mounted = useRef(true);
   const [error, setError] = useState('');
-  const [touched, setTouched] = useState(false);
-  const hasChosenLocation = touched || Boolean(location);
-  // Only development GPS can bypass an unavailable native map. Never save
-  // Aleppo's placeholder or an old location through that fallback.
-  const canConfirm = mapInteractive
-    ? hasChosenLocation
-    : __DEV__ && touched && gpsSelected;
-  const selectedLabel = gpsSelected
-    ? 'موقع الجهاز الحالي'
-    : touched
-      ? 'تم اختيار نقطة جديدة على الخريطة'
-      : location?.label || 'لم يتم تحديد موقع بعد';
+  const [recenterToken, setRecenterToken] = useState(0);
+  const mounted = useRef(true);
 
-  const locateDevice = useCallback(async () => {
-    if (!__DEV__) return;
-    setGpsLoading(true);
-    setError('');
-    const result = await getDevelopmentDeviceLocation();
-    if (!mounted.current) return;
-    setGpsLoading(false);
-    if (!result.ok) {
-      setError(result.message);
-      return;
-    }
-    // The user may have chosen a point on the map while GPS was loading.
-    if (manuallySelected.current) return;
-    setCoordinate(result.coordinate);
-    setTouched(true);
-    setGpsSelected(true);
-    setRecenterToken((current) => current + 1);
-  }, []);
-
+  // Ask for location access when opening this screen, but never require GPS
+  // permission to select a point manually on the map.
   useEffect(() => {
     mounted.current = true;
-    // Start async geolocation after effect execution, not during render synchronization.
-    let active = true;
-    void Promise.resolve().then(() => {
-      if (active && __DEV__) void locateDevice();
-    });
-    return () => { active = false; mounted.current = false; };
-  }, [locateDevice]);
+    const requestOnEntry = async () => {
+      try {
+        const permission = await Location.getForegroundPermissionsAsync();
+        if (!permission.granted && permission.canAskAgain) {
+          await Location.requestForegroundPermissionsAsync();
+        }
+      } catch {
+        // Manual map selection must keep working even without device-location support.
+      }
+    };
+    void requestOnEntry();
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
-  const onChange = (next: Coordinate) => {
-    if (
-      !Number.isFinite(next.latitude) || Math.abs(next.latitude) > 90 ||
-      !Number.isFinite(next.longitude) || Math.abs(next.longitude) > 180
-    ) return;
+  const locateDeviceNow = async () => {
+    if (locating || saving) return;
+    setLocating(true);
+    setError('');
+    try {
+      const gps = await getDevelopmentDeviceLocation();
+      if (!mounted.current) return;
+      if (!gps.ok) {
+        setError(gps.message);
+        return;
+      }
+      setCoordinate(gps.coordinate);
+      setSelection({ source: 'gps' });
+      setRecenterToken((token) => token + 1);
+    } finally {
+      if (mounted.current) setLocating(false);
+    }
+  };
 
-    manuallySelected.current = true;
+  const changeMapPoint = (next: Coordinate) => {
+    if (!validCoordinate(next)) return;
     setCoordinate(next);
-    setTouched(true);
-    setGpsSelected(false);
+    setSelection({ source: 'map' });
     setError('');
   };
 
-  const confirm = async () => {
-    if (saving || !canConfirm) return;
+  const save = async () => {
+    if (!selection || saving) return;
     setSaving(true);
     setError('');
-    try {
-      // Only the coordinates under the pin are authoritative. A previously
-      // typed neighbourhood must never override the actual selected point.
-      // Geocoder labels are best-effort and never move the saved pin.
-      let place = gpsSelected ? 'موقعي الحالي' : UNRESOLVED_LABEL;
-      const geocoding = new AbortController();
-      const timeout = setTimeout(() => geocoding.abort(), 6500);
+    let label = selection.label;
+
+    if (!label) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6500);
       try {
-        const resolved = (await reverseGeocodeArabic(coordinate, geocoding.signal)).trim();
-        if (resolved.length >= 2) place = resolved;
+        label = await reverseGeocodeArabic(coordinate, controller.signal);
       } catch {
-        // Reverse-geocoding is best effort. Keep the selected GPS coordinates.
+        // A real selected coordinate is still valid if reverse geocoding is offline.
+        label =
+          'موقع محدد · ' + coordinate.latitude.toFixed(4) + ', ' + coordinate.longitude.toFixed(4);
       } finally {
         clearTimeout(timeout);
       }
-
-      setLocation({ coordinate, label: place, selectionVersion: 2 });
-      router.back();
-    } catch {
-      setError('تعذّر حفظ الموقع. حاول مرة ثانية.');
-    } finally {
-      setSaving(false);
     }
+    if (!mounted.current) return;
+    setLocation({ coordinate, label, selectionVersion: 2 });
+    router.back();
   };
 
   return (
-    <Screen contentClassName="px-0 pb-0 pt-0">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="mx-auto w-full max-w-[430px] flex-1 px-4 pb-4 pt-2"
-      >
-        <View className={cn('h-12 items-center justify-between', rowClassName)}>
+    <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
+      <View className="mx-auto w-full max-w-[430px] flex-1 px-5 pb-6 pt-3">
+        <View
+          className="min-h-14 flex-row items-center justify-between"
+          style={{ direction: 'rtl' }}
+        >
           <Pressable
-            accessibilityLabel="رجوع"
             accessibilityRole="button"
-            className="h-11 w-11 items-center justify-center rounded-full bg-surface-default"
+            accessibilityLabel="رجوع إلى إكمال الملف"
+            className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
             onPress={() => router.back()}
           >
-            <AppIcon
-              name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }}
-              size={20}
-              tone="action"
-            />
+            <OutlineIcon name="arrow-right" size={23} color={colors.action.primary} />
           </Pressable>
-          <AppText className="font-ui-bold" variant="heading-3">
+          <Typography.Heading
+            type="h3"
+            className="font-ui-bold text-text-primary"
+            style={{ textAlign: 'right', writingDirection: 'rtl', lineHeight: 35, paddingTop: 4 }}
+          >
             حدّد منطقتك
-          </AppText>
+          </Typography.Heading>
+          <View className="w-11" />
         </View>
 
-        <AppText align="right" className="mb-3 mt-1 text-content-secondary" variant="caption">
-          {__DEV__
-            ? 'موقعك الحالي بيتحدد تلقائياً. فيك تغيّره من الخريطة.'
-            : 'حرّك الخريطة أو اضغط على المكان المطلوب.'}
-        </AppText>
+        <Typography.Paragraph
+          className="mt-2 mb-4 font-ui-regular text-text-secondary"
+          style={{ textAlign: 'right', writingDirection: 'rtl', lineHeight: 27 }}
+        >
+          حرّك الخريطة لتحديد النقطة تحت المؤشّر، أو استخدم موقعك الحالي.
+        </Typography.Paragraph>
 
-        <View className="relative min-h-[220px] flex-1 overflow-hidden rounded-[20px] border border-action-primary bg-surface-subtle">
+        <View
+          className="min-h-[300px] flex-1 overflow-hidden rounded-form-field border border-border-default bg-surface-subtle"
+          style={{ flex: 1 }}
+        >
           <ProfileLocationMap
             coordinate={coordinate}
-            onChange={onChange}
-            onInteractiveChange={setMapInteractive}
+            onChange={changeMapPoint}
+            onInteractiveChange={setMapReady}
             recenterToken={recenterToken}
           />
-
-          <View
-            className="absolute left-3 right-3 top-3 flex-row items-center justify-center gap-2 self-center rounded-[12px] bg-surface-default px-3 py-2"
-            pointerEvents="none"
-          >
-            <AppIcon
-              name={{ ios: 'hand.draw', android: 'touch_app', web: 'touch_app' }}
-              size={16}
-              tone="action"
-            />
-            <AppText align="center" className="font-ui-medium" variant="caption">
-              حرّك الخريطة لتحديد النقطة تحت المؤشر
-            </AppText>
-          </View>
-        </View>
-
-        <View className="mt-3 gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3">
-          <View className={cn('items-center gap-2', rowClassName)}>
-            <AppIcon
-              name={{ ios: 'mappin.circle', android: 'place', web: 'place' }}
-              size={20}
-              tone="action"
-            />
-            <View className="min-w-0 flex-1 items-end">
-              <AppText align="right" className="font-ui-semibold" variant="label">
-                الموقع المحدد
-              </AppText>
-              <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
-                {selectedLabel}
-              </AppText>
+          <View pointerEvents="none" className="absolute left-3 right-3 top-3 items-center">
+            <View className="rounded-full bg-surface-default px-4 py-2">
+              <Typography.Paragraph
+                type="body-sm"
+                className="font-ui-medium text-text-primary"
+                style={{ textAlign: 'center', writingDirection: 'rtl' }}
+              >
+                {mapReady ? 'حرّك الخريطة أو اضغط لتحديد الموقع' : 'جاري تهيئة الخريطة…'}
+              </Typography.Paragraph>
             </View>
           </View>
-
-          {__DEV__ ? (
-            <Button
-              label={gpsLoading ? 'جاري تحديد موقع الجهاز' : 'استخدام موقعي الحالي'}
-              loading={gpsLoading}
-              disabled={gpsLoading || saving}
-              size="sm"
-              variant="outline"
-              onPress={() => {
-                manuallySelected.current = false;
-                void locateDevice();
-              }}
-            />
-          ) : null}
-
-          {!mapInteractive && !gpsSelected ? (
-            <AppText align="right" className="text-tone-warning-text" variant="caption">
-              الخريطة غير متاحة في هذه النسخة. {__DEV__
-                ? 'استخدم موقع الجهاز الحالي بعد السماح بالوصول إلى GPS.'
-                : 'يلزم فتح النسخة الداعمة للخرائط لتحديد الموقع.'}
-            </AppText>
-          ) : null}
-          {!mapInteractive && gpsSelected ? (
-            <AppText align="right" className="text-content-secondary" variant="caption">
-              تم تحديد موقع الجهاز. يمكنك اعتماده حتى لو الخريطة ما اشتغلت بنسخة التطوير.
-            </AppText>
-          ) : null}
-
-          {mapInteractive && !hasChosenLocation ? (
-            <AppText align="right" className="text-tone-warning-text" variant="caption">
-              الموقع الظاهر مجرد معاينة. حرّك الخريطة أو اضغط على مكانك قبل الاعتماد.
-            </AppText>
-          ) : null}
-          {error ? (
-            <AppText accessibilityLiveRegion="polite" align="right" className="text-tone-danger-text" variant="caption">
-              {error}
-            </AppText>
-          ) : null}
         </View>
 
-        <Button
-          className="mt-3 h-[52px] rounded-[12px]"
-          disabled={saving || !canConfirm}
-          label="اعتماد الموقع"
-          loading={saving}
-          loadingLabel="عم نحفظ الموقع"
-          onPress={() => void confirm()}
-        />
-      </KeyboardAvoidingView>
-    </Screen>
+        <View className="mt-4 gap-3">
+          <Button
+            variant="outline"
+            size="lg"
+            className="min-h-[52px] rounded-form-field"
+            isDisabled={locating || saving}
+            onPress={() => void locateDeviceNow()}
+          >
+            <View className="flex-row items-center gap-2" style={{ direction: 'rtl' }}>
+              <OutlineIcon name="map-pin" size={21} color={colors.action.primary} />
+              <Typography.Paragraph className="font-ui-semibold text-text-primary">
+                {locating ? 'جاري تحديد الموقع…' : 'استخدام موقعي الحالي'}
+              </Typography.Paragraph>
+            </View>
+          </Button>
+
+          <View className="min-h-12 rounded-form-field bg-action-subtle px-4 py-3">
+            <Typography.Paragraph
+              type="body-sm"
+              className="font-ui-medium text-text-primary"
+              style={{ textAlign: 'right', writingDirection: 'rtl', lineHeight: 23 }}
+            >
+              {selection?.label ??
+                (selection
+                  ? 'تم تحديد الموقع، اضغط اعتماد الموقع للحفظ.'
+                  : 'حدّد نقطة على الخريطة أو استخدم موقعك الحالي للمتابعة.')}
+            </Typography.Paragraph>
+          </View>
+
+          {error ? (
+            <Typography.Paragraph
+              className="font-ui-medium text-tone-danger-text"
+              style={{ textAlign: 'right', writingDirection: 'rtl', lineHeight: 26 }}
+            >
+              {error}
+            </Typography.Paragraph>
+          ) : null}
+
+          <Button
+            variant="primary"
+            size="lg"
+            className="min-h-[54px] rounded-form-field bg-action-primary"
+            isDisabled={!selection || saving}
+            onPress={() => void save()}
+          >
+            <Button.Label className="font-ui-semibold text-text-on-action">
+              {saving ? 'جاري حفظ الموقع…' : 'اعتماد الموقع'}
+            </Button.Label>
+          </Button>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }

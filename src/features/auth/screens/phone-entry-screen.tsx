@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CountryFlag } from '@/features/auth/components/country-flag';
 import { requestMockVerification } from '@/features/auth/mocks/auth.mock';
 import { BrandMark } from '@/shared/components/brand/brand-mark';
+import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { phoneCountries, type CountryOption } from '@/shared/components/ui/country-select';
 import { toE164 } from '@/shared/components/ui/phone-number-field';
 import { useMockScenario } from '@/shared/mock';
@@ -53,6 +54,7 @@ export function PhoneEntryScreen() {
         params: {
           phone: e164Phone,
           returnTo,
+          ...(mode === 'register' ? { mode } : {}),
           expiresInSeconds: String(verification.expiresInSeconds),
           resendAfterSeconds: String(verification.resendAfterSeconds),
         },
@@ -86,13 +88,25 @@ export function PhoneEntryScreen() {
                   UberTib
                 </Typography.Heading>
               </View>
+              <AuthBackButton
+                onPress={() => {
+                  if (returnTo && router.canGoBack()) router.back();
+                  else router.replace({ pathname: '/', params: { step: '2' } });
+                }}
+              />
             </View>
 
             <View className="mt-14 gap-3">
               <Typography.Heading
                 type="h1"
                 className="font-ui-bold text-text-primary"
-                style={{ textAlign: 'right', writingDirection: 'rtl' }}
+                style={{
+                  textAlign: 'right',
+                  writingDirection: 'rtl',
+                  lineHeight: 53,
+                  paddingTop: 9,
+                  paddingBottom: 6,
+                }}
               >
                 {mode === 'register' ? 'أنشئ حسابك في أوبرطب' : 'أهلاً بك في أوبرطب'}
               </Typography.Heading>

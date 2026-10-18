@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 
 import { ReferenceCard, ReferenceIcon } from '@/features/profile/components/patient-reference-ui';
+import { useProfilePhoto } from '@/features/profile/state/profile-photo-provider';
+import { EditableProfileAvatar } from '@/shared/components/media/editable-profile-avatar';
 import { AppIcon, AppText, ReadStateBoundary, Screen } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { useMockScenario } from '@/shared/mock';
@@ -25,7 +27,12 @@ function ProfileMenuCard({
 }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress}>
-      <ReferenceCard className={cn('min-h-[66px] flex-row-reverse items-center gap-[9px] px-[10px] py-[9px]', danger && 'border-tone-danger-border bg-tone-danger-fill/70')}>
+      <ReferenceCard
+        className={cn(
+          'min-h-[66px] flex-row-reverse items-center gap-[9px] px-[10px] py-[9px]',
+          danger && 'border-tone-danger-border bg-tone-danger-fill/70',
+        )}
+      >
         <ReferenceIcon icon={icon} size={37} warm={danger} />
         <View className="min-w-0 flex-1 items-end">
           <AppText
@@ -62,6 +69,7 @@ export function ProfileScreen() {
   const { scheme, colors, setScheme } = useAppTheme();
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   const { getSurfaceState } = useMockScenario();
+  const { photo, setPhoto } = useProfilePhoto();
 
   return (
     <Screen contentClassName="px-0 py-0">
@@ -73,7 +81,11 @@ export function ProfileScreen() {
             className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
             onPress={() => router.push('/notifications')}
           >
-            <AppIcon name={{ ios: 'bell', android: 'notifications_none', web: 'notifications_none' }} size={20} tone="action" />
+            <AppIcon
+              name={{ ios: 'bell', android: 'notifications_none', web: 'notifications_none' }}
+              size={20}
+              tone="action"
+            />
           </Pressable>
           <AppText align="center" className="flex-1 font-ui-bold" variant="heading-3">
             حسابي
@@ -84,7 +96,11 @@ export function ProfileScreen() {
             className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
             onPress={() => router.push('/profile/settings')}
           >
-            <AppIcon name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }} size={19} tone="action" />
+            <AppIcon
+              name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
+              size={19}
+              tone="action"
+            />
           </Pressable>
         </View>
       </View>
@@ -98,13 +114,18 @@ export function ProfileScreen() {
           emptyTitle="بيانات الحساب غير متاحة"
           permissionTitle="بيانات الحساب غير متاحة"
         >
-          <View className="min-h-[64px] flex-row-reverse items-center gap-2 rounded-[12px] bg-action-subtle px-3 py-[9px]">
-            <AppIcon name={{ ios: 'checkmark.seal.fill', android: 'verified', web: 'verified' }} size={21} tone="action" />
+          <View className="min-h-[72px] flex-row-reverse items-center gap-3 rounded-[12px] bg-action-subtle px-3 py-[9px]">
+            <EditableProfileAvatar value={photo} onChange={setPhoto} />
             <View className="min-w-0 flex-1 items-end">
               <AppText align="right" className="font-ui-bold" variant="label">
                 {mockPatientWorld.account.name}
               </AppText>
-              <AppText align="right" className="mt-0.5 text-content-secondary" style={{ fontSize: 10, lineHeight: 16 }} variant="caption">
+              <AppText
+                align="right"
+                className="mt-0.5 text-content-secondary"
+                style={{ fontSize: 10, lineHeight: 16 }}
+                variant="caption"
+              >
                 {mockPatientWorld.account.phone} · الهاتف موثّق (معاينة)
               </AppText>
             </View>
@@ -117,8 +138,17 @@ export function ProfileScreen() {
               className="min-h-[52px] flex-1 flex-row-reverse items-center justify-center gap-2 rounded-[11px] border border-border-subtle bg-surface-default px-2"
               onPress={() => router.push('/profile/family')}
             >
-              <AppIcon name={{ ios: 'person.2.fill', android: 'group', web: 'group' }} size={18} tone="action" />
-              <AppText align="center" className="font-ui-semibold" style={{ fontSize: 11, lineHeight: 18 }} variant="caption">
+              <AppIcon
+                name={{ ios: 'person.2.fill', android: 'group', web: 'group' }}
+                size={18}
+                tone="action"
+              />
+              <AppText
+                align="center"
+                className="font-ui-semibold"
+                style={{ fontSize: 11, lineHeight: 18 }}
+                variant="caption"
+              >
                 أفراد العائلة
               </AppText>
             </Pressable>
@@ -128,8 +158,17 @@ export function ProfileScreen() {
               className="min-h-[52px] flex-1 flex-row-reverse items-center justify-center gap-2 rounded-[11px] border border-border-subtle bg-surface-default px-2"
               onPress={() => router.push('/profile/health')}
             >
-              <AppIcon name={{ ios: 'heart.text.square', android: 'monitor_heart', web: 'monitor_heart' }} size={18} tone="action" />
-              <AppText align="center" className="font-ui-semibold" style={{ fontSize: 11, lineHeight: 18 }} variant="caption">
+              <AppIcon
+                name={{ ios: 'heart.text.square', android: 'monitor_heart', web: 'monitor_heart' }}
+                size={18}
+                tone="action"
+              />
+              <AppText
+                align="center"
+                className="font-ui-semibold"
+                style={{ fontSize: 11, lineHeight: 18 }}
+                variant="caption"
+              >
                 معلوماتي الصحية
               </AppText>
             </Pressable>
@@ -157,7 +196,11 @@ export function ProfileScreen() {
             <ProfileMenuCard
               title="إغلاق الحساب / طلب الحذف"
               description="طلب محكوم مع توضيح الاحتفاظ قبل التأكيد"
-              icon={{ ios: 'person.crop.circle.badge.xmark', android: 'person_off', web: 'person_off' }}
+              icon={{
+                ios: 'person.crop.circle.badge.xmark',
+                android: 'person_off',
+                web: 'person_off',
+              }}
               danger
               onPress={() => router.push('/profile/account-closure')}
             />
@@ -204,8 +247,17 @@ export function ProfileScreen() {
             onPress={() => setAppearanceOpen(true)}
             accessibilityLabel={`المظهر الحالي ${scheme === 'dark' ? 'داكن' : 'فاتح'}، تغيير المظهر`}
           >
-            <AppIcon name={{ ios: 'paintbrush', android: 'palette', web: 'palette' }} size={18} tone="action" />
-            <AppText align="right" className="min-w-0 flex-1 font-ui-semibold" style={{ fontSize: 11, lineHeight: 17 }} variant="caption">
+            <AppIcon
+              name={{ ios: 'paintbrush', android: 'palette', web: 'palette' }}
+              size={18}
+              tone="action"
+            />
+            <AppText
+              align="right"
+              className="min-w-0 flex-1 font-ui-semibold"
+              style={{ fontSize: 11, lineHeight: 17 }}
+              variant="caption"
+            >
               المظهر · {scheme === 'dark' ? 'داكن' : 'فاتح'}
             </AppText>
             <AppText className="text-content-secondary" style={{ fontSize: 9.5 }} variant="caption">
@@ -214,11 +266,15 @@ export function ProfileScreen() {
           </Pressable>
 
           <View className="mt-[7px] rounded-[10px] bg-tone-warning-fill px-3 py-[9px]">
-            <AppText align="right" className="text-tone-warning-text" style={{ fontSize: 10, lineHeight: 17 }} variant="caption">
+            <AppText
+              align="right"
+              className="text-tone-warning-text"
+              style={{ fontSize: 10, lineHeight: 17 }}
+              variant="caption"
+            >
               الإجراءات الحساسة تتطلب إعادة التحقق من الهوية.
             </AppText>
           </View>
-
         </ReadStateBoundary>
       </ScrollView>
 
@@ -258,29 +314,31 @@ export function ProfileScreen() {
                   onPress={() => setAppearanceOpen(false)}
                   style={{ backgroundColor: colors.surface.subtle }}
                 >
-                  <AppIcon name={{ ios: 'xmark', android: 'close', web: 'close' }} size={17} tone="secondary" />
+                  <AppIcon
+                    name={{ ios: 'xmark', android: 'close', web: 'close' }}
+                    size={17}
+                    tone="secondary"
+                  />
                 </Pressable>
               </View>
-              <AppText
-                align="right"
-                style={{ color: colors.text.secondary }}
-                variant="caption"
-              >
+              <AppText align="right" style={{ color: colors.text.secondary }} variant="caption">
                 اختر المظهر المناسب، وسيتم حفظ اختيارك تلقائياً.
               </AppText>
 
-              {([
-                {
-                  value: 'light',
-                  label: 'فاتح (Light)',
-                  icon: { ios: 'sun.max.fill', android: 'light_mode', web: 'light_mode' },
-                },
-                {
-                  value: 'dark',
-                  label: 'داكن (Dark)',
-                  icon: { ios: 'moon.fill', android: 'dark_mode', web: 'dark_mode' },
-                },
-              ] as const).map((option) => {
+              {(
+                [
+                  {
+                    value: 'light',
+                    label: 'فاتح (Light)',
+                    icon: { ios: 'sun.max.fill', android: 'light_mode', web: 'light_mode' },
+                  },
+                  {
+                    value: 'dark',
+                    label: 'داكن (Dark)',
+                    icon: { ios: 'moon.fill', android: 'dark_mode', web: 'dark_mode' },
+                  },
+                ] as const
+              ).map((option) => {
                 const selected = scheme === option.value;
                 return (
                   <Pressable
@@ -309,7 +367,11 @@ export function ProfileScreen() {
                     </AppText>
                     {selected ? (
                       <AppIcon
-                        name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
+                        name={{
+                          ios: 'checkmark.circle.fill',
+                          android: 'check_circle',
+                          web: 'check_circle',
+                        }}
                         size={20}
                         tone="action"
                       />

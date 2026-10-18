@@ -3,8 +3,7 @@ import * as Location from 'expo-location';
 import type { Coordinate } from '@/features/auth/components/profile-location-map.types';
 
 export type DeviceLocationResult =
-  | { ok: true; coordinate: Coordinate }
-  | { ok: false; message: string };
+  { ok: true; coordinate: Coordinate } | { ok: false; message: string };
 
 const MAX_LOCATION_AGE_MS = 20_000;
 const MAX_LOCATION_ACCURACY_METERS = 2_000;
@@ -20,12 +19,10 @@ function usable(coords: Location.LocationObjectCoords): boolean {
 }
 
 /**
- * Real device GPS only. Do not substitute a static Aleppo point or a
- * neighbourhood label when geolocation is denied/unavailable.
+ * Real device GPS, requested only by a user action. Never substitute a
+ * static city point or neighbourhood when GPS is denied/unavailable.
  */
 export async function getDevelopmentDeviceLocation(): Promise<DeviceLocationResult> {
-  if (!__DEV__) return { ok: false, message: 'الموقع التلقائي متاح أثناء التطوير فقط.' };
-
   try {
     if (!(await Location.hasServicesEnabledAsync())) {
       return { ok: false, message: 'فعّل خدمة الموقع (GPS) بالجهاز وحاول مرة ثانية.' };

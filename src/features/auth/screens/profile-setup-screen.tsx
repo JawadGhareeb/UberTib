@@ -1,171 +1,316 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import {
+  Avatar,
+  Button,
+  FieldError,
+  Input,
+  Label,
+  RadioGroup,
+  TextField,
+  Typography,
+} from 'heroui-native';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { BrandedDateField } from '@/features/auth/components/branded-date-field';
+import { useProfilePhoto } from '@/features/profile/state/profile-photo-provider';
+import { EditableProfileAvatar } from '@/shared/components/media/editable-profile-avatar';
+import { OutlineIcon } from '@/shared/components/media/outline-icon';
 import { resolveSafeReturnTo } from '@/features/auth/navigation/auth-intent';
 import { usePreferredLocation } from '@/features/location/state/preferred-location-provider';
-import {
-  AppIcon,
-  AppText,
-  Button,
-  Screen,
-  SegmentedField,
-  SelectField,
-  TextField,
-} from '@/shared/components/ui';
+import { BrandMark } from '@/shared/components/brand/brand-mark';
+import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
+import { useAppTheme } from '@/shared/theme/theme-provider';
 
 type Gender = 'female' | 'male';
+
+function formatDate(date: Date): string {
+  return [
+    String(date.getDate()).padStart(2, '0'),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getFullYear()),
+  ].join(' / ');
+}
 
 export function ProfileSetupScreen() {
   const router = useRouter();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
-  const [gender, setGender] = useState<Gender>();
-  const { location } = usePreferredLocation();
-  const area = location?.label ?? '';
+  const [gender, setGender] = useState<Gender>('male');
+  const [selectedDate, setSelectedDate] = useState(new Date(1994, 7, 12));
   const [submitting, setSubmitting] = useState(false);
   const [attempted, setAttempted] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date(1994, 7, 12));
+  const { location } = usePreferredLocation();
+  const { colors } = useAppTheme();
+  const { photo, setPhoto } = useProfilePhoto();
 
+  const area = location?.label ?? '';
   const valid =
     name.trim().length >= 2 && Boolean(birthDate) && Boolean(gender) && area.trim().length >= 2;
 
   const save = async () => {
+    if (submitting) return;
     setAttempted(true);
-    if (!valid || submitting) return;
+    if (!valid) return;
 
     setSubmitting(true);
-    await Promise.resolve();
-    setSubmitting(false);
-    router.replace(resolveSafeReturnTo(returnTo));
+    try {
+      // Mock-first screen: profile persistence will be attached to the approved API.
+      await Promise.resolve();
+      router.replace(resolveSafeReturnTo(returnTo));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <Screen contentClassName="px-0 pb-0 pt-0">
+    <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
       <KeyboardAvoidingView
+        className="flex-1"
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="mx-auto w-full max-w-[430px] flex-1 gap-2 px-4 pb-5"
       >
-        <View className="h-16 flex-row items-center justify-between">
-          <View className="rounded-[8px] bg-action-subtle px-[10px] py-1.5">
-            <AppText className="text-content-link" variant="label">
-              الخطوة 3 من 3
-            </AppText>
-          </View>
-
-          <Pressable
-            accessibilityLabel="رجوع"
-            accessibilityRole="button"
-            className="h-11 w-11 items-center justify-center rounded-full border border-border-default bg-surface-default"
-            onPress={() => router.back()}
-          >
-            <AppIcon
-              name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }}
-              size={22}
-              tone="primary"
-            />
-          </Pressable>
-        </View>
-
         <ScrollView
-          className="min-h-0 flex-1"
-          contentContainerClassName="gap-3.5 pb-3"
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <AppText className="font-ui-bold" variant="heading-1">
-            أكمل ملفك الأساسي
-          </AppText>
-
-          <AppText className="text-content-secondary" variant="body">
-            نستخدم هذه المعلومات لتجهيز حجوزاتك وتخصيص تجربتك.
-          </AppText>
-
-          <View className="w-full flex-row items-center justify-end gap-3">
-            <View className="items-end gap-[3px]">
-              <AppText className="" variant="body-strong">
-                صورة شخصية (اختيارية)
-              </AppText>
-              <AppText className="text-content-secondary" variant="caption">
-                يمكنك إضافتها لاحقاً
-              </AppText>
-            </View>
-            <View className="h-14 w-14 items-center justify-center rounded-full bg-action-subtle">
-              <AppIcon
-                name={{ ios: 'person', android: 'person_outline', web: 'person_outline' }}
-                size={26}
-                tone="action"
+          <View className="mx-auto w-full max-w-[430px] flex-1 px-6 pb-8 pt-6">
+            <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
+              <View className="flex-row items-center gap-2">
+                <BrandMark size={42} />
+                <Typography.Heading type="h3" className="font-ui-bold text-text-primary">
+                  UberTib
+                </Typography.Heading>
+              </View>
+              <AuthBackButton
+                onPress={() => {
+                  if (router.canGoBack()) router.back();
+                  else router.replace({ pathname: '/auth/phone', params: { mode: 'register' } });
+                }}
               />
             </View>
-          </View>
 
-          <TextField
-            clearable
-            variant="contained"
-            error={attempted && name.trim().length < 2 ? 'أدخل الاسم الكامل.' : undefined}
-            icon={{ ios: 'person', android: 'person_outline', web: 'person_outline' }}
-            label="الاسم الكامل"
-            onChangeText={setName}
-            placeholder="ليان خالد"
-            value={name}
-          />
+            <View className="mt-10 gap-3">
+              <Typography.Heading
+                type="h1"
+                className="font-ui-bold text-text-primary"
+                style={{
+                  textAlign: 'right',
+                  writingDirection: 'rtl',
+                  lineHeight: 55,
+                  paddingTop: 11,
+                  paddingBottom: 7,
+                  includeFontPadding: true,
+                }}
+              >
+                أكمل ملفك الأساسي
+              </Typography.Heading>
+              <Typography.Paragraph
+                className="font-ui-regular text-text-secondary"
+                style={{
+                  textAlign: 'right',
+                  writingDirection: 'rtl',
+                  lineHeight: 30,
+                  paddingTop: 5,
+                  paddingBottom: 2,
+                  includeFontPadding: true,
+                }}
+              >
+                هالمعلومات الأساسية بتساعدنا نجهّز حجوزاتك ونخصّص تجربتك.
+              </Typography.Paragraph>
+            </View>
 
-          <BrandedDateField
-            displayValue={birthDate}
-            error={attempted && !birthDate ? 'اختر تاريخ الميلاد.' : undefined}
-            onChange={(date) => {
-              setSelectedDate(date);
-              setBirthDate(
-                `${String(date.getDate()).padStart(2, '0')} / ${String(
-                  date.getMonth() + 1,
-                ).padStart(2, '0')} / ${date.getFullYear()}`,
-              );
-            }}
-            value={selectedDate}
-          />
+            <View
+              className="mt-7 flex-row items-center justify-end gap-3"
+              style={{ direction: 'ltr' }}
+            >
+              <View className="flex-1 items-end gap-1">
+                <Typography.Paragraph
+                  className="font-ui-semibold text-text-primary"
+                  style={{ textAlign: 'right', writingDirection: 'rtl' }}
+                >
+                  صورة شخصية (اختيارية)
+                </Typography.Paragraph>
+                <Typography.Paragraph
+                  type="body-sm"
+                  className="font-ui-regular text-text-secondary"
+                  style={{ textAlign: 'right', writingDirection: 'rtl' }}
+                >
+                  بتقدر تضيفها لاحقاً من حسابك.
+                </Typography.Paragraph>
+              </View>
+              <EditableProfileAvatar value={photo} onChange={setPhoto} />
+            </View>
 
-          <SegmentedField
-            error={attempted && !gender ? 'اختر الجنس.' : undefined}
-            label="الجنس"
-            onChange={setGender}
-            options={[
-              { value: 'female', label: 'أنثى' },
-              { value: 'male', label: 'ذكر' },
-            ]}
-            value={gender}
-          />
+            <View className="mt-8 gap-6">
+              <TextField isRequired isInvalid={attempted && name.trim().length < 2}>
+                <Label className="mb-2 self-end font-ui-semibold text-text-primary">
+                  الاسم الكامل
+                </Label>
+                <Input
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="الاسم الكامل"
+                  autoComplete="name"
+                  returnKeyType="done"
+                  variant="secondary"
+                  className="h-14 rounded-form-field border border-border-default bg-surface-default px-4 font-ui-medium text-text-primary focus:border-action-primary"
+                  placeholderColorClassName="text-text-placeholder"
+                  style={{ textAlign: 'right', writingDirection: 'rtl' }}
+                />
+                <FieldError>أدخل الاسم الكامل، حرفين على الأقل.</FieldError>
+              </TextField>
 
-          <SelectField
-            error={attempted && area.trim().length < 2 ? 'حدد منطقتك.' : undefined}
-            icon={{ ios: 'mappin', android: 'location_on', web: 'location_on' }}
-            label="المنطقة"
-            onPress={() => router.push('/location-picker')}
-            placeholder="حلب · الفرقان"
-            value={area}
-          />
+              <BrandedDateField
+                value={selectedDate}
+                displayValue={birthDate}
+                error={attempted && !birthDate ? 'اختر تاريخ الميلاد.' : undefined}
+                onChange={(date) => {
+                  setSelectedDate(date);
+                  setBirthDate(formatDate(date));
+                }}
+              />
 
-          <View className="w-full flex-row items-center justify-end gap-2">
-            <AppText className="text-content-secondary" variant="caption">
-              يمكن تعديل المنطقة من الخريطة
-            </AppText>
-            <AppIcon
-              name={{ ios: 'info.circle', android: 'info', web: 'info' }}
-              size={16}
-              tone="info"
-            />
+              <View className="gap-3">
+                <Label className="self-end font-ui-semibold text-text-primary">الجنس</Label>
+                <RadioGroup
+                  value={gender}
+                  onValueChange={(next) => {
+                    if (next === 'male' || next === 'female') setGender(next);
+                  }}
+                  className="flex-row gap-3"
+                  style={{ direction: 'rtl' }}
+                >
+                  {(
+                    [
+                      { value: 'male', label: 'ذكر', icon: 'mars' },
+                      { value: 'female', label: 'أنثى', icon: 'venus' },
+                    ] as const
+                  ).map(({ value, label, icon }) => {
+                    const selected = gender === value;
+                    return (
+                      <RadioGroup.Item
+                        key={value}
+                        value={value}
+                        className={
+                          'min-h-[124px] flex-1 items-center justify-center rounded-form-field border px-3 py-3 ' +
+                          (selected
+                            ? 'border-action-primary bg-action-subtle'
+                            : 'border-border-default bg-surface-default')
+                        }
+                      >
+                        <View className="items-center justify-center gap-2.5">
+                          <View className="relative">
+                            <Avatar
+                              size="lg"
+                              variant="soft"
+                              color={selected ? 'accent' : 'default'}
+                            >
+                              <Avatar.Fallback>
+                                <OutlineIcon
+                                  name="user-round"
+                                  size={26}
+                                  color={colors.text.primary}
+                                  strokeWidth={1.8}
+                                />
+                              </Avatar.Fallback>
+                            </Avatar>
+                            <View className="absolute -bottom-1 -right-2 h-7 w-7 items-center justify-center rounded-full border border-border-subtle bg-surface-default">
+                              <OutlineIcon
+                                name={icon}
+                                size={16}
+                                color={selected ? colors.text.primary : colors.text.secondary}
+                                strokeWidth={2}
+                              />
+                            </View>
+                          </View>
+                          <Typography.Paragraph
+                            className={
+                              selected
+                                ? 'font-ui-semibold text-text-primary'
+                                : 'font-ui-medium text-text-secondary'
+                            }
+                            style={{ textAlign: 'center', writingDirection: 'rtl' }}
+                          >
+                            {label}
+                          </Typography.Paragraph>
+                        </View>
+                      </RadioGroup.Item>
+                    );
+                  })}
+                </RadioGroup>
+              </View>
+
+              <View className="gap-2.5">
+                <Label className="self-end font-ui-semibold text-text-primary">المنطقة</Label>
+                <TextField>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={area ? 'تغيير المنطقة: ' + area : 'اختر مدينتك أو منطقتك'}
+                    accessibilityHint="يفتح صفحة البحث عن المدن والمناطق"
+                    className="relative justify-center"
+                    onPress={() => router.push('/location-picker')}
+                  >
+                    <Input
+                      editable={false}
+                      pointerEvents="none"
+                      variant="secondary"
+                      value={area}
+                      placeholder="اختر مدينتك أو منطقتك"
+                      className="h-14 rounded-form-field border border-border-default bg-surface-default pl-12 pr-4 font-ui-medium text-text-primary"
+                      placeholderColorClassName="text-text-placeholder"
+                      style={{ textAlign: 'right', writingDirection: 'rtl' }}
+                    />
+                    <View
+                      pointerEvents="none"
+                      className="absolute left-4 h-8 w-8 items-center justify-center"
+                    >
+                      <OutlineIcon name="map-pin" size={20} color={colors.action.primary} />
+                    </View>
+                  </Pressable>
+                </TextField>
+                <FieldError isInvalid={attempted && area.trim().length < 2}>
+                  حدد منطقتك للمتابعة.
+                </FieldError>
+                <Typography.Paragraph
+                  type="body-sm"
+                  className="font-ui-regular text-text-secondary"
+                  style={{ textAlign: 'right', writingDirection: 'rtl' }}
+                >
+                  بتقدر تغيّر منطقتك بأي وقت من الحساب.
+                </Typography.Paragraph>
+              </View>
+            </View>
+
+            <View className="min-h-8 flex-1" />
+
+            <View className="mt-8 gap-3">
+              <Button
+                variant="primary"
+                size="lg"
+                isDisabled={submitting}
+                className="min-h-[52px] rounded-form-field bg-action-primary"
+                onPress={() => void save()}
+              >
+                <Button.Label className="font-ui-semibold text-text-on-action">
+                  {submitting ? 'جاري الحفظ...' : 'حفظ والمتابعة'}
+                </Button.Label>
+              </Button>
+              <Typography.Paragraph
+                type="body-sm"
+                className="font-ui-regular text-text-secondary"
+                style={{ textAlign: 'center', writingDirection: 'rtl' }}
+              >
+                بتقدر تكمل بقية معلوماتك لاحقاً من ملفك الشخصي.
+              </Typography.Paragraph>
+            </View>
           </View>
         </ScrollView>
-
-        <Button
-          className="h-[52px] rounded-[12px]"
-          endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
-          label="حفظ والدخول"
-          loading={submitting}
-          loadingLabel="جاري الحفظ"
-          onPress={() => void save()}
-        />
       </KeyboardAvoidingView>
-    </Screen>
+    </SafeAreaView>
   );
 }

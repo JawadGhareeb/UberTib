@@ -1,352 +1,142 @@
-import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, View } from 'react-native';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { Button, Dialog, FieldError, Input, Label, TextField, Typography } from 'heroui-native';
+import { useState } from 'react';
+import { Platform, Pressable, View } from 'react-native';
 
-import { AppIcon, AppText, Button, SelectField } from '@/shared/components/ui';
-import { cn } from '@/shared/utils/cn';
+import { useAppTheme } from '@/shared/theme/theme-provider';
+import { OutlineIcon } from '@/shared/components/media/outline-icon';
 
-const MONTHS = [
-  'كانون الثاني',
-  'شباط',
-  'آذار',
-  'نيسان',
-  'أيار',
-  'حزيران',
-  'تموز',
-  'آب',
-  'أيلول',
-  'تشرين الأول',
-  'تشرين الثاني',
-  'كانون الأول',
-] as const;
+const MIN_DATE = new Date(1900, 0, 1);
 
-const WEEK_DAYS = ['أح', 'إث', 'ثل', 'أر', 'خم', 'جم', 'سب'] as const;
-const MIN_YEAR = 1900;
-
-interface BrandedDateFieldProps {
+type BrandedDateFieldProps = {
   value: Date;
   displayValue?: string;
   error?: string;
   onChange: (date: Date) => void;
-}
+};
 
-function formatDate(date: Date): string {
-  return `${String(date.getDate()).padStart(2, '0')} / ${String(date.getMonth() + 1).padStart(
-    2,
-    '0',
-  )} / ${date.getFullYear()}`;
-}
-
-function isSameDay(left: Date, right: Date): boolean {
-  return (
-    left.getFullYear() === right.getFullYear() &&
-    left.getMonth() === right.getMonth() &&
-    left.getDate() === right.getDate()
-  );
-}
-
+/**
+ * The visible trigger is HeroUI Input (read-only) for consistency with the
+ * profile name field. The native datepicker is the platform date selection UI.
+ */
 export function BrandedDateField({ value, displayValue, error, onChange }: BrandedDateFieldProps) {
-  const today = useMemo(() => new Date(), []);
   const [visible, setVisible] = useState(false);
-  const [draftDate, setDraftDate] = useState(value);
-  const [visibleYear, setVisibleYear] = useState(value.getFullYear());
-  const [visibleMonth, setVisibleMonth] = useState(value.getMonth());
-  const [showYears, setShowYears] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const { colors } = useAppTheme();
+  const today = new Date();
 
   const open = () => {
-    setDraftDate(value);
-    setVisibleYear(value.getFullYear());
-    setVisibleMonth(value.getMonth());
-    setShowYears(false);
-    setVisible(true);
-  };
-
-  const daysInMonth = useMemo(
-    () => new Date(visibleYear, visibleMonth + 1, 0).getDate(),
-    [visibleMonth, visibleYear],
-  );
-  const firstDay = useMemo(
-    () => new Date(visibleYear, visibleMonth, 1).getDay(),
-    [visibleMonth, visibleYear],
-  );
-
-  const dayCells = useMemo(
-    () => [
-      ...Array.from({ length: firstDay }, () => null),
-      ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
-    ],
-    [daysInMonth, firstDay],
-  );
-
-  const years = useMemo(
-    () =>
-      Array.from(
-        { length: today.getFullYear() - MIN_YEAR + 1 },
-        (_, index) => today.getFullYear() - index,
-      ),
-    [today],
-  );
-
-  const monthAtMaximum = visibleYear === today.getFullYear() && visibleMonth === today.getMonth();
-
-  const goPreviousMonth = () => {
-    if (visibleMonth === 0) {
-      setVisibleMonth(11);
-      setVisibleYear((year) => Math.max(MIN_YEAR, year - 1));
-      return;
+    if (Platform.OS === 'android') {
+      DateTimePickerAndroid.open({
+        value,
+        mode: 'date',
+        minimumDate: MIN_DATE,
+        maximumDate: today,
+        onValueChange: (_event, selectedDate) => {
+          onChange(selectedDate);
+        },
+      });
+    } else {
+      setDraft(value);
+      setVisible(true);
     }
-
-    setVisibleMonth((month) => month - 1);
-  };
-
-  const goNextMonth = () => {
-    if (monthAtMaximum) return;
-
-    if (visibleMonth === 11) {
-      setVisibleMonth(0);
-      setVisibleYear((year) => Math.min(today.getFullYear(), year + 1));
-      return;
-    }
-
-    setVisibleMonth((month) => month + 1);
-  };
-
-  const chooseDay = (day: number) => {
-    const next = new Date(visibleYear, visibleMonth, day);
-    if (next > today) return;
-    setDraftDate(next);
   };
 
   return (
-    <>
-      <SelectField
-        direction="ltr"
-        error={error}
-        icon={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }}
-        label="تاريخ الميلاد"
+    <TextField className="gap-2.5" isInvalid={Boolean(error)}>
+      <Label className="self-end font-ui-semibold text-text-primary">تاريخ الميلاد</Label>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={displayValue ? 'تاريخ الميلاد ' + displayValue : 'اختر تاريخ الميلاد'}
+        accessibilityHint="يفتح التقويم لاختيار اليوم والشهر والسنة"
         onPress={open}
-        placeholder="اختر تاريخ الميلاد"
-        value={displayValue}
-      />
-
-      <Modal
-        animationType="slide"
-        onRequestClose={() => setVisible(false)}
-        transparent
-        visible={visible}
+        className="relative justify-center"
       >
-        <View className="flex-1 justify-end">
-          <Pressable
-            accessibilityLabel="إغلاق اختيار التاريخ"
-            className="absolute inset-0 bg-surface-scrim/50"
-            onPress={() => setVisible(false)}
+        <Input
+          editable={false}
+          pointerEvents="none"
+          variant="secondary"
+          value={displayValue ?? ''}
+          placeholder="اختر تاريخ الميلاد"
+          className="h-14 rounded-form-field border border-border-default bg-surface-default pl-12 pr-4 font-ui-medium text-text-primary"
+          placeholderColorClassName="text-text-placeholder"
+          style={{ textAlign: 'right', writingDirection: displayValue ? 'ltr' : 'rtl' }}
+        />
+        <View pointerEvents="none" className="absolute left-4 h-8 w-8 items-center justify-center">
+          <OutlineIcon
+            name="calendar-days"
+            size={21}
+            color={colors.text.secondary}
+            strokeWidth={1.9}
           />
+        </View>
+      </Pressable>
+      <FieldError isInvalid={Boolean(error)}>{error}</FieldError>
 
-          <View className="rounded-t-[28px] border-t border-border-subtle bg-surface-canvas px-5 pb-7 pt-4">
-            <View className="mx-auto w-full max-w-[430px]">
-              <View className="mb-4 h-1 w-11 self-center rounded-full bg-border-default" />
-
-              <View className="flex-row items-center justify-between">
-                <Pressable
-                  accessibilityLabel="إغلاق"
-                  className="h-10 w-10 items-center justify-center rounded-full border border-border-subtle bg-surface-default"
-                  onPress={() => setVisible(false)}
+      {Platform.OS === 'ios' ? (
+        <Dialog isOpen={visible} onOpenChange={setVisible}>
+          <Dialog.Portal>
+            <Dialog.Overlay />
+            <Dialog.Content className="mx-5 rounded-form-field p-5">
+              <Dialog.Close variant="ghost" />
+              <View className="mt-2 w-full items-end gap-1">
+                <Dialog.Title
+                  className="w-full font-ui-bold text-text-primary"
+                  style={{ textAlign: 'right', writingDirection: 'rtl' }}
                 >
-                  <AppIcon
-                    name={{ ios: 'xmark', android: 'close', web: 'close' }}
-                    size={18}
-                    tone="secondary"
-                  />
-                </Pressable>
-
-                <View className="items-end">
-                  <AppText className="font-ui-bold" variant="heading-3">
-                    اختر تاريخ الميلاد
-                  </AppText>
-                  <AppText className="mt-0.5 text-content-secondary" variant="caption">
-                    اختر اليوم والشهر والسنة
-                  </AppText>
-                </View>
-              </View>
-
-              <View className="mt-5 rounded-[18px] border border-border-subtle bg-surface-default p-3">
-                <View className="flex-row items-center justify-between">
-                  <Pressable
-                    accessibilityLabel="الشهر السابق"
-                    className="h-10 w-10 items-center justify-center rounded-[10px] bg-action-subtle"
-                    onPress={goPreviousMonth}
-                  >
-                    <AppIcon
-                      name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
-                      size={18}
-                      tone="action"
-                    />
-                  </Pressable>
-
-                  <Pressable
-                    accessibilityRole="button"
-                    className="min-h-10 flex-1 items-center justify-center"
-                    onPress={() => setShowYears((current) => !current)}
-                  >
-                    <AppText
-                      align="center"
-                      className="font-ui-bold text-content-link"
-                      variant="body-strong"
-                    >
-                      {MONTHS[visibleMonth]} {visibleYear}
-                    </AppText>
-                    <AppText align="center" className="text-content-secondary" variant="caption">
-                      {showYears ? 'العودة إلى التقويم' : 'اضغط لتغيير السنة'}
-                    </AppText>
-                  </Pressable>
-
-                  <Pressable
-                    accessibilityLabel="الشهر التالي"
-                    accessibilityState={{ disabled: monthAtMaximum }}
-                    className={cn(
-                      'h-10 w-10 items-center justify-center rounded-[10px]',
-                      monthAtMaximum ? 'bg-surface-subtle' : 'bg-action-subtle',
-                    )}
-                    disabled={monthAtMaximum}
-                    onPress={goNextMonth}
-                  >
-                    <AppIcon
-                      name={{
-                        ios: 'chevron.right',
-                        android: 'chevron_right',
-                        web: 'chevron_right',
-                      }}
-                      size={18}
-                      tone={monthAtMaximum ? 'secondary' : 'action'}
-                    />
-                  </Pressable>
-                </View>
-
-                {showYears ? (
-                  <ScrollView className="mt-4 max-h-[280px]" showsVerticalScrollIndicator={false}>
-                    <View className="flex-row flex-wrap justify-between gap-y-2">
-                      {years.map((year) => {
-                        const selected = year === visibleYear;
-
-                        return (
-                          <Pressable
-                            accessibilityRole="button"
-                            accessibilityState={{ selected }}
-                            className={cn(
-                              'h-11 w-[31%] items-center justify-center rounded-[10px] border',
-                              selected
-                                ? 'border-action-primary bg-action-subtle'
-                                : 'border-border-subtle bg-surface-canvas',
-                            )}
-                            key={year}
-                            onPress={() => {
-                              setVisibleYear(year);
-                              if (year === today.getFullYear() && visibleMonth > today.getMonth()) {
-                                setVisibleMonth(today.getMonth());
-                              }
-                              setShowYears(false);
-                            }}
-                          >
-                            <AppText
-                              align="center"
-                              direction="ltr"
-                              className={selected ? 'font-ui-bold text-content-link' : undefined}
-                              variant="label"
-                            >
-                              {year}
-                            </AppText>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                  </ScrollView>
-                ) : (
-                  <>
-                    <View className="mt-5 flex-row" style={{ direction: 'ltr' }}>
-                      {WEEK_DAYS.map((day) => (
-                        <View className="w-[14.285%] items-center py-2" key={day}>
-                          <AppText
-                            align="center"
-                            className="text-content-secondary"
-                            variant="caption"
-                          >
-                            {day}
-                          </AppText>
-                        </View>
-                      ))}
-                    </View>
-
-                    <View className="flex-row flex-wrap" style={{ direction: 'ltr' }}>
-                      {dayCells.map((day, index) => {
-                        if (!day) {
-                          return <View className="h-11 w-[14.285%]" key={`empty-${index}`} />;
-                        }
-
-                        const date = new Date(visibleYear, visibleMonth, day);
-                        const selected = isSameDay(date, draftDate);
-                        const disabled = date > today;
-
-                        return (
-                          <View className="h-11 w-[14.285%] items-center justify-center" key={day}>
-                            <Pressable
-                              accessibilityLabel={`${day} ${MONTHS[visibleMonth]} ${visibleYear}`}
-                              accessibilityRole="button"
-                              accessibilityState={{ disabled, selected }}
-                              className={cn(
-                                'h-9 w-9 items-center justify-center rounded-full',
-                                selected && 'bg-action-primary',
-                                !selected && !disabled && 'active:bg-action-subtle',
-                              )}
-                              disabled={disabled}
-                              onPress={() => chooseDay(day)}
-                            >
-                              <AppText
-                                align="center"
-                                direction="ltr"
-                                className={cn(
-                                  'text-type-label',
-                                  selected && 'font-ui-bold text-content-on-action',
-                                  disabled && 'text-content-disabled',
-                                )}
-                                variant="label"
-                              >
-                                {day}
-                              </AppText>
-                            </Pressable>
-                          </View>
-                        );
-                      })}
-                    </View>
-                  </>
-                )}
-              </View>
-
-              <View className="mt-4 rounded-[14px] bg-action-subtle px-4 py-3">
-                <AppText className="text-content-secondary" variant="caption">
-                  التاريخ المحدد
-                </AppText>
-                <AppText
-                  direction="ltr"
-                  className="mt-1 font-ui-bold text-content-link"
-                  variant="body-strong"
+                  تاريخ الميلاد
+                </Dialog.Title>
+                <Dialog.Description
+                  className="w-full font-ui-regular text-text-secondary"
+                  style={{ textAlign: 'right', writingDirection: 'rtl' }}
                 >
-                  {formatDate(draftDate)}
-                </AppText>
+                  اختر اليوم والشهر والسنة
+                </Dialog.Description>
               </View>
-
-              <View className="mt-4 gap-2">
+              <DateTimePicker
+                value={draft}
+                mode="date"
+                display="spinner"
+                locale="ar_SY"
+                minimumDate={MIN_DATE}
+                maximumDate={today}
+                onValueChange={(_event, selectedDate) => {
+                  setDraft(selectedDate);
+                }}
+                style={{ height: 190, width: '100%' }}
+              />
+              <View className="mt-3 flex-row gap-3" style={{ direction: 'rtl' }}>
                 <Button
-                  label="تأكيد التاريخ"
+                  variant="primary"
+                  className="min-h-[48px] flex-1 rounded-form-field bg-action-primary"
                   onPress={() => {
-                    onChange(draftDate);
+                    onChange(draft);
                     setVisible(false);
                   }}
-                />
-                <Button label="إلغاء" onPress={() => setVisible(false)} variant="secondary" />
+                >
+                  <Button.Label className="font-ui-semibold text-text-on-action">
+                    تأكيد
+                  </Button.Label>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="min-h-[48px] flex-1 rounded-form-field"
+                  onPress={() => setVisible(false)}
+                >
+                  <Button.Label className="font-ui-semibold">إلغاء</Button.Label>
+                </Button>
               </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </>
+            </Dialog.Content>
+          </Dialog.Portal>
+        </Dialog>
+      ) : null}
+      <Typography.Paragraph
+        type="body-sm"
+        className="font-ui-regular text-text-secondary"
+        style={{ textAlign: 'right', writingDirection: 'rtl' }}
+      >
+        تاريخ الميلاد يساعدنا على تجهيز ملفك الطبي.
+      </Typography.Paragraph>
+    </TextField>
   );
 }

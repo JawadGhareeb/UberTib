@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Typography } from 'heroui-native';
 import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -14,11 +14,12 @@ import { secureStorage } from '@/shared/storage/secure-storage';
  */
 export function AppEntryScreen() {
   const router = useRouter();
-  const [checking, setChecking] = useState(!__DEV__);
-  const [step, setStep] = useState<0 | 1>(0);
+  const { step: requestedStep } = useLocalSearchParams<{ step?: string }>();
+  const [checking, setChecking] = useState(!__DEV__ && requestedStep !== '2');
+  const [step, setStep] = useState<0 | 1>(requestedStep === '2' ? 1 : 0);
 
   useEffect(() => {
-    if (__DEV__) return;
+    if (__DEV__ || requestedStep === '2') return;
     let active = true;
     const bootstrap = async () => {
       try {
@@ -40,7 +41,7 @@ export function AppEntryScreen() {
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, requestedStep]);
 
   const finish = useCallback(
     async (destination: '/(tabs)/home' | '/auth/phone', mode?: 'register') => {

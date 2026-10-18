@@ -1,34 +1,20 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense } from 'react';
 import { ActivityIndicator, TurboModuleRegistry, View } from 'react-native';
 
-import { ProfileLocationMapFallback } from './profile-location-map-fallback';
 import type { ProfileLocationMapProps } from './profile-location-map.types';
+import { WebViewProfileLocationMap } from './profile-location-map-webview.native';
 
 const hasMapLibreNativeModules =
   TurboModuleRegistry.get('MLRNCameraModule') !== null &&
   TurboModuleRegistry.get('MLRNMapViewModule') !== null;
 
-const MapLibreProfileLocationMap = lazy(async () => {
+const NativeMap = lazy(async () => {
   const module = await import('./profile-location-map-maplibre.native');
-
   return { default: module.MapLibreProfileLocationMap };
 });
 
-export function ProfileLocationMap({ coordinate, onChange, onInteractiveChange, recenterToken }: ProfileLocationMapProps) {
-  useEffect(() => {
-    if (!hasMapLibreNativeModules) onInteractiveChange?.(false);
-  }, [onInteractiveChange]);
-  if (!hasMapLibreNativeModules) {
-    return (
-      <ProfileLocationMapFallback
-        coordinate={coordinate}
-        description="الخريطة التفاعلية غير متاحة في هذه النسخة؛ يلزم تشغيل النسخة الداعمة للخرائط."
-        onChange={onChange}
-        onInteractiveChange={onInteractiveChange}
-        recenterToken={recenterToken}
-      />
-    );
-  }
+export function ProfileLocationMap(props: ProfileLocationMapProps) {
+  if (!hasMapLibreNativeModules) return <WebViewProfileLocationMap {...props} />;
 
   return (
     <Suspense
@@ -38,7 +24,7 @@ export function ProfileLocationMap({ coordinate, onChange, onInteractiveChange, 
         </View>
       }
     >
-      <MapLibreProfileLocationMap coordinate={coordinate} onChange={onChange} onInteractiveChange={onInteractiveChange} recenterToken={recenterToken} />
+      <NativeMap {...props} />
     </Suspense>
   );
 }

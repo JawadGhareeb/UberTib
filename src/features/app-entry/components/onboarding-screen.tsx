@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 
 import { BrandMark } from '@/shared/components/brand/brand-mark';
+import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { theme } from '@/shared/theme';
 import { useAppTheme } from '@/shared/theme/theme-provider';
 
@@ -175,9 +176,12 @@ export function OnboardingScreen({
                 UberTib
               </Typography.Heading>
             </View>
-            <Typography.Paragraph type="body-sm" className="font-ui-medium text-text-secondary">
-              {step + 1} / 2
-            </Typography.Paragraph>
+            <View className="flex-row items-center gap-2">
+              <Typography.Paragraph type="body-sm" className="font-ui-medium text-text-secondary">
+                {step + 1} / 2
+              </Typography.Paragraph>
+              {step === 1 ? <AuthBackButton onPress={onBack} /> : null}
+            </View>
           </View>
           <View className="mt-5 flex-row gap-2" style={{ direction: 'ltr' }}>
             <View className="h-[4px] flex-1 rounded-full bg-action-primary" />
@@ -196,7 +200,13 @@ export function OnboardingScreen({
             <Typography.Heading
               type="h1"
               className="w-full font-ui-bold text-text-primary"
-              style={{ textAlign: 'right', writingDirection: 'rtl' }}
+              style={{
+                textAlign: 'right',
+                writingDirection: 'rtl',
+                lineHeight: 51,
+                paddingTop: 9,
+                paddingBottom: 6,
+              }}
             >
               {step === 0 ? 'عناية أسنان أسهل، من أول خطوة' : 'بلّش بالطريقة اللي بتناسبك'}
             </Typography.Heading>
@@ -236,7 +246,7 @@ export function OnboardingScreen({
                   className="min-h-[52px] rounded-form-field"
                   onPress={onRegister}
                 >
-                  <Button.Label className="font-ui-semibold">إنشاء حساب</Button.Label>
+                  <Button.Label className="font-ui-semibold">الانضمام للمنصة</Button.Label>
                 </Button>
                 <Button
                   variant="tertiary"
@@ -244,7 +254,7 @@ export function OnboardingScreen({
                   className="min-h-[52px] rounded-form-field"
                   onPress={onLogin}
                 >
-                  <Button.Label className="font-ui-semibold">تسجيل الدخول</Button.Label>
+                  <Button.Label className="font-ui-semibold">لدي حساب</Button.Label>
                 </Button>
               </>
             )}
