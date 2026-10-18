@@ -6,7 +6,7 @@ Patient-facing React Native application for UperTib.
 
 - Expo SDK 57 + Expo Router
 - React Native + strict TypeScript
-- NativeWind
+- HeroUI Native + Uniwind + Tailwind CSS 4
 - TanStack React Query
 - Expo Secure Store
 - IBM Plex Sans Arabic
@@ -42,6 +42,18 @@ npm run android
 
 Rebuild the native app after installing or upgrading MapLibre. Restarting Metro alone does not
 add native modules to an existing binary.
+
+## HeroUI Native development preview
+
+The design-system preview route is `/dev/ui-kit` (development builds only). It exercises HeroUI Native Button, Card and Input, the UberTib Arabic font, and light/dark brand themes without changing patient screens.
+
+```bash
+npm run uniwind:theme:sync
+npm run uniwind:theme:check
+npm run start
+```
+
+The CSS theme is generated from `src/shared/theme/tokens.json`. Never edit `src/shared/theme/uniwind-theme.css` by hand. HeroUI Native is focused on iOS/Android; web parity is not part of this migration test. Android/iOS JS bundles can be checked with Expo export, but device validation is still required.
 
 ## Mock verification
 

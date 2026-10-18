@@ -11,6 +11,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { I18nManager, Image, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { HeroUINativeProvider } from 'heroui-native/provider';
 
 import { AppProviders } from '@/providers/app-providers';
 import { useAppTheme } from '@/shared/theme/theme-provider';
@@ -61,7 +63,7 @@ export default function RootLayout() {
           justifyContent: 'center',
         }}
       >
-        <StatusBar backgroundColor="#F9F9F9" style="dark" />
+        <StatusBar style="dark" />
         <Image
           accessibilityLabel="UperTib"
           resizeMode="contain"
@@ -74,11 +76,15 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <View style={{ direction: 'ltr', flex: 1 }}>
-        <AppProviders>
-          <RootNavigator />
-        </AppProviders>
-      </View>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <HeroUINativeProvider config={{ isRTL: true }}>
+          <View style={{ direction: 'ltr', flex: 1 }}>
+            <AppProviders>
+              <RootNavigator />
+            </AppProviders>
+          </View>
+        </HeroUINativeProvider>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }

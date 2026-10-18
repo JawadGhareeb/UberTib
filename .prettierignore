@@ -4,5 +4,7 @@ dist
 web-build
 coverage
 package-lock.json
+src/shared/theme/uniwind-theme.css
+src/uniwind-types.d.ts
 docs/UI_UX_REBUILD_PLAN.md
 docs/MOCK_BUSINESS_COVERAGE_MATRIX.md

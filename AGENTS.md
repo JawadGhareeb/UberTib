@@ -35,6 +35,13 @@ When code and canonical documentation disagree, reconcile the mismatch instead o
 - When live transport is enabled later, all HTTP goes through `shared/api/http-client.ts`.
 
 ## Mobile correctness
+## HeroUI Native components policy — Patient UI redesign
+
+- Every new or redesigned patient screen MUST use the native HeroUI components directly whenever an equivalent exists: Input, TextField, Label, FieldError, InputOTP, Select, Button, Card, Typography, Dialog, BottomSheet, Tabs, Toast, etc. Do not recreate or use legacy custom visual wrappers for equivalent controls.
+- Product-specific components without a HeroUI equivalent (interactive tooth diagrams, special dental/booking visuals) can remain custom and compose HeroUI elements.
+- React Native View/ScrollView/SafeAreaView remain appropriate layout/platform primitives, not replacements for HeroUI visual controls.
+- Preserve existing domain flows, mock behavior, auth returnTo, permissions, accessibility and Arabic/RTL while migrating. Remove legacy components only after all consumers are updated.
+
 
 - TypeScript strict mode; no `any`.
 - React Query may own asynchronous mock/server state where caching is useful.
