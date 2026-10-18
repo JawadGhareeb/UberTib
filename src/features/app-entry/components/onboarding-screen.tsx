@@ -14,6 +14,7 @@ type OnboardingScreenProps = {
   onBack: () => void;
   onBrowse: () => void;
   onLogin: () => void;
+  onRegister: () => void;
 };
 
 function IntroArtwork({ step }: { step: 0 | 1 }) {
@@ -139,6 +140,7 @@ export function OnboardingScreen({
   onBack,
   onBrowse,
   onLogin,
+  onRegister,
 }: OnboardingScreenProps) {
   useEffect(() => {
     if (Platform.OS !== 'android' || step === 0) return;
@@ -204,21 +206,44 @@ export function OnboardingScreen({
             >
               {step === 0
                 ? 'مو ضروري تعرف اسم المشكلة. منساعدك توصف حاجتك، تقارن بين الأطباء المؤهلين، وتحجز الموعد المناسب.'
-                : 'اكتشف الأطباء والخدمات والمواعيد كزائر، أو سجّل الدخول لتحجز وتتابع مواعيدك وخطط علاجك.'}
+                : 'تصفّح الأطباء والخدمات كزائر، أو أنشئ حساباً جديداً، أو سجّل الدخول لتتابع حجوزاتك.'}
             </Typography.Paragraph>
           </View>
           <View className="min-h-8 flex-1" />
           <View className="mt-8 gap-3">
             {step === 0 ? (
-              <Button variant="primary" size="lg" className="min-h-[52px]" onPress={onNext}>
+              <Button
+                variant="primary"
+                size="lg"
+                className="min-h-[52px] rounded-form-field"
+                onPress={onNext}
+              >
                 <Button.Label className="font-ui-semibold">التالي</Button.Label>
               </Button>
             ) : (
               <>
-                <Button variant="primary" size="lg" className="min-h-[52px]" onPress={onBrowse}>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="min-h-[52px] rounded-form-field"
+                  onPress={onBrowse}
+                >
                   <Button.Label className="font-ui-semibold">التصفح كزائر</Button.Label>
                 </Button>
-                <Button variant="outline" size="lg" className="min-h-[52px]" onPress={onLogin}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="min-h-[52px] rounded-form-field"
+                  onPress={onRegister}
+                >
+                  <Button.Label className="font-ui-semibold">إنشاء حساب</Button.Label>
+                </Button>
+                <Button
+                  variant="tertiary"
+                  size="lg"
+                  className="min-h-[52px] rounded-form-field"
+                  onPress={onLogin}
+                >
                   <Button.Label className="font-ui-semibold">تسجيل الدخول</Button.Label>
                 </Button>
               </>

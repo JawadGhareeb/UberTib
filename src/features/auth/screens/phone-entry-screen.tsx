@@ -22,7 +22,7 @@ function normalizeDigits(input: string): string {
 
 export function PhoneEntryScreen() {
   const router = useRouter();
-  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
+  const { returnTo, mode } = useLocalSearchParams<{ returnTo?: string; mode?: 'register' }>();
   const { scenario } = useMockScenario();
   const [country, setCountry] = useState<CountryOption>(DEFAULT_COUNTRY);
   const [phone, setPhone] = useState('');
@@ -30,7 +30,7 @@ export function PhoneEntryScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const e164Phone = toE164(country, phone);
-  const national = phone.replace(/^0+/, '');
+  const national = phone;
   const canSubmit =
     /^\+[1-9]\d{7,14}$/.test(e164Phone) && (country.iso !== 'SY' || /^9\d{8}$/.test(national));
 
@@ -94,13 +94,15 @@ export function PhoneEntryScreen() {
                 className="font-ui-bold text-text-primary"
                 style={{ textAlign: 'right', writingDirection: 'rtl' }}
               >
-                أهلاً بك في أوبرطب
+                {mode === 'register' ? 'أنشئ حسابك في أوبرطب' : 'أهلاً بك في أوبرطب'}
               </Typography.Heading>
               <Typography.Paragraph
                 className="font-ui-regular text-text-secondary"
                 style={{ textAlign: 'right', writingDirection: 'rtl' }}
               >
-                أدخل رقم موبايلك لنبعتلك رمز التحقق وتكمّل حجزك بسهولة.
+                {mode === 'register'
+                  ? 'أنشئ حسابك برقم الموبايل، ومنكمل بياناتك الأساسية بعد التحقق.'
+                  : 'أدخل رقم موبايلك لنبعتلك رمز التحقق وتكمّل حجزك بسهولة.'}
               </Typography.Paragraph>
             </View>
 
@@ -117,7 +119,7 @@ export function PhoneEntryScreen() {
                     setError(undefined);
                   }}
                   isDisabled={submitting}
-                  presentation="bottom-sheet"
+                  presentation="dialog"
                 >
                   <Select.Trigger
                     accessibilityLabel={'تغيير الدولة، ' + country.nameAr + '، ' + country.dialCode}
@@ -133,45 +135,60 @@ export function PhoneEntryScreen() {
                   </Select.Trigger>
                   <Select.Portal>
                     <Select.Overlay />
-                    <Select.Content presentation="bottom-sheet" snapPoints={['65%']}>
-                      <Select.ListLabel className="mb-2 text-right font-ui-semibold">
-                        اختر الدولة ورمز الاتصال
-                      </Select.ListLabel>
-                      {phoneCountries.map((item) => (
-                        <Select.Item
-                          key={item.iso}
-                          value={item.iso}
-                          label={item.nameAr + ' · ' + item.dialCode}
-                        >
-                          <View
-                            className="flex-1 flex-row items-center gap-3"
-                            style={{ direction: 'ltr' }}
+                    <Select.Content
+                      presentation="dialog"
+                      classNames={{ content: 'w-[90%] max-w-[420px] rounded-form-field p-5' }}
+                    >
+                      <View
+                        className="mb-4 flex-row items-center justify-between"
+                        style={{ direction: 'rtl' }}
+                      >
+                        <Select.ListLabel className="font-ui-semibold text-text-primary">
+                          اختر الدولة ورمز الاتصال
+                        </Select.ListLabel>
+                        <Select.Close accessibilityLabel="إغلاق قائمة الدول" />
+                      </View>
+                      <ScrollView
+                        className="max-h-[390px]"
+                        nestedScrollEnabled
+                        keyboardShouldPersistTaps="always"
+                      >
+                        {phoneCountries.map((item) => (
+                          <Select.Item
+                            key={item.iso}
+                            value={item.iso}
+                            label={item.nameAr + ' · ' + item.dialCode}
                           >
-                            <CountryFlag iso={item.iso} />
-                            <Select.ItemLabel className="flex-1 text-right font-ui-regular" />
-                          </View>
-                          <Select.ItemIndicator />
-                        </Select.Item>
-                      ))}
+                            <View
+                              className="flex-1 flex-row items-center gap-3"
+                              style={{ direction: 'ltr' }}
+                            >
+                              <CountryFlag iso={item.iso} />
+                              <Select.ItemLabel className="flex-1 text-right font-ui-regular" />
+                            </View>
+                            <Select.ItemIndicator />
+                          </Select.Item>
+                        ))}
+                      </ScrollView>
                     </Select.Content>
                   </Select.Portal>
                 </Select>
 
                 <Input
                   accessibilityLabel="رقم الموبايل بدون رمز الدولة"
-                  accessibilityHint="أدخل رقمك بدون رمز الدولة، ويمكن إدخال الصفر الأول"
+                  accessibilityHint="أدخل الرقم المحلي بعد رمز الدولة بدون صفر في البداية. الرقم السوري يبدأ بـ 9."
                   autoComplete="tel"
                   keyboardType="phone-pad"
                   textContentType="telephoneNumber"
-                  maxLength={15}
-                  placeholder={country.iso === 'SY' ? '9XX XXX XXX' : 'رقم الهاتف'}
+                  maxLength={country.iso === 'SY' ? 9 : 15}
+                  placeholder={country.iso === 'SY' ? '9XXXXXXXX' : 'رقم الهاتف'}
                   className="h-14 min-w-0 flex-1 rounded-form-field border border-border-default bg-surface-default px-4 font-ui-medium text-base text-text-primary focus:border-action-primary"
                   placeholderColorClassName="text-text-placeholder"
                   selectionColorClassName="text-action-primary"
                   variant="secondary"
                   value={phone}
                   onChangeText={(value) => {
-                    setPhone(normalizeDigits(value));
+                    setPhone(normalizeDigits(value).replace(/^0+/, ''));
                     if (error) setError(undefined);
                   }}
                   returnKeyType="done"
@@ -188,7 +205,7 @@ export function PhoneEntryScreen() {
               style={{ textAlign: 'right', writingDirection: 'rtl' }}
             >
               {country.iso === 'SY'
-                ? 'مثال: 9XXXXXXXX أو 09XXXXXXXX'
+                ? 'مثال: 9XXXXXXXX — بدون صفر في البداية'
                 : 'اكتب الرقم المحلي بدون رمز الاتصال الدولي.'}
             </Typography.Paragraph>
 
@@ -200,7 +217,7 @@ export function PhoneEntryScreen() {
                 variant="primary"
                 isDisabled={!canSubmit || submitting}
                 onPress={() => void submitPhone()}
-                className="min-h-[52px] rounded-control bg-action-primary"
+                className="min-h-[52px] rounded-form-field bg-action-primary"
                 accessibilityLabel="إرسال رمز التحقق"
               >
                 <Button.Label className="font-ui-semibold text-text-on-action">
