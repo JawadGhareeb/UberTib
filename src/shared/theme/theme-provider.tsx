@@ -58,7 +58,7 @@ export function ThemeProvider({ children }: PropsWithChildren) {
 
   return (
     <ThemeContext.Provider value={value}>
-      <View className="flex-1" style={{ backgroundColor: colors.surface.canvas }}>
+      <View className="flex-1" style={{ flex: 1, backgroundColor: colors.surface.canvas }}>
         {children}
       </View>
     </ThemeContext.Provider>

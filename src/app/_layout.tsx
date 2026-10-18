@@ -9,12 +9,15 @@ import {
 } from '@expo-google-fonts/ibm-plex-sans-arabic';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as NativeSplashScreen from 'expo-splash-screen';
 import { I18nManager, Image, View } from 'react-native';
+import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native/provider';
 
 import { AppProviders } from '@/providers/app-providers';
+import { RootErrorBoundary } from '@/shared/components/error-boundary/root-error-boundary';
 import { useAppTheme } from '@/shared/theme/theme-provider';
 
 // Same direction model used by Scent World:
@@ -27,6 +30,14 @@ I18nManager.swapLeftAndRightInRTL?.(false);
 
 function RootNavigator() {
   const { colors, scheme } = useAppTheme();
+
+  useEffect(() => {
+    // Expo Go may keep the native splash surface visible after JS mounts.
+    // Hide it explicitly only once the app navigator has committed.
+    void NativeSplashScreen.hideAsync().catch((error: unknown) => {
+      if (__DEV__) console.warn('[UberTib startup] Could not hide native splash', error);
+    });
+  }, []);
 
   return (
     <>
@@ -75,15 +86,17 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={{ flex: 1 }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <HeroUINativeProvider config={{ isRTL: true }}>
-          <View style={{ direction: 'ltr', flex: 1 }}>
-            <AppProviders>
-              <RootNavigator />
-            </AppProviders>
-          </View>
-        </HeroUINativeProvider>
+        <RootErrorBoundary>
+          <HeroUINativeProvider config={{ isRTL: true, devInfo: { stylingPrinciples: false } }}>
+            <View style={{ direction: 'ltr', flex: 1 }}>
+              <AppProviders>
+                <RootNavigator />
+              </AppProviders>
+            </View>
+          </HeroUINativeProvider>
+        </RootErrorBoundary>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

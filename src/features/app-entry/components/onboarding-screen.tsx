@@ -150,14 +150,22 @@ export function OnboardingScreen({
   }, [step, onBack]);
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-canvas" edges={['top', 'bottom']}>
+    <SafeAreaView
+      className="flex-1 bg-surface-canvas"
+      style={{ flex: 1 }}
+      edges={['top', 'bottom']}
+    >
       <ScrollView
+        style={{ flex: 1 }}
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View className="mx-auto w-full max-w-[430px] flex-1 px-6 pb-7 pt-5">
+        <View
+          className="mx-auto w-full max-w-[430px] flex-1 px-6 pb-7 pt-5"
+          style={{ flexGrow: 1 }}
+        >
           <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
             <View className="flex-row items-center gap-2">
               <BrandMark size={40} />
