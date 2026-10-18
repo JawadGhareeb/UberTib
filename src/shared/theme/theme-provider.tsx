@@ -17,7 +17,6 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: PropsWithChildren) {
   const [scheme, setSchemeState] = useState<ThemeScheme>('light');
-  const [themeReady, setThemeReady] = useState(false);
   const colors = useMemo(() => getThemeColors(scheme), [scheme]);
 
   useEffect(() => {
@@ -33,8 +32,6 @@ export function ThemeProvider({ children }: PropsWithChildren) {
         }
       } catch {
         if (active) Uniwind.setTheme('light');
-      } finally {
-        if (active) setThemeReady(true);
       }
     };
     void hydrateTheme();
@@ -62,7 +59,7 @@ export function ThemeProvider({ children }: PropsWithChildren) {
   return (
     <ThemeContext.Provider value={value}>
       <View className="flex-1" style={{ backgroundColor: colors.surface.canvas }}>
-        {themeReady ? children : null}
+        {children}
       </View>
     </ThemeContext.Provider>
   );

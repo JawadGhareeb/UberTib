@@ -39,7 +39,6 @@ function isValidLocation(value: unknown): value is PreferredLocation {
 
 export function PreferredLocationProvider({ children }: PropsWithChildren) {
   const [location, setLocationState] = useState<PreferredLocation | null>(null);
-  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -54,8 +53,8 @@ export function PreferredLocationProvider({ children }: PropsWithChildren) {
           // Ignore invalid cached data.
         }
       })
-      .finally(() => {
-        if (active) setHydrated(true);
+      .catch(() => {
+        // Storage can be unavailable in Expo Go; the app remains usable without a saved location.
       });
 
     return () => {
@@ -70,9 +69,6 @@ export function PreferredLocationProvider({ children }: PropsWithChildren) {
   }, []);
 
   const value = useMemo(() => ({ location, setLocation }), [location, setLocation]);
-
-  // Do not render an outdated location during async storage hydration.
-  if (!hydrated) return null;
 
   return (
     <PreferredLocationContext.Provider value={value}>{children}</PreferredLocationContext.Provider>
