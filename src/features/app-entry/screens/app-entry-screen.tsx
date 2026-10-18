@@ -1,132 +1,81 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Typography } from 'heroui-native';
+import { useCallback, useEffect, useState } from 'react';
+import { View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  type OnboardingSlide,
-  OnboardingScreen,
-} from '@/features/app-entry/components/onboarding-screen';
-import { SplashScreen } from '@/features/app-entry/components/splash-screen';
+import { OnboardingScreen } from '@/features/app-entry/components/onboarding-screen';
+import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { secureStorage } from '@/shared/storage/secure-storage';
-import { theme } from '@/shared/theme';
 
-const slides: OnboardingSlide[] = [
-  {
-    title: 'خلّينا نفهم شو عم يزعجك',
-    copy: 'مو ضروري تعرف اسم المشكلة أو الاختصاص.',
-    illustration: 'complaint',
-  },
-  {
-    title: 'الخطوات الأربع',
-    copy: 'خطوة بسيطة، منساعدك توصل للرعاية المناسبة.',
-    illustration: 'steps',
-  },
-  {
-    title: 'اختر الطبيب المناسب لك',
-    copy: 'نعرض لك أطباء مؤهلين للخدمة، وأنت تختار وتقارن.',
-    illustration: 'doctor',
-  },
-  {
-    title: 'من أول زيارة لآخر مرحلة',
-    copy: 'من التقييم والحجز لخطة العلاج والمراحل والمتابعة.',
-    illustration: 'care',
-  },
-];
-
+/**
+ * New two-step first-use intro; guests are not forced to authenticate.
+ * Development builds replay both steps for easy visual QA.
+ */
 export function AppEntryScreen() {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [slideIndex, setSlideIndex] = useState(0);
-  const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward'>('forward');
-  const [nextRoute, setNextRoute] = useState<'/(tabs)/home' | '/auth/phone'>('/auth/phone');
+  const [checking, setChecking] = useState(!__DEV__);
+  const [step, setStep] = useState<0 | 1>(0);
 
   useEffect(() => {
+    if (__DEV__) return;
     let active = true;
-
-    const boot = async () => {
-      let onboardingComplete = false;
-      let accessToken: string | null = null;
-
+    const bootstrap = async () => {
       try {
-        [onboardingComplete, accessToken] = await Promise.all([
+        const [complete, token] = await Promise.all([
           secureStorage.getOnboardingComplete(),
           secureStorage.getAccessToken(),
         ]);
+        if (!active) return;
+        if (complete || token) {
+          router.replace('/(tabs)/home');
+          return;
+        }
       } catch {
-        // A SecureStore failure must never trap the patient on the splash
-        // screen. Fall back to the unauthenticated intro/phone route.
+        // Secure storage being unavailable must not prevent guest browsing.
       }
-
-      await new Promise((resolve) => setTimeout(resolve, theme.motion.duration.ceiling + 580));
-
-      if (!active) return;
-
-      const destination = accessToken ? '/(tabs)/home' : '/auth/phone';
-      setNextRoute(destination);
-
-      // Development builds need to replay and visually QA all four Pen
-      // onboarding slides on EVERY fresh app launch, even after a previous
-      // preview or when a mock/session token exists. The saved first-use
-      // decision still controls production launches.
-      if (__DEV__) {
-        setSlideIndex(0);
-        setShowOnboarding(true);
-        setReady(true);
-        return;
-      }
-
-      if (accessToken || onboardingComplete) {
-        router.replace(destination);
-        return;
-      }
-
-      setShowOnboarding(true);
-      setReady(true);
+      if (active) setChecking(false);
     };
-
-    void boot();
-
+    void bootstrap();
     return () => {
       active = false;
     };
   }, [router]);
 
-  const goToSlide = (target: number) => {
-    if (target < 0 || target >= slides.length || target === slideIndex) return;
-    setTransitionDirection(target > slideIndex ? 'forward' : 'backward');
-    setSlideIndex(target);
-  };
+  const finish = useCallback(
+    async (destination: '/(tabs)/home' | '/auth/phone') => {
+      try {
+        await secureStorage.setOnboardingComplete();
+      } catch {
+        // Storage failure must never block an explicit patient choice.
+      }
+      router.replace(destination);
+    },
+    [router],
+  );
 
-  const completeOnboarding = async () => {
-    try {
-      await secureStorage.setOnboardingComplete();
-    } catch {
-      // Storage permission errors should not prevent going to login/home.
-    }
-    router.replace(nextRoute);
-  };
+  const back = useCallback(() => setStep(0), []);
 
-  if (!ready || !showOnboarding) {
-    return <SplashScreen />;
+  if (checking) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-surface-canvas">
+        <View className="items-center gap-3">
+          <BrandMark size={92} />
+          <Typography.Paragraph className="font-ui-medium text-text-secondary">
+            جارٍ تهيئة التطبيق…
+          </Typography.Paragraph>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
     <OnboardingScreen
-      index={slideIndex}
-      onBack={() => goToSlide(slideIndex - 1)}
-      onGoToSlide={goToSlide}
-      onNext={() => {
-        if (slideIndex === slides.length - 1) {
-          void completeOnboarding();
-          return;
-        }
-
-        goToSlide(slideIndex + 1);
-      }}
-      onSkip={() => void completeOnboarding()}
-      slide={slides[slideIndex]!}
-      total={slides.length}
-      transitionDirection={transitionDirection}
+      step={step}
+      onNext={() => setStep(1)}
+      onBack={back}
+      onBrowse={() => void finish('/(tabs)/home')}
+      onLogin={() => void finish('/auth/phone')}
     />
   );
 }

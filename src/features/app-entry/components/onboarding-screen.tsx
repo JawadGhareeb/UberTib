@@ -1,158 +1,220 @@
+import { Button, Typography } from 'heroui-native';
 import { useEffect } from 'react';
-import { BackHandler, Platform, Pressable, ScrollView, View } from 'react-native';
-import Animated, { FadeInLeft, FadeInRight, LinearTransition, ReduceMotion } from 'react-native-reanimated';
+import { BackHandler, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 
-import {
-  type OnboardingIllustrationKind,
-  OnboardingIllustration,
-} from '@/features/app-entry/components/onboarding-illustrations';
-import { useAppDirection } from '@/providers/app-direction-provider';
-import { AppText, Button } from '@/shared/components/ui';
+import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { theme } from '@/shared/theme';
-import { cn } from '@/shared/utils/cn';
+import { useAppTheme } from '@/shared/theme/theme-provider';
 
-export interface OnboardingSlide {
-  title: string;
-  copy: string;
-  illustration: OnboardingIllustrationKind;
-}
-
-interface OnboardingScreenProps {
-  slide: OnboardingSlide;
-  index: number;
-  total: number;
+type OnboardingScreenProps = {
+  step: 0 | 1;
   onNext: () => void;
   onBack: () => void;
-  onGoToSlide: (target: number) => void;
-  onSkip: () => void;
-  transitionDirection: 'forward' | 'backward';
+  onBrowse: () => void;
+  onLogin: () => void;
+};
+
+function IntroArtwork({ step }: { step: 0 | 1 }) {
+  const { colors } = useAppTheme();
+  const teal = theme.brand.mark;
+  const ink = colors.text.primary;
+
+  return (
+    <View
+      accessible
+      accessibilityLabel={
+        step === 0 ? 'رسم توضيحي لسن ورحلة العناية به' : 'رسم توضيحي لطبيب أسنان وموعد حجز مؤكد'
+      }
+      accessibilityRole="image"
+      className="w-full items-center justify-center"
+    >
+      <Svg width="100%" height={280} viewBox="0 0 320 280" fill="none">
+        {step === 0 ? (
+          <>
+            <Circle cx="160" cy="139" r="116" fill={colors.action.subtle} />
+            <Circle
+              cx="160"
+              cy="139"
+              r="100"
+              stroke={colors.border.default}
+              strokeWidth="1.5"
+              strokeDasharray="5 9"
+            />
+            <Circle
+              cx="73"
+              cy="66"
+              r="24"
+              fill={colors.surface.default}
+              stroke={colors.border.subtle}
+              strokeWidth="2"
+            />
+            <Path
+              d="M65 66l6 6 11-13"
+              stroke={teal}
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <Circle
+              cx="249"
+              cy="207"
+              r="24"
+              fill={colors.surface.default}
+              stroke={colors.border.subtle}
+              strokeWidth="2"
+            />
+            <Path d="M239 207h20M249 197v20" stroke={teal} strokeWidth="3" strokeLinecap="round" />
+            <Path
+              d="M159 71C138 56 114 61 102 78c-20 28-6 62 5 97l10 31c5 18 16 18 22 1l11-37c4-12 15-12 19 0l11 37c6 17 17 17 22-1l10-31c12-36 25-70 5-97-12-17-36-22-58-7z"
+              fill={colors.surface.default}
+              stroke={ink}
+              strokeWidth="5"
+              strokeLinejoin="round"
+            />
+            <Path
+              d="M138 99c12 10 31 12 46 0"
+              stroke={teal}
+              strokeWidth="5"
+              strokeLinecap="round"
+            />
+            <Circle cx="83" cy="205" r="5" fill={teal} />
+            <Circle cx="241" cy="88" r="7" fill={ink} />
+            <Line
+              x1="238"
+              y1="90"
+              x2="228"
+              y2="100"
+              stroke={ink}
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </>
+        ) : (
+          <>
+            <Circle cx="160" cy="139" r="116" fill={colors.action.subtle} />
+            <Rect
+              x="69"
+              y="30"
+              width="182"
+              height="218"
+              rx="23"
+              fill={colors.surface.default}
+              stroke={colors.border.default}
+              strokeWidth="2"
+            />
+            <Rect x="97" y="55" width="126" height="116" rx="19" fill={colors.surface.subtle} />
+            <Circle cx="160" cy="94" r="24" fill={teal} />
+            <Path d="M117 151c6-28 22-38 43-38s37 10 43 38" fill={ink} />
+            <Rect x="100" y="189" width="76" height="9" rx="4.5" fill={colors.border.default} />
+            <Rect x="100" y="208" width="117" height="7" rx="3.5" fill={colors.border.subtle} />
+            <Circle
+              cx="235"
+              cy="212"
+              r="32"
+              fill={teal}
+              stroke={colors.surface.default}
+              strokeWidth="7"
+            />
+            <Path
+              d="M221 212l10 10 19-21"
+              stroke="#111111"
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <Circle cx="77" cy="65" r="14" fill={ink} />
+            <Circle cx="250" cy="66" r="8" fill={teal} />
+          </>
+        )}
+      </Svg>
+    </View>
+  );
 }
 
 export function OnboardingScreen({
-  slide,
-  index,
-  total,
+  step,
   onNext,
   onBack,
-  onGoToSlide,
-  onSkip,
-  transitionDirection,
+  onBrowse,
+  onLogin,
 }: OnboardingScreenProps) {
-  const last = index === total - 1;
-  const { rowClassName } = useAppDirection();
-  const slideEntrance = (transitionDirection === 'forward' ? FadeInLeft : FadeInRight)
-    .duration(theme.motion.duration.overlay)
-    .reduceMotion(ReduceMotion.System);
-
   useEffect(() => {
-    if (Platform.OS !== 'android' || index === 0) return;
-
-    const backSubscription = BackHandler.addEventListener('hardwareBackPress', () => {
+    if (Platform.OS !== 'android' || step === 0) return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
       onBack();
       return true;
     });
-
-    return () => backSubscription.remove();
-  }, [index, onBack]);
+    return () => subscription.remove();
+  }, [step, onBack]);
 
   return (
-    <SafeAreaView className="flex-1 bg-surface-canvas">
+    <SafeAreaView className="flex-1 bg-surface-canvas" edges={['top', 'bottom']}>
       <ScrollView
         className="flex-1"
-        bounces={false}
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        <View className="mx-auto w-full max-w-[430px] flex-1 gap-3 px-5 pb-5">
-          <View className="h-9 flex-row items-center justify-between">
-            <View className="flex-row items-center gap-1.5" style={{ direction: 'ltr' }}>
-              {Array.from({ length: total }, (_, dotIndex) => (
-                <Pressable
-                  accessibilityLabel={`الانتقال إلى الصفحة ${dotIndex + 1} من ${total}`}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: dotIndex === index }}
-                  className="h-9 w-8 items-center justify-center"
-                  key={dotIndex}
-                  onPress={() => onGoToSlide(dotIndex)}
-                >
-                  <Animated.View
-                    className={cn(
-                      'h-[7px] rounded-full',
-                      dotIndex === index ? 'w-5 bg-action-primary' : 'w-[7px] bg-border-default',
-                    )}
-                    layout={LinearTransition.duration(theme.motion.duration.stateChange)
-                      .reduceMotion(ReduceMotion.System)}
-                  />
-                </Pressable>
-              ))}
+        <View className="mx-auto w-full max-w-[430px] flex-1 px-6 pb-7 pt-5">
+          <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
+            <View className="flex-row items-center gap-2">
+              <BrandMark size={40} />
+              <Typography.Heading type="h3" className="font-ui-bold text-text-primary">
+                UberTib
+              </Typography.Heading>
             </View>
-
-            <Pressable
-              accessibilityRole="button"
-              className="min-h-target-comfortable min-w-[56px] items-end justify-center"
-              onPress={onSkip}
-            >
-              <AppText className="text-content-secondary" variant="label">
-                تخطي
-              </AppText>
-            </Pressable>
+            <Typography.Paragraph type="body-sm" className="font-ui-medium text-text-secondary">
+              {step + 1} / 2
+            </Typography.Paragraph>
           </View>
-
-          <Animated.View
-            className="h-[340px] overflow-hidden rounded-[24px] bg-surface-subtle"
-            entering={slideEntrance}
-            key={`${index}-${slide.illustration}`}
-          >
-            <OnboardingIllustration kind={slide.illustration} />
-          </Animated.View>
-
-          <Animated.View
-            className="min-h-[118px] gap-2"
-            entering={slideEntrance}
-            key={`${index}-${slide.title}`}
-          >
-            <AppText
-              className="font-ui-bold"
-              style={{
-                fontSize: theme.typography['onboarding-title'].fontSize,
-                lineHeight: theme.typography['onboarding-title'].lineHeight,
-              }}
-              variant="heading-2"
+          <View className="mt-5 flex-row gap-2" style={{ direction: 'ltr' }}>
+            <View className="h-[4px] flex-1 rounded-full bg-action-primary" />
+            <View
+              className={
+                step === 1
+                  ? 'h-[4px] flex-1 rounded-full bg-action-primary'
+                  : 'h-[4px] flex-1 rounded-full bg-border-default'
+              }
+            />
+          </View>
+          <View className="mt-6">
+            <IntroArtwork step={step} />
+          </View>
+          <View className="mt-2 items-end gap-3">
+            <Typography.Heading
+              type="h1"
+              className="w-full font-ui-bold text-text-primary"
+              style={{ textAlign: 'right', writingDirection: 'rtl' }}
             >
-              {slide.title}
-            </AppText>
-            <AppText
-              className="text-content-secondary"
-              style={{
-                fontSize: theme.typography['onboarding-copy'].fontSize,
-                lineHeight: theme.typography['onboarding-copy'].lineHeight,
-              }}
-              variant="body"
+              {step === 0 ? 'عناية أسنان أسهل، من أول خطوة' : 'بلّش بالطريقة اللي بتناسبك'}
+            </Typography.Heading>
+            <Typography.Paragraph
+              className="w-full font-ui-regular text-text-secondary"
+              style={{ textAlign: 'right', writingDirection: 'rtl' }}
             >
-              {slide.copy}
-            </AppText>
-          </Animated.View>
-
-          <View className="min-h-0 flex-1 justify-end gap-[9px]">
-            <View className={cn(rowClassName, 'gap-2')}>
-              {index > 0 ? (
-                <Button
-                  accessibilityLabel="العودة إلى الخطوة السابقة"
-                  className="h-[52px] flex-1 rounded-[12px] px-2"
-                  endIcon={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }}
-                  label="السابق"
-                  onPress={onBack}
-                  variant="secondary"
-                />
-              ) : null}
-              <Button
-                className={cn('h-[52px] rounded-[12px]', index > 0 ? 'flex-[2]' : 'flex-1')}
-                endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
-                label={last ? 'ابدأ مع UperTib' : 'التالي'}
-                onPress={onNext}
-              />
-            </View>
+              {step === 0
+                ? 'مو ضروري تعرف اسم المشكلة. منساعدك توصف حاجتك، تقارن بين الأطباء المؤهلين، وتحجز الموعد المناسب.'
+                : 'اكتشف الأطباء والخدمات والمواعيد كزائر، أو سجّل الدخول لتحجز وتتابع مواعيدك وخطط علاجك.'}
+            </Typography.Paragraph>
+          </View>
+          <View className="min-h-8 flex-1" />
+          <View className="mt-8 gap-3">
+            {step === 0 ? (
+              <Button variant="primary" size="lg" className="min-h-[52px]" onPress={onNext}>
+                <Button.Label className="font-ui-semibold">التالي</Button.Label>
+              </Button>
+            ) : (
+              <>
+                <Button variant="primary" size="lg" className="min-h-[52px]" onPress={onBrowse}>
+                  <Button.Label className="font-ui-semibold">التصفح كزائر</Button.Label>
+                </Button>
+                <Button variant="outline" size="lg" className="min-h-[52px]" onPress={onLogin}>
+                  <Button.Label className="font-ui-semibold">تسجيل الدخول</Button.Label>
+                </Button>
+              </>
+            )}
           </View>
         </View>
       </ScrollView>
