@@ -54,7 +54,7 @@ export function ConsentDetailScreen({ consentId }: { consentId: string }) {
       <ProfileReferenceSectionTitle>النسخة المقبولة الحالية</ProfileReferenceSectionTitle>
       <View className="gap-[7px]">
         <ProfileReferenceFact
-          icon={{ ios: 'checkmark.doc', android: 'fact_check', web: 'fact_check' }}
+          icon={{ ios: 'checkmark.seal', android: 'fact_check', web: 'fact_check' }}
           label="الإصدار المقبول"
           value={consent.version}
         />

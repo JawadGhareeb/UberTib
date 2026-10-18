@@ -63,8 +63,12 @@ export function LocationPickerScreen() {
 
   useEffect(() => {
     mounted.current = true;
-    if (__DEV__) void locateDevice();
-    return () => { mounted.current = false; };
+    // Start async geolocation after effect execution, not during render synchronization.
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active && __DEV__) void locateDevice();
+    });
+    return () => { active = false; mounted.current = false; };
   }, [locateDevice]);
 
   const onChange = (next: Coordinate) => {

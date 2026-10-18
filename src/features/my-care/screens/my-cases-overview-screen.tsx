@@ -7,6 +7,7 @@ import {
   CareV5Badge,
   CareV5Card,
   CareV5Header,
+  CareV5BottomNav,
 } from '@/features/my-care/components/care-v5-ui';
 import {
   getMockCareCaseForScenario,
@@ -15,7 +16,6 @@ import {
   type MockCareCase,
 } from '@/features/my-care/mocks/care.mock';
 import { AppIcon, AppText, Screen } from '@/shared/components/ui';
-import { CareV5BottomNav } from '@/features/my-care/components/care-v5-ui';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { useMockScenario } from '@/shared/mock';
 import { cn } from '@/shared/utils/cn';

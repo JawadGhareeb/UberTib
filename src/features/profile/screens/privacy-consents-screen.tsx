@@ -9,7 +9,7 @@ import {
   ProfileReferenceNotice,
 } from '@/features/profile/components/profile-reference-ui';
 import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-provider';
-import { AppText, Button, ReadStateBoundary, ConfirmationDialog } from '@/shared/components/ui';
+import { AppText, ReadStateBoundary, ConfirmationDialog } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
 export function PrivacyConsentsScreen() {

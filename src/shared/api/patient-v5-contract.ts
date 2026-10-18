@@ -120,8 +120,8 @@ export interface TreatmentPlan {
   proposalVersionId?: ResourceId;
   acceptedSnapshotId?: ResourceId;
   status: 'draft' | 'pending' | 'accepted' | 'superseded' | 'rejected';
-  lines: Array<{ id: ResourceId; title: string; amountMinor: number; currency: 'SYP' }>;
-  changes?: Array<{ lineId: ResourceId; reason: string; beforeMinor: number; afterMinor: number }>;
+  lines: { id: ResourceId; title: string; amountMinor: number; currency: 'SYP' }[];
+  changes?: { lineId: ResourceId; reason: string; beforeMinor: number; afterMinor: number }[];
   totalMinor: number;
   currency: 'SYP';
 }
@@ -156,7 +156,7 @@ export interface FinancialSnapshot {
   currency: 'SYP';
   totalMinor: number;
   acceptedAt: ISODateTime;
-  lines: Array<{ id: ResourceId; title: string; amountMinor: number; dueAt?: ISODateTime }>;
+  lines: { id: ResourceId; title: string; amountMinor: number; dueAt?: ISODateTime }[];
   cancellationTerms: string;
   externalOnly: true;
 }
@@ -213,7 +213,7 @@ export interface ConsentRecord {
   withdrawalAllowed: boolean;
   acceptedAt?: ISODateTime;
   nextVersion?: string;
-  immutableHistory: Array<{ version: string; action: 'accepted' | 'withdrawn'; at: ISODateTime }>;
+  immutableHistory: { version: string; action: 'accepted' | 'withdrawn'; at: ISODateTime }[];
 }
 
 export interface ExportRecord {

@@ -29,7 +29,7 @@ export function BookingPatientSelectionScreen() {
     selectedDate?.dateLabel === dateLabel &&
     selectedDate?.slots.includes(timeLabel ?? ''),
   );
-  const [selectedId, setSelectedId] = useState(mockPatientWorld.family[0].id);
+  const [selectedId, setSelectedId] = useState<(typeof mockPatientWorld.family)[number]['id']>(mockPatientWorld.family[0].id);
   const chosenPatient = mockPatientWorld.family.find((patient) => patient.id === selectedId);
   const canContinue = canBookForPatient(selectedId, scenario);
 

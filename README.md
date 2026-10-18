@@ -45,6 +45,18 @@ add native modules to an existing binary.
 
 ## HeroUI Native development preview
 
+## Mobile build verification
+
+Use `npm run lint` to verify the entire repo with **zero allowed ESLint warnings** and `npm run typecheck` to check strict TypeScript. `npm run build` is the single local gate: Lint, TypeScript, canonical Uniwind theme validation, Android Expo production JS export and iOS Expo production JS export. Generated files go to `dist/android` and `dist/ios` (ignored by Git).
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
+
+The `build` script validates **Expo JavaScript bundles** for both platforms. It does **not** produce a signed APK/AAB/IPA; native binaries require an EAS or native toolchain build and real-device QA remains necessary.
+
 The design-system preview route is `/dev/ui-kit` (development builds only). It exercises HeroUI Native Button, Card and Input, the UberTib Arabic font, and light/dark brand themes without changing patient screens.
 
 ```bash

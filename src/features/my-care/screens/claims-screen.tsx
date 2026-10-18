@@ -1,6 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
 
 import { CareV5Badge, CareV5Card, CareV5Header } from '@/features/my-care/components/care-v5-ui';
@@ -52,10 +52,11 @@ export function ClaimsScreen({ caseId }: ClaimsScreenProps) {
   const initialType = issueTypes.some((item) => item.id === params.issue)
     ? (params.issue as (typeof issueTypes)[number]['id'])
     : 'treatment';
-  const [type, setType] = useState<(typeof issueTypes)[number]['id']>(initialType);
+  const [choice, setChoice] = useState<{ issue: string | undefined; type: (typeof issueTypes)[number]['id'] }>();
+  // URL issue changes update the selection without a synchronous effect/state update.
+  const type = choice && choice.issue === params.issue ? choice.type : initialType;
   const [description, setDescription] = useState('');
   const [refundAmount, setRefundAmount] = useState('');
-  useEffect(() => { setType(initialType); }, [initialType]);
   const [evidenceTitles, setEvidenceTitles] = useState<string[]>([]);
   const [picking, setPicking] = useState(false);
   const [attachmentError, setAttachmentError] = useState('');
@@ -189,7 +190,7 @@ export function ClaimsScreen({ caseId }: ClaimsScreenProps) {
                       : 'border-border-default bg-surface-default',
                   )}
                   key={item.id}
-                  onPress={() => setType(item.id)}
+                  onPress={() => setChoice({ issue: params.issue, type: item.id })}
                 >
                   <AppIcon name={item.icon} size={16} tone={selected ? 'action' : 'secondary'} />
                   <AppText
@@ -308,7 +309,7 @@ export function ClaimsScreen({ caseId }: ClaimsScreenProps) {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="إضافة صورة داعمة من الجهاز"
-            disabled={picking || evidenceTitles.length >= 3 || type === 'refund'}
+            disabled={picking || evidenceTitles.length >= 3}
             onPress={() => void addEvidence()}
           >
           <CareV5Card className="mt-2 min-h-[52px] flex-row-reverse items-center gap-2 rounded-[13px] px-[9px] py-[7px]">

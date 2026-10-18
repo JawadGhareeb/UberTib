@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
-import { CareActionFooter } from '@/features/my-care/components/care-financial-ui';
+import { CareActionFooter, CareDetailRow } from '@/features/my-care/components/care-financial-ui';
 import { CareV5Badge, CareV5Card, CareV5Header } from '@/features/my-care/components/care-v5-ui';
 import { getMockClaimForScenario } from '@/features/my-care/mocks/records.mock';
 import { getMockCareCaseForScenario } from '@/features/my-care/mocks/care.mock';

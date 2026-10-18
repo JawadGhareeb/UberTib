@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, TextInput, View } from 'react-native';
 
 import { CareV5Badge, CareV5Card, CareV5Header } from '@/features/my-care/components/care-v5-ui';
@@ -23,14 +23,9 @@ export function SubmitReviewScreen({ caseId }: SubmitReviewScreenProps) {
   const [rating, setRating] = useState(existing?.rating ?? 0);
   const [comment, setComment] = useState(existing?.comment ?? '');
 
-  // Opening a previously submitted review must reflect its recorded score,
-  // never show five unselected disabled stars on an already reviewed case.
-  useEffect(() => {
-    if (existing) {
-      setRating(existing.rating);
-      setComment(existing.comment);
-    }
-  }, [existing?.rating, existing?.comment]);
+  // Verified reviews are authoritative; editable draft state applies before submission.
+  const displayedRating = existing?.rating ?? rating;
+  const displayedComment = existing?.comment ?? comment;
 
   if (!careCase || careCase.progress < 100) {
     return (
@@ -100,10 +95,10 @@ export function SubmitReviewScreen({ caseId }: SubmitReviewScreenProps) {
             <AppText align="right" className="font-ui-bold text-content-primary" variant="label">كيف كانت تجربتك الموثّقة؟</AppText>
 
             <View className="mt-[5px] items-center">
-              <RatingInput value={rating} onChange={setRating} disabled={Boolean(existing) || readState !== 'success'} />
+              <RatingInput value={displayedRating} onChange={setRating} disabled={Boolean(existing) || readState !== 'success'} />
             </View>
             <AppText align="center" className="mt-1 text-content-secondary" variant="caption">
-              {rating > 0 ? `التقييم المختار: ${rating}/5 — يمكنك تغييره قبل الإرسال` : 'اضغط على النجوم لتقييم تجربتك من 1 إلى 5.'}
+              {displayedRating > 0 ? `التقييم المختار: ${displayedRating}/5 — يمكنك تغييره قبل الإرسال` : 'اضغط على النجوم لتقييم تجربتك من 1 إلى 5.'}
             </AppText>
             <View className="mt-2 flex-row-reverse justify-center gap-1.5">
               {[
@@ -129,14 +124,14 @@ export function SubmitReviewScreen({ caseId }: SubmitReviewScreenProps) {
               placeholder="اكتب تجربتك"
               placeholderTextColor={colors.text.placeholder}
               style={{ textAlign: 'right', textAlignVertical: 'top', writingDirection: 'rtl' }}
-              value={comment}
+              value={displayedComment}
             />
             <AppText
               direction="ltr"
               className="text-type-caption text-content-placeholder"
               variant="caption"
             >
-              {comment.length} / 500
+              {displayedComment.length} / 500
             </AppText>
           </View>
 

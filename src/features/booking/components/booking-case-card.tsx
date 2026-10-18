@@ -94,7 +94,7 @@ export function BookingCaseCard({
               <View
                 className={cn(
                   'h-[5px] flex-1 rounded-full',
-                  step < careCase.completedSteps ? 'bg-action-primary' : 'bg-border-subtle',
+                  step < (careCase.completedSteps ?? 0) ? 'bg-action-primary' : 'bg-border-subtle',
                 )}
                 key={step}
               />

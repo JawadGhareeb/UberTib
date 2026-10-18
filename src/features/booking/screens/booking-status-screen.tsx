@@ -238,7 +238,7 @@ export function BookingStatusScreen() {
                   {booking.serviceName} · {booking.providerName} · {booking.branch}
                 </AppText>
               </View>
-              {booking.actionDeadlineLabel && !cancelled ? (
+              {'actionDeadlineLabel' in booking && typeof booking.actionDeadlineLabel === 'string' && booking.actionDeadlineLabel && !cancelled ? (
                 <View className="max-w-[112px] rounded-full bg-surface-default px-2 py-1">
                   <AppText align="center" className="text-tone-warning-text" variant="badge">
                     {booking.actionDeadlineLabel}

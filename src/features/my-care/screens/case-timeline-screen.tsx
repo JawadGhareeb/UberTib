@@ -342,7 +342,7 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
                 }}
               >
                 <CareV5TimelineRow
-                  date={event.date.split(' · ')[0]}
+                  date={event.date.split(' · ')[0] ?? event.date}
                   title={event.title}
                   detail={event.detail}
                   tag={event.tag}

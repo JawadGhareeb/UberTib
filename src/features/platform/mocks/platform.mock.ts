@@ -42,7 +42,7 @@ export const mockNeedsAttention: MockAttentionItem[] = [
     title: 'طلب تمثيل قيد المراجعة',
     detail: 'لا تحتاج لإعادة الإرسال. النتيجة ستظهر عند اكتمال المراجعة.',
     actionLabel: 'عرض الطلب',
-    href: '/profile/pending-submissions' as const,
+    href: '/profile/family' as const,
     tone: 'info' as const,
   },
 ];
@@ -62,7 +62,7 @@ export const mockNotifications: MockNotification[] = [
     detail: 'أصبحت مرحلة علاج القنوات هي المرحلة الحالية.',
     timeLabel: 'أمس',
     unread: true,
-    href: '/care/case-001' as const,
+    href: '/care/case-001/timeline' as const,
   },
   {
     id: 'notification-003',

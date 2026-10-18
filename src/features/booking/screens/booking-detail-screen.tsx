@@ -31,6 +31,7 @@ export function BookingDetailScreen() {
     );
   }
 
+  const actionDeadlineLabel = 'actionDeadlineLabel' in booking && typeof booking.actionDeadlineLabel === 'string' ? booking.actionDeadlineLabel : undefined;
   const isConfirmed = booking.status === 'confirmed';
   const isClosed = booking.status === 'completed' || booking.status === 'cancelled';
   const isSessionRequest = bookingRequests.some((request) => request.id === booking.id);
@@ -108,10 +109,10 @@ export function BookingDetailScreen() {
           tone={booking.status === 'cancelled' ? 'danger' : isConfirmed || booking.status === 'completed' ? 'info' : 'warning'}
         />
 
-        {booking.actionDeadlineLabel ? (
+        {actionDeadlineLabel ? (
           <View className="mt-2 rounded-[10px] bg-tone-warning-fill p-3">
             <AppText align="right" className="text-tone-warning-text" variant="caption">
-              {booking.actionDeadlineLabel}
+              {actionDeadlineLabel}
             </AppText>
           </View>
         ) : null}

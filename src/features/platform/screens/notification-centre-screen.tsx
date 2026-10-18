@@ -11,7 +11,7 @@ import { cn } from '@/shared/utils/cn';
 
 const glyphs = {
   calendar: { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
-  plan: { ios: 'checkmark.clipboard.fill', android: 'fact_check', web: 'fact_check' },
+  plan: { ios: 'checkmark.seal.fill', android: 'fact_check', web: 'fact_check' },
   receipt: { ios: 'doc.text', android: 'receipt_long', web: 'receipt_long' },
   bell: { ios: 'bell.badge.fill', android: 'notifications_active', web: 'notifications_active' },
   image: { ios: 'photo.badge.plus', android: 'add_photo_alternate', web: 'add_photo_alternate' },
