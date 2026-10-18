@@ -1,0 +1,8 @@
+node_modules
+.expo
+dist
+web-build
+coverage
+package-lock.json
+docs/UI_UX_REBUILD_PLAN.md
+docs/MOCK_BUSINESS_COVERAGE_MATRIX.md

@@ -1,0 +1,257 @@
+import { useRouter } from 'expo-router';
+import type { PropsWithChildren } from 'react';
+import { Image, Pressable, View } from 'react-native';
+import { DEMO_CLINIC_PHOTOS, ProviderPortrait } from '@/features/discovery/components/provider-photo-gallery';
+
+import { useAppDirection } from '@/providers/app-direction-provider';
+import { AppIcon, AppText } from '@/shared/components/ui';
+import { cn } from '@/shared/utils/cn';
+
+export function BookingHeader({
+  title,
+  subtitle,
+  showBack = true,
+  onBackPress,
+  leadingIcon,
+  leadingTone = 'action',
+}: {
+  title: string;
+  subtitle?: string;
+  showBack?: boolean;
+  onBackPress?: () => void;
+  leadingIcon?: 'review' | 'pending' | 'confirmed' | 'reason' | 'patient' | 'calendar';
+  leadingTone?: 'action' | 'warning' | 'success';
+}) {
+  const router = useRouter();
+  const { rowClassName } = useAppDirection();
+
+  return (
+    <View
+      className={cn(
+        'mx-auto h-16 w-full max-w-[430px] items-center justify-between px-4',
+        rowClassName,
+      )}
+    >
+      {showBack ? (
+        <Pressable
+          accessibilityLabel="رجوع"
+          accessibilityRole="button"
+          className="h-10 w-10 items-center justify-center rounded-full bg-surface-default"
+          onPress={() => {
+            if (onBackPress) return onBackPress();
+            if (router.canGoBack()) return router.back();
+            return router.replace('/booking');
+          }}
+        >
+          <AppIcon
+            name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }}
+            size={19}
+            tone="primary"
+          />
+        </Pressable>
+      ) : (
+        <View className="h-10 w-10" />
+      )}
+
+      <View className="min-w-0 flex-1 items-center px-2">
+        <AppText align="center" className="font-ui-bold text-type-heading-4" numberOfLines={1}>{title}</AppText>
+        {subtitle ? (
+          <AppText align="center" className="text-content-link" variant="caption">
+            {subtitle}
+          </AppText>
+        ) : null}
+      </View>
+      {leadingIcon ? (
+        <View className={cn(
+          'h-10 w-10 items-center justify-center rounded-full',
+          leadingTone === 'warning' ? 'bg-tone-warning-fill' :
+          leadingTone === 'success' ? 'bg-tone-success-fill' : 'bg-action-subtle',
+        )}>
+          <AppIcon
+            name={leadingIcon === 'reason'
+              ? { ios: 'list.clipboard', android: 'edit_document', web: 'edit_document' }
+              : leadingIcon === 'patient'
+                ? { ios: 'person.2', android: 'group', web: 'group' }
+                : leadingIcon === 'calendar'
+                  ? { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }
+                  : leadingIcon === 'review'
+                    ? { ios: 'checklist', android: 'fact_check', web: 'fact_check' }
+              : leadingIcon === 'confirmed'
+                ? { ios: 'checkmark.seal', android: 'verified', web: 'verified' }
+                : { ios: 'clock', android: 'schedule', web: 'schedule' }}
+            size={19}
+            tone={leadingTone}
+          />
+        </View>
+      ) : <View className="h-10 w-10" />}
+    </View>
+  );
+}
+
+export function BookingStepPill({
+  current,
+  total,
+  label,
+}: {
+  current: number;
+  total: number;
+  label: string;
+}) {
+  return (
+    <View className="flex-row items-center justify-between rounded-[11px] bg-surface-subtle px-3 py-2">
+      <AppText
+        direction="ltr"
+        className="text-type-caption text-content-secondary"
+        variant="caption"
+      >
+        {current}/{total}
+      </AppText>
+      <AppText className="text-type-caption text-content-link" variant="label">
+        {label}
+      </AppText>
+    </View>
+  );
+}
+
+export function BookingCard({ children, className }: PropsWithChildren<{ className?: string }>) {
+  const hasRadius = className?.split(/\s+/).some((item) => /^rounded-(?!t-|r-|b-|l-)/.test(item));
+  return (
+    <View
+      className={cn(!hasRadius && 'rounded-[14px]', 'border border-border-subtle bg-surface-default', className)}
+    >
+      {children}
+    </View>
+  );
+}
+
+/** Shared doctor and clinic media in booking; pictures are illustrative, not verified branch imagery. */
+export function BookingProviderMiniCard({
+  providerName,
+  serviceName,
+  branch,
+  portraitUri,
+}: {
+  providerName: string;
+  serviceName: string;
+  branch: string;
+  portraitUri?: string;
+}) {
+  const { rowClassName } = useAppDirection();
+  return (
+    <BookingCard className="p-2.5">
+      <View className={cn('items-center gap-2', rowClassName)}>
+        <Image
+          accessibilityLabel="صورة توضيحية للعيادة"
+          className="h-[46px] w-[52px] rounded-[9px] bg-action-subtle"
+          source={{ uri: DEMO_CLINIC_PHOTOS[2] }}
+        />
+        <ProviderPortrait size={42} uri={portraitUri} />
+        <View className="min-w-0 flex-1 items-end">
+          <AppText align="right" className="font-ui-semibold text-content-primary" numberOfLines={1} variant="label">
+            {providerName} · {serviceName}
+          </AppText>
+          <AppText align="right" className="mt-0.5 text-content-secondary" numberOfLines={2} variant="caption">
+            {branch} · صور توضيحية
+          </AppText>
+        </View>
+      </View>
+    </BookingCard>
+  );
+}
+
+export function BookingFact({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <View className="min-w-0 flex-1 items-end">
+      <AppText className="text-type-caption text-content-secondary" variant="caption">
+        {label}
+      </AppText>
+      <AppText
+        className={cn(
+          'mt-0.5 text-type-label',
+          highlight ? 'font-ui-bold text-content-link' : 'text-content-primary',
+        )}
+        variant="label"
+      >
+        {value}
+      </AppText>
+    </View>
+  );
+}
+
+export function BookingStatusBanner({
+  title,
+  body,
+  tone = 'info',
+}: {
+  title: string;
+  body: string;
+  tone?: 'info' | 'success' | 'warning' | 'danger' | 'neutral';
+}) {
+  const classes = {
+    info: 'bg-tone-info-fill',
+    success: 'bg-tone-success-fill',
+    warning: 'bg-tone-warning-fill',
+    danger: 'bg-tone-danger-fill',
+    neutral: 'bg-surface-subtle',
+  }[tone];
+
+  const iconTone =
+    tone === 'success'
+      ? 'success'
+      : tone === 'warning'
+        ? 'warning'
+        : tone === 'danger'
+          ? 'danger'
+          : 'info';
+
+  return (
+    <View className={cn('flex-row items-start gap-2 rounded-[13px] p-3', classes)}>
+      <View className="min-w-0 flex-1 items-end">
+        <AppText className="font-ui-bold text-type-label" variant="label">
+          {title}
+        </AppText>
+        <AppText className="mt-1 text-type-caption  text-content-secondary" variant="caption">
+          {body}
+        </AppText>
+      </View>
+      <AppIcon
+        name={{
+          ios:
+            tone === 'success'
+              ? 'checkmark.circle.fill'
+              : tone === 'danger'
+                ? 'exclamationmark.triangle.fill'
+                : tone === 'warning'
+                  ? 'clock.fill'
+                  : 'info.circle.fill',
+          android:
+            tone === 'success'
+              ? 'check_circle'
+              : tone === 'danger'
+                ? 'warning'
+                : tone === 'warning'
+                  ? 'schedule'
+                  : 'info',
+          web:
+            tone === 'success'
+              ? 'check_circle'
+              : tone === 'danger'
+                ? 'warning'
+                : tone === 'warning'
+                  ? 'schedule'
+                  : 'info',
+        }}
+        size={17}
+        tone={iconTone}
+      />
+    </View>
+  );
+}

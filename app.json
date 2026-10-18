@@ -1,0 +1,64 @@
+{
+  "expo": {
+    "name": "UperTib",
+    "slug": "upertib",
+    "scheme": "upertib",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./src/shared/assets/splash-mark.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#F9F9F9",
+          "dark": {
+            "image": "./src/shared/assets/splash-mark.png",
+            "backgroundColor": "#F9F9F9"
+          }
+        }
+      ],
+      "expo-secure-store",
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "يسمح UperTib بالوصول إلى الصور فقط عندما تختار إرفاق صورة موجودة ضمن التقييم الأولي.",
+          "cameraPermission": "يسمح UperTib باستخدام الكاميرا فقط عندما تختار التقاط صورة لإضافتها إلى التقييم."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "يسمح UperTib باستخدام موقع جهازك لتحديد منطقتك الحالية عندما تطلب ذلك."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "android": {
+      "package": "com.upertib.patient",
+      "adaptiveIcon": {
+        "foregroundImage": "./src/shared/assets/icon.png",
+        "backgroundColor": "#111111"
+      }
+    },
+    "web": {
+      "lang": "ar",
+      "dir": "rtl",
+      "favicon": "./src/shared/assets/icon.png"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "3c589cc9-c3b2-40b9-9e3b-dd6b4d849145"
+      }
+    },
+    "owner": "hares12345123412",
+    "icon": "./src/shared/assets/icon.png"
+  }
+}

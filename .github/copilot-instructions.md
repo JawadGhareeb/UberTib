@@ -1,0 +1,1 @@
+Follow `AGENTS.md` as the source of truth for engineering behavior. Preserve feature boundaries, keep Expo Router files thin, use React Query for server state, route HTTP through the shared Axios client, avoid `any`, avoid duplicated constants, and run `npm run check` before completion. Prefer one logical commit for a coherent task instead of many tiny commits.
