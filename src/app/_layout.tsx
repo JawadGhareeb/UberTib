@@ -92,13 +92,14 @@ export default function RootLayout() {
     <SafeAreaProvider style={{ flex: 1 }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <RootErrorBoundary>
-          <HeroUINativeProvider config={{ isRTL: true, devInfo: { stylingPrinciples: false } }}>
-            <View style={{ direction: 'ltr', flex: 1 }}>
-              <AppProviders>
+          {/* Portalled HeroUI content must remain under the app's direction/theme contexts. */}
+          <AppProviders>
+            <HeroUINativeProvider config={{ isRTL: true, devInfo: { stylingPrinciples: false } }}>
+              <View style={{ direction: 'ltr', flex: 1 }}>
                 <RootNavigator />
-              </AppProviders>
-            </View>
-          </HeroUINativeProvider>
+              </View>
+            </HeroUINativeProvider>
+          </AppProviders>
         </RootErrorBoundary>
       </GestureHandlerRootView>
     </SafeAreaProvider>

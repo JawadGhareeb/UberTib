@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuthModeSwitch } from '@/features/auth/components/auth-mode-switch';
 import { CountryFlag } from '@/features/auth/components/country-flag';
 import { normalizeDigits } from '@/features/auth/utils/phone-input';
 import { requestMockVerification } from '@/features/auth/mocks/auth.mock';
@@ -28,6 +29,17 @@ export function PhoneEntryScreen() {
   const national = phone;
   const canSubmit =
     /^\+[1-9]\d{7,14}$/.test(e164Phone) && (country.iso !== 'SY' || /^9\d{8}$/.test(national));
+
+  const switchAuthMode = () => {
+    setError(undefined);
+    router.replace({
+      pathname: '/auth/phone',
+      params: {
+        ...(returnTo ? { returnTo } : {}),
+        ...(mode === 'register' ? {} : { mode: 'register' }),
+      },
+    });
+  };
 
   const submitPhone = async () => {
     if (submitting) return;
@@ -232,6 +244,7 @@ export function PhoneEntryScreen() {
                   {submitting ? 'جاري إرسال الرمز...' : 'إرسال رمز التحقق'}
                 </Button.Label>
               </Button>
+              <AuthModeSwitch isRegister={mode === 'register'} onSwitch={switchAuthMode} />
               <Typography.Paragraph
                 type="body-sm"
                 className="font-ui-regular text-text-secondary"

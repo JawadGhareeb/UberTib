@@ -1,18 +1,20 @@
 import { ScrollView } from 'react-native';
 import { ReadStateBoundary, Screen } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
+import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-tab-metrics';
 import { ProfileAccountHeader } from '../components/profile-account-header';
 import { ProfileAccountSummary } from '../components/profile-account-summary';
-import { ProfileAppearanceSettings } from '../components/profile-appearance-settings';
 import { ProfileMenuSection } from '../components/profile-menu-section';
 
 export function ProfileScreen() {
   const { getSurfaceState } = useMockScenario();
+
   return (
     <Screen contentClassName="px-0 py-0" header={<ProfileAccountHeader />}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-28 pt-[7px]"
+        contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pt-4"
+        contentContainerStyle={{ paddingBottom: PATIENT_TAB_BAR_HEIGHT + 44 }}
         showsVerticalScrollIndicator={false}
       >
         <ReadStateBoundary
@@ -22,7 +24,6 @@ export function ProfileScreen() {
         >
           <ProfileAccountSummary />
           <ProfileMenuSection />
-          <ProfileAppearanceSettings />
         </ReadStateBoundary>
       </ScrollView>
     </Screen>

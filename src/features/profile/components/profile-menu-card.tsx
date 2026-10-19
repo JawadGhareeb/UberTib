@@ -1,7 +1,7 @@
+import { Card as HeroCard } from 'heroui-native';
 import { Pressable, View } from 'react-native';
-import { ReferenceCard, ReferenceIcon } from './patient-reference-ui';
-import { AppIcon, AppText } from '@/shared/components/ui';
-import type { AppIconName } from '@/shared/components/ui/app-icon';
+
+import { AppIcon, AppText, type AppIconName } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
 
 export function ProfileMenuCard({
@@ -18,40 +18,46 @@ export function ProfileMenuCard({
   danger?: boolean;
 }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress}>
-      <ReferenceCard
+    <Pressable accessibilityRole="button" accessibilityLabel={title} onPress={onPress}>
+      <HeroCard
+        variant="default"
         className={cn(
-          'min-h-[66px] flex-row-reverse items-center gap-[9px] px-[10px] py-[9px]',
-          danger && 'border-tone-danger-border bg-tone-danger-fill/70',
+          'min-h-[66px] flex-row-reverse items-center gap-3 rounded-[14px] border border-border-subtle bg-surface-default px-3 py-2.5',
+          danger && 'border-tone-danger-border bg-tone-danger-fill',
         )}
       >
-        <ReferenceIcon icon={icon} size={37} warm={danger} />
-        <View className="min-w-0 flex-1 items-end">
+        <View
+          className={cn(
+            'h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[12px] bg-action-subtle',
+            danger && 'bg-tone-danger-fill',
+          )}
+        >
+          <AppIcon name={icon} size={21} tone={danger ? 'danger' : 'action'} />
+        </View>
+        <View className="min-w-0 flex-1 items-end gap-1">
           <AppText
             align="right"
             className={cn('font-ui-semibold', danger && 'text-tone-danger-text')}
-            numberOfLines={2}
-            style={{ fontSize: 12, lineHeight: 19 }}
             variant="label"
+            numberOfLines={1}
           >
             {title}
           </AppText>
           <AppText
             align="right"
-            className="mt-0.5 text-content-secondary"
-            numberOfLines={2}
-            style={{ fontSize: 9.5, lineHeight: 15 }}
+            className="text-content-secondary"
             variant="caption"
+            numberOfLines={2}
           >
             {description}
           </AppText>
         </View>
         <AppIcon
           name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
-          size={16}
+          size={17}
           tone={danger ? 'danger' : 'secondary'}
         />
-      </ReferenceCard>
+      </HeroCard>
     </Pressable>
   );
 }

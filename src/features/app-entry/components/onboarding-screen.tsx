@@ -13,7 +13,6 @@ type OnboardingScreenProps = {
   onBack: () => void;
   onBrowse: () => void;
   onLogin: () => void;
-  onRegister: () => void;
 };
 
 export function OnboardingScreen({
@@ -22,7 +21,6 @@ export function OnboardingScreen({
   onBack,
   onBrowse,
   onLogin,
-  onRegister,
 }: OnboardingScreenProps) {
   useEffect(() => {
     if (Platform.OS !== 'android' || step === 0) return;
@@ -97,7 +95,7 @@ export function OnboardingScreen({
             >
               {step === 0
                 ? 'مو ضروري تعرف اسم المشكلة. منساعدك توصف حاجتك، تقارن بين الأطباء المؤهلين، وتحجز الموعد المناسب.'
-                : 'تصفّح الأطباء والخدمات كزائر، أو أنشئ حساباً جديداً، أو سجّل الدخول لتتابع حجوزاتك.'}
+                : 'تصفّح الأطباء والخدمات كزائر، أو سجّل الدخول لتتابع حجوزاتك.'}
             </Typography.Paragraph>
           </View>
           <View className="min-h-8 flex-1" />
@@ -120,14 +118,6 @@ export function OnboardingScreen({
                   onPress={onBrowse}
                 >
                   <Button.Label className="font-ui-semibold">التصفح كزائر</Button.Label>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="min-h-[52px] rounded-form-field"
-                  onPress={onRegister}
-                >
-                  <Button.Label className="font-ui-semibold">الانضمام للمنصة</Button.Label>
                 </Button>
                 <Button
                   variant="tertiary"

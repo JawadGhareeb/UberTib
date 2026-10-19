@@ -3,7 +3,7 @@ import { AppHeader } from '@/shared/components/navigation';
 import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-tab-metrics';
 import { AppText, ReadStateBoundary, Screen } from '@/shared/components/ui';
 import { mockPatientWorld } from '@/shared/mock/patient.mock';
-import { HomeAssessmentCard } from '../components/home-assessment-card';
+import { AssessmentEntryCard } from '@/shared/components/assessment/assessment-entry-card';
 import { HomeAttentionSection } from '../components/home-attention-section';
 import { HomeCasesSection } from '../components/home-cases-section';
 import { HomePendingRequests, HomeUpcomingBookings } from '../components/home-bookings-section';
@@ -35,7 +35,7 @@ export function PatientHomeScreen() {
                 من هون بتبدأ رحلتك للعناية بأسنانك
               </AppText>
             </View>
-            <HomeAssessmentCard />
+            <AssessmentEntryCard />
             <HomeServicesSection />
             <HomeAttentionSection attention={attention} />
             <HomeUpcomingBookings upcomingBookings={upcomingBookings} />

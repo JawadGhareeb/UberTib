@@ -41,16 +41,9 @@ const defaultServiceState: DiscoveryServiceState = {
   filtersApplied: false,
 };
 
-// The mock-first root-canal reference starts with three example doctors checked,
-// exactly as in the approved Pen screen. A real catalog must start unselected.
-const rootCanalReferenceState: DiscoveryServiceState = {
-  ...defaultServiceState,
-  area: 'الجميلية',
-  comparisonProviderIds: ['provider-layan', 'provider-karim', 'provider-rima'],
-};
-
-function initialServiceState(serviceCode?: string): DiscoveryServiceState {
-  return serviceCode === 'root-canal' ? rootCanalReferenceState : defaultServiceState;
+// Search results start unfiltered and comparison starts empty; the user makes the choice.
+function initialServiceState(_serviceCode?: string): DiscoveryServiceState {
+  return defaultServiceState;
 }
 
 const DiscoverySessionContext = createContext<DiscoverySessionContextValue | null>(null);
@@ -75,7 +68,9 @@ export function DiscoverySessionProvider({ children }: PropsWithChildren) {
 
   const getServiceState = useCallback(
     (serviceCode?: string) =>
-      serviceCode ? (serviceStates[serviceCode] ?? initialServiceState(serviceCode)) : defaultServiceState,
+      serviceCode
+        ? (serviceStates[serviceCode] ?? initialServiceState(serviceCode))
+        : defaultServiceState,
     [serviceStates],
   );
 
@@ -104,18 +99,24 @@ export function DiscoverySessionProvider({ children }: PropsWithChildren) {
     [],
   );
 
-  const resetProviderFilters = useCallback((serviceCode: string) => {
-    updateServiceState(serviceCode, {
-      filters: { ...defaultProviderFilters },
-      filtersApplied: false,
-      area: 'كل المناطق',
-      scrollY: 0,
-    });
-  }, [updateServiceState]);
+  const resetProviderFilters = useCallback(
+    (serviceCode: string) => {
+      updateServiceState(serviceCode, {
+        filters: { ...defaultProviderFilters },
+        filtersApplied: false,
+        area: 'كل المناطق',
+        scrollY: 0,
+      });
+    },
+    [updateServiceState],
+  );
 
-  const applyProviderFilters = useCallback((serviceCode: string) => {
-    updateServiceState(serviceCode, { filtersApplied: true, scrollY: 0 });
-  }, [updateServiceState]);
+  const applyProviderFilters = useCallback(
+    (serviceCode: string) => {
+      updateServiceState(serviceCode, { filtersApplied: true, scrollY: 0 });
+    },
+    [updateServiceState],
+  );
 
   const setProviderSort = useCallback(
     (serviceCode: string, sort: ProviderSortMode) => {

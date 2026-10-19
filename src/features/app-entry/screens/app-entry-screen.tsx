@@ -44,17 +44,13 @@ export function AppEntryScreen() {
   }, [router, requestedStep]);
 
   const finish = useCallback(
-    async (destination: '/(tabs)/home' | '/auth/phone', mode?: 'register') => {
+    async (destination: '/(tabs)/home' | '/auth/phone') => {
       try {
         await secureStorage.setOnboardingComplete();
       } catch {
         // Storage failure must never block an explicit patient choice.
       }
-      if (destination === '/auth/phone' && mode === 'register') {
-        router.replace({ pathname: '/auth/phone', params: { mode } });
-      } else {
-        router.replace(destination);
-      }
+      router.replace(destination);
     },
     [router],
   );
@@ -81,7 +77,6 @@ export function AppEntryScreen() {
       onBack={back}
       onBrowse={() => void finish('/(tabs)/home')}
       onLogin={() => void finish('/auth/phone')}
-      onRegister={() => void finish('/auth/phone', 'register')}
     />
   );
 }

@@ -1,66 +1,153 @@
-import { useRouter } from 'expo-router';
-import { ScrollView } from 'react-native';
+import { useState } from 'react';
+import { Keyboard, Pressable, ScrollView, View } from 'react-native';
+
 import {
   DiscoveryBottomBar,
   DiscoveryHeader,
 } from '@/features/discovery/components/pen-discovery-ui';
+import { useDiscoverySession } from '@/features/discovery/state/discovery-session-provider';
+import { AssessmentEntryCard } from '@/shared/components/assessment/assessment-entry-card';
 import { AppHeader } from '@/shared/components/navigation';
-import { AppText, Screen, SearchField } from '@/shared/components/ui';
-import { DiscoverAssessmentSuggestion } from '../components/discover-assessment-suggestion';
-import { DiscoverQuickSearchTypes } from '../components/discover-quick-search-types';
-import { DiscoverRecentSearches } from '../components/discover-recent-searches';
-import { useUniversalSearchActions } from '../hooks/use-universal-search-actions';
+import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-tab-metrics';
+import { AppIcon, AppText, Screen, SearchField } from '@/shared/components/ui';
+import type { PenServiceFamily } from '@/features/discovery/presentation/pen-discovery-data';
+import {
+  selectedDiscoveryAreas,
+  withSelectedDiscoveryAreas,
+  type DiscoveryFilterSelection,
+} from '../model/discover-filters';
+import { DiscoverFilterSheet } from '../components/discover-filter-sheet';
+import { DiscoverAppliedFilterChips } from '../components/discover-applied-filter-chips';
+import { DiscoverSearchResults } from '../components/discover-search-results';
 
+const initialDiscoverFilters: DiscoveryFilterSelection = {
+  area: 'كل المناطق',
+  areas: [],
+  groupCode: null,
+  serviceCode: null,
+  priceRange: null,
+};
+
+/** One smart search entry and one progressive filter modal; no external category/back stack. */
 export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean } = {}) {
-  const router = useRouter();
-  const { catalogQuery, setCatalogQuery, submitSearch, openQuickType, openRecent } =
-    useUniversalSearchActions();
+  const { catalogQuery, setCatalogQuery } = useDiscoverySession();
+  const [filters, setFilters] = useState<DiscoveryFilterSelection>(initialDiscoverFilters);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const activeFilters = Boolean(
+    selectedDiscoveryAreas(filters).length > 0 ||
+    filters.groupCode ||
+    filters.serviceCode ||
+    filters.priceRange,
+  );
+
+  const chooseFamily = (family: PenServiceFamily) => {
+    setFilters((current) => ({
+      ...current,
+      groupCode: family.groupCode,
+      serviceCode: family.id,
+      priceRange: null,
+    }));
+    setCatalogQuery('');
+    Keyboard.dismiss();
+  };
+
+  const chooseArea = (area: string) => {
+    setFilters((current) => withSelectedDiscoveryAreas(current, [area]));
+    setCatalogQuery('');
+    Keyboard.dismiss();
+  };
+
   return (
     <Screen
       contentClassName="px-0 py-0"
       header={
-        asTab ? (
-          <AppHeader variant="primary" title="اكتشف" />
-        ) : (
-          <DiscoveryHeader
-            showFilterAction
-            onFilterPress={() =>
-              router.push({
-                pathname: '/discover/providers',
-                params: { serviceCode: 'root-canal' },
-              })
-            }
-            title="البحث"
-          />
-        )
+        asTab ? <AppHeader variant="primary" title="اكتشف" /> : <DiscoveryHeader title="البحث" />
       }
     >
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerClassName={
-          asTab
-            ? 'mx-auto w-full max-w-[430px] px-4 pb-32 pt-3'
-            : 'mx-auto w-full max-w-[430px] px-4 pb-[98px] pt-1'
-        }
+        contentContainerClassName="mx-auto w-full max-w-[430px] gap-4 px-4 pt-4"
+        contentContainerStyle={{ paddingBottom: PATIENT_TAB_BAR_HEIGHT + 52 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <AppText align="right" className="font-ui-bold" variant="heading-3">
-          ابحث بالطريقة التي تعرفها
-        </AppText>
+        <View className="items-end gap-1">
+          <AppText align="right" variant="heading-2">
+            كيف فينا نساعدك؟
+          </AppText>
+          <AppText align="right" variant="label" className="text-content-secondary">
+            ابحث عن طبيب أو خدمة، أو استخدم الفلاتر للاختيار.
+          </AppText>
+        </View>
 
-        <SearchField
-          containerClassName="mt-3"
-          onChangeText={setCatalogQuery}
-          onSubmitEditing={() => submitSearch()}
-          placeholder="ألم، خدمة، طبيب، أو منطقة في حلب"
-          value={catalogQuery}
+        <View className="flex-row-reverse items-center gap-2">
+          <View className="min-w-0 flex-1">
+            <SearchField
+              value={catalogQuery}
+              onChangeText={setCatalogQuery}
+              onSubmitEditing={() => Keyboard.dismiss()}
+              accessibilityLabel="ابحث عن طبيب أو خدمة"
+              placeholder="اسم طبيب، خدمة، أو منطقة..."
+            />
+          </View>
+          {catalogQuery.length ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="مسح البحث"
+              className="h-[46px] w-[40px] items-center justify-center rounded-[12px] bg-surface-default"
+              onPress={() => {
+                setCatalogQuery('');
+                Keyboard.dismiss();
+              }}
+            >
+              <AppIcon
+                name={{ ios: 'xmark', android: 'close', web: 'close' }}
+                size={18}
+                tone="secondary"
+              />
+            </Pressable>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="فلترة البحث حسب الموقع والخدمات"
+            accessibilityHint="يفتح نافذة الفلاتر المتدرجة"
+            className={
+              'h-[46px] w-[46px] shrink-0 items-center justify-center rounded-[13px] border ' +
+              (activeFilters
+                ? 'border-action-primary bg-action-subtle'
+                : 'border-border-subtle bg-surface-default')
+            }
+            onPress={() => {
+              Keyboard.dismiss();
+              setFilterOpen(true);
+            }}
+          >
+            <AppIcon
+              name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
+              size={22}
+              tone="action"
+            />
+          </Pressable>
+        </View>
+
+        <DiscoverAppliedFilterChips selection={filters} onChange={setFilters} />
+
+        <AssessmentEntryCard />
+        <DiscoverSearchResults
+          query={catalogQuery}
+          filters={filters}
+          onChooseFamily={chooseFamily}
+          onChooseArea={chooseArea}
         />
-
-        <DiscoverAssessmentSuggestion />
-        <DiscoverQuickSearchTypes onSelect={openQuickType} />
-        <DiscoverRecentSearches onSelect={openRecent} />
       </ScrollView>
+
+      <DiscoverFilterSheet
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        selection={filters}
+        onApply={setFilters}
+        serviceSelectionEnabled
+      />
       {asTab ? null : <DiscoveryBottomBar activeTab="اكتشف" />}
     </Screen>
   );
