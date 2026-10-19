@@ -1,385 +1,413 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { Pressable, ScrollView, View } from 'react-native';
-import Animated, { FadeInDown, ReduceMotion } from 'react-native-reanimated';
-import Svg, { Circle } from 'react-native-svg';
 
-import { HomeCareToothIcon } from '@/features/patient-home/components/home-care-tooth-icon';
+import {
+  getMockBookingsForScenario,
+  isUpcomingMockBooking,
+  type MockBooking,
+} from '@/features/booking/mocks/bookings.mock';
+import { ServiceIcon } from '@/features/discovery/components/service-icon';
+import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
+import {
+  getMockCareCaseForScenario,
+  mockCareCases,
+  type MockCareCase,
+} from '@/features/my-care/mocks/care.mock';
+import { getMockNeedsAttentionForScenario } from '@/features/platform/mocks/platform.mock';
 import { AppHeader } from '@/shared/components/navigation';
+import { CenteredActionIcon } from '@/shared/components/ui/centered-action-icon';
 import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-tab-metrics';
-import { AppIcon, AppText, Button, Screen } from '@/shared/components/ui';
-import { ToothSvg, type ToothShape } from '@/shared/components/ui/tooth-svg';
-import { theme } from '@/shared/theme';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { AppIcon, AppText, ReadStateBoundary, Screen } from '@/shared/components/ui';
+import { useMockScenario } from '@/shared/mock';
+import { mockPatientWorld } from '@/shared/mock/patient.mock';
 
-const groups: {
-  code: 'G01' | 'G02' | 'G03' | 'G04';
-  label: string;
-  tooth: ToothShape;
-}[] = [
-  { code: 'G01', label: 'جراحة ولثة', tooth: 'incisor' },
-  { code: 'G02', label: 'ترميم وتركيبات', tooth: 'molar' },
-  { code: 'G03', label: 'علاج الجذور', tooth: 'premolar' },
-  { code: 'G04', label: 'فحص ووقاية', tooth: 'molar' },
-];
+const groupIcons = {
+  G01: 'implant',
+  G02: 'crowns',
+  G03: 'root-canal',
+  G04: 'dental-checkup',
+} as const;
 
-function HomeHero() {
-  const router = useRouter();
-  const { colors, scheme } = useAppTheme();
-  const warm = theme.illustration.warm[scheme];
-
+function SectionTitle({
+  title,
+  action,
+  onAction,
+}: {
+  title: string;
+  action?: string;
+  onAction?: () => void;
+}) {
   return (
-    <Animated.View
-      className="min-h-[178px] flex-row items-center gap-2 overflow-hidden rounded-[18px] bg-action-subtle px-3 py-[12px]"
-      entering={FadeInDown.duration(theme.motion.duration.overlay).reduceMotion(
-        ReduceMotion.System,
-      )}
-    >
-      <View className="relative h-[148px] w-[138px] shrink-0">
-        <View
-          className="absolute left-0 top-[39px] h-[94px] w-[94px] rounded-full"
-          style={{ backgroundColor: warm.surface }}
-        />
-        <View className="absolute left-[48px] top-[51px] h-[92px] w-[84px] rounded-full bg-state-selected" />
-        <View className="absolute left-[54px] top-[57px] h-[79px] w-[79px] rounded-full bg-action-primary/10" />
-
-        <View className="absolute left-[1px] top-[3px] h-[30px] min-w-[66px] flex-row items-center justify-center gap-1 rounded-full border border-action-secondary-border bg-surface-default px-2">
-          <AppText className="font-ui-medium" style={{ fontSize: 11, lineHeight: 16 }} variant="label">
-            ألم
-          </AppText>
-          <AppIcon name={{ ios: 'heart.text.square', android: 'monitor_heart', web: 'monitor_heart' }} size={13} tone="action" />
-        </View>
-
-        <View className="absolute right-[5px] top-[2px] h-[30px] min-w-[52px] flex-row items-center justify-center gap-1 rounded-full border border-action-secondary-border bg-surface-default px-2">
-          <AppText className="font-ui-medium" style={{ fontSize: 11, lineHeight: 16 }} variant="label">
-            كسر
-          </AppText>
-          <AppIcon name={{ ios: 'bandage', android: 'healing', web: 'healing' }} size={13} tone="action" />
-        </View>
-
-        <View className="absolute left-[58px] top-[45px] h-[75px] w-[75px] items-center justify-center rounded-full bg-surface-default">
-          <ToothSvg height={52} kind="molar" selected width={38} />
-        </View>
-
-        <View className="absolute bottom-[4px] left-[4px] h-[43px] w-[43px] items-center justify-center rounded-full bg-surface-default">
-          <AppIcon
-            color={warm.accent}
-            name={{ ios: 'face.smiling', android: 'sentiment_satisfied', web: 'sentiment_satisfied' }}
-            size={25}
-          />
-        </View>
-
-        <View className="absolute bottom-[4px] right-[1px] h-[27px] flex-row items-center justify-center gap-1 rounded-full border border-action-secondary-border bg-surface-default px-2">
-          <AppText style={{ fontSize: 10, lineHeight: 15 }} variant="caption">
-            تورّم
-          </AppText>
-          <AppIcon
-            name={{ ios: 'cross.case', android: 'health_and_safety', web: 'health_and_safety' }}
-            size={13}
-            tone="action"
-          />
-        </View>
-      </View>
-
-      <View className="min-w-0 flex-1 items-end justify-center">
-        <AppText
-          align="right"
-          className="w-full font-ui-bold"
-          style={{ fontSize: 19, lineHeight: 27 }}
-          variant="heading-3"
-        >
-          شو عم يزعجك بأسنانك؟
-        </AppText>
-        <AppText
-          align="right"
-          className="mt-1 w-full text-content-secondary"
-          style={{ fontSize: 11, lineHeight: 18 }}
-          variant="caption"
-        >
-          احكِ لنا بطريقتك، ونساعدك تحدد الخطوة المناسبة.
-        </AppText>
+    <View className="flex-row-reverse items-center justify-between gap-3">
+      <AppText align="right" variant="heading-4">
+        {title}
+      </AppText>
+      {action && onAction ? (
         <Pressable
           accessibilityRole="button"
-          className="mt-3 min-h-[42px] w-full flex-row items-center justify-center gap-2 rounded-[11px] bg-action-primary px-2"
-          onPress={() => router.push('/assessment/start')}
+          accessibilityLabel={action}
+          hitSlop={8}
+          onPress={onAction}
         >
-          <AppText
-            align="center"
-            className="font-ui-bold"
-            style={{ color: colors.text.onAction, fontSize: 12, lineHeight: 18 }}
-            variant="label"
-          >
-            ساعدني أحدد حالتي
+          <AppText variant="label" className="text-content-link">
+            {action}
           </AppText>
-          <AppIcon
-            name={{ ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' }}
-            size={16}
-            tone="onAction"
-          />
         </Pressable>
-      </View>
-    </Animated.View>
+      ) : null}
+    </View>
   );
 }
 
-function HomeCareGroup({
-  group,
-  index,
-}: {
-  group: (typeof groups)[number];
-  index: number;
-}) {
-  const router = useRouter();
+function AppointmentPreview({ item, onPress }: { item: MockBooking; onPress: () => void }) {
   return (
-    <Animated.View
-      className="w-[49%]"
-      entering={FadeInDown.delay(60 + index * 25)
-        .duration(theme.motion.duration.overlay)
-        .reduceMotion(ReduceMotion.System)}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={'عرض موعد ' + item.serviceName}
+      onPress={onPress}
     >
-      <Pressable
-        accessibilityRole="button"
-        className="min-h-[76px] flex-row items-center gap-1 rounded-[15px] border border-border-subtle bg-surface-default px-[5px] py-[6px]"
-        onPress={() =>
-          router.push({
-            pathname: '/discover/group/[groupCode]',
-            params: { groupCode: group.code },
-          })
-        }
+      <HeroCard
+        variant="default"
+        className="rounded-[16px] border border-border-subtle bg-surface-default px-3.5 py-3"
       >
-        <HomeCareToothIcon kind={group.tooth} />
-        <View className="min-w-0 flex-1 items-end justify-center">
-          <AppText
-            align="right"
-            className="font-ui-bold"
-            direction="ltr"
-            style={{ color: theme.brand.mark, fontSize: 10, lineHeight: 15 }}
-            variant="badge"
-          >
-            {group.code}
-          </AppText>
-          <AppText
-            align="right"
-            className="mt-1 w-full font-ui-medium"
-            numberOfLines={2}
-            style={{ fontSize: 11.5, lineHeight: 17 }}
-            variant="label"
-          >
-            {group.label}
-          </AppText>
+        <View className="flex-row-reverse items-center gap-3">
+          <CenteredActionIcon name="calendar" frameSize={48} iconSize={22} />
+          <View className="min-w-0 flex-1 items-end gap-1">
+            <AppText align="right" variant="body-strong" numberOfLines={1}>
+              {item.serviceName}
+              {' · '}
+              <AppText variant="caption" className="text-content-secondary">
+                {item.providerName}
+              </AppText>
+            </AppText>
+            <AppText align="right" variant="caption" numberOfLines={1}>
+              {item.dateLabel} · {item.timeLabel}
+            </AppText>
+          </View>
+          <AppIcon
+            name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
+            size={18}
+            tone="secondary"
+          />
         </View>
-      </Pressable>
-    </Animated.View>
+      </HeroCard>
+    </Pressable>
   );
 }
 
-function TreatmentProgress() {
-  const { colors } = useAppTheme();
-
+function CarePreview({ item, onPress }: { item: MockCareCase; onPress: () => void }) {
   return (
-    <View className="h-[58px] w-[58px] items-center justify-center">
-      <Svg accessible={false} height={58} viewBox="0 0 58 58" width={58}>
-        <Circle cx={29} cy={29} fill="none" r={24} stroke={colors.action.subtle} strokeWidth={4} />
-        <Circle
-          cx={29}
-          cy={29}
-          fill="none"
-          origin="29,29"
-          r={24}
-          rotation={-90}
-          stroke={colors.action.primary}
-          strokeDasharray={[75.4, 75.4]}
-          strokeLinecap="round"
-          strokeWidth={4}
-        />
-      </Svg>
-      <View className="absolute inset-0 items-center justify-center">
-        <AppText
-          align="center"
-          direction="ltr"
-          className="font-ui-bold"
-          style={{ color: colors.action.primary, fontSize: 11, lineHeight: 16 }}
-          variant="label"
-        >
-          2/4
-        </AppText>
-      </View>
-    </View>
-  );
-}
-
-function HomeSummaryCards() {
-  const router = useRouter();
-  const { scheme } = useAppTheme();
-  const warm = theme.illustration.warm[scheme];
-
-  return (
-    <View className="mt-2 flex-row gap-[6px]">
-      <Pressable
-        accessibilityRole="button"
-        className="min-h-[116px] min-w-0 flex-1 rounded-[15px] border border-border-subtle bg-surface-default px-2 py-[7px]"
-        onPress={() => router.push('/(tabs)/care')}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={'عرض الحالة ' + item.title}
+      onPress={onPress}
+    >
+      <HeroCard
+        variant="default"
+        className="rounded-[16px] border border-border-subtle bg-surface-default px-3.5 py-3"
       >
-        <View className="flex-row items-center justify-between gap-1">
-          <View className="rounded-full bg-action-subtle px-[7px] py-[3px]">
-            <AppText className="font-ui-medium" style={{ fontSize: 10, lineHeight: 15 }} variant="caption">
-              2 من 4
+        <View className="flex-row-reverse items-center gap-3">
+          <CenteredActionIcon name="care" frameSize={48} iconSize={22} />
+          <View className="min-w-0 flex-1 items-end gap-1">
+            <AppText align="right" variant="body-strong" numberOfLines={1}>
+              {item.title}
+            </AppText>
+            <AppText align="right" variant="caption" numberOfLines={2}>
+              {item.nextAction}
             </AppText>
           </View>
-          <AppText className="font-ui-bold" style={{ fontSize: 12, lineHeight: 18 }} variant="label">
-            علاج نشط
-          </AppText>
+          <AppIcon
+            name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
+            size={18}
+            tone="secondary"
+          />
         </View>
-
-        <View className="mt-[5px] flex-row items-center justify-between">
-          <TreatmentProgress />
-          <View
-            className="h-10 w-12 items-center justify-center rounded-[11px]"
-            style={{ backgroundColor: warm.surface }}
-          >
-            <AppIcon
-              name={{ ios: 'viewfinder', android: 'center_focus_strong', web: 'center_focus_strong' }}
-              size={21}
-              tone="action"
-            />
-          </View>
-        </View>
-
-        <AppText align="right" className="mt-1" style={{ fontSize: 10, lineHeight: 15 }} variant="caption">
-          تنظيف القنوات
-        </AppText>
-      </Pressable>
-
-      <Pressable
-        accessibilityRole="button"
-        className="min-h-[116px] min-w-0 flex-1 rounded-[15px] border border-border-subtle bg-surface-default px-2 py-[7px]"
-        onPress={() => router.push('/booking')}
-      >
-        <View className="flex-row items-center justify-between gap-1">
-          <View className="rounded-full bg-tone-success-fill px-[7px] py-[3px]">
-            <AppText className="text-tone-success-text" style={{ fontSize: 10, lineHeight: 15 }} variant="caption">
-              مؤكد
-            </AppText>
-          </View>
-          <AppText className="font-ui-bold" style={{ fontSize: 12, lineHeight: 18 }} variant="label">
-            موعدك القادم
-          </AppText>
-        </View>
-
-        <View className="mt-[5px] flex-row items-center justify-end gap-1.5">
-          <View className="h-[34px] w-[34px] items-center justify-center rounded-[11px] bg-action-subtle">
-            <AppIcon
-              name={{ ios: 'building.2', android: 'business', web: 'business' }}
-              size={18}
-              tone="action"
-            />
-          </View>
-          <View className="h-[34px] w-[34px] items-center justify-center rounded-full bg-action-subtle">
-            <AppIcon
-              name={{ ios: 'person.crop.circle', android: 'person_outline', web: 'person_outline' }}
-              size={22}
-              tone="action"
-            />
-          </View>
-        </View>
-        <AppText align="right" className="mt-1 font-ui-medium" style={{ fontSize: 10.5, lineHeight: 16 }} variant="label">
-          د. لينا يوسف
-        </AppText>
-        <AppText align="right" className="font-ui-semibold" style={{ color: theme.brand.mark, fontSize: 10, lineHeight: 15 }} variant="caption">
-          24 أيلول · 12:00
-        </AppText>
-      </Pressable>
-    </View>
+      </HeroCard>
+    </Pressable>
   );
 }
 
 export function PatientHomeScreen() {
   const router = useRouter();
-  const { colors } = useAppTheme();
-  const [showCoachMark, setShowCoachMark] = useState(true);
+  const { scenario, bookingRequests, getSurfaceState } = useMockScenario();
+  const bookingState = getSurfaceState('booking');
+  const careState = getSurfaceState('care');
+  const attentionState = getSurfaceState('attention');
+  const isAvailable = (state: string) =>
+    !['empty-no-data', 'error-permission', 'error-fetch', 'loading-initial'].includes(state);
+
+  const bookings = isAvailable(bookingState)
+    ? [...bookingRequests, ...getMockBookingsForScenario(scenario)]
+    : [];
+  const upcomingBookings = bookings
+    .filter((item): item is MockBooking => 'dateKey' in item && isUpcomingMockBooking(item))
+    .sort((a, b) => (a.dateKey ?? '').localeCompare(b.dateKey ?? ''));
+  const pendingBookings = bookings.filter(
+    (item) => item.status === 'pending' || item.status === 'eligibility-review',
+  );
+  const activeCases =
+    isAvailable(careState) && !scenario.flags?.emptyNewPatient
+      ? mockCareCases
+          .flatMap((item) => {
+            const current = getMockCareCaseForScenario(item.id, scenario);
+            return current ? [current] : [];
+          })
+          .filter((item) => item.progress < 100)
+      : [];
+
+  const attention = isAvailable(attentionState)
+    ? getMockNeedsAttentionForScenario(scenario)
+        .filter(
+          (item) =>
+            item.id !== 'attention-booking' &&
+            (item.id !== 'attention-follow-up' ||
+              scenario.flags?.followUpDue ||
+              scenario.flags?.followUpOverdue) &&
+            (item.id !== 'attention-submission' || scenario.flags?.representationPending),
+        )
+        .slice(0, 2)
+    : [];
 
   return (
-    <Screen contentClassName="px-0 py-0">
-      <AppHeader variant="primary" />
-
-      <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-[430px] px-3 pt-3"
-        contentContainerStyle={{ paddingBottom: PATIENT_TAB_BAR_HEIGHT + 10 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <HomeHero />
-
-        {showCoachMark ? (
-          <View className="mt-2 min-h-[58px] flex-row items-center gap-2 rounded-[17px] bg-action-primary px-3 py-[7px]">
-            <View className="h-[36px] w-[36px] shrink-0 items-center justify-center rounded-full bg-surface-default/20">
-              <AppIcon
-                name={{ ios: 'lightbulb', android: 'lightbulb_outline', web: 'lightbulb_outline' }}
-                size={21}
-                tone="onAction"
-              />
+    <Screen contentClassName="px-0 py-0" header={<AppHeader variant="primary" />}>
+      <View style={{ flex: 1 }}>
+        <ReadStateBoundary
+          state={getSurfaceState('home')}
+          emptyTitle="لا توجد بيانات متاحة حالياً"
+          errorTitle="تعذر تحميل الرئيسية"
+        >
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerClassName="mx-auto w-full max-w-[430px] gap-5 px-4 pt-4"
+            contentContainerStyle={{ paddingBottom: PATIENT_TAB_BAR_HEIGHT + 48 }}
+            showsVerticalScrollIndicator={false}
+          >
+            <View className="items-end gap-1">
+              <AppText align="right" variant="heading-2">
+                أهلاً، {mockPatientWorld.account.activePatientName}
+              </AppText>
+              <AppText align="right" variant="label" className="text-content-secondary">
+                من هون بتبدأ رحلتك للعناية بأسنانك
+              </AppText>
             </View>
-            <Pressable
-              accessibilityRole="button"
-              className="min-w-0 flex-1 items-end justify-center"
-              onPress={() => router.push('/assessment/start')}
+
+            <HeroCard
+              variant="default"
+              className="gap-3 rounded-[18px] border border-border-subtle bg-action-subtle p-4"
             >
-              <AppText
-                className="font-ui-bold"
-                style={{ color: colors.text.onAction, fontSize: 12, lineHeight: 18 }}
-                variant="label"
+              <View className="flex-row-reverse items-center gap-3">
+                <View className="h-11 w-11 shrink-0 items-center justify-center rounded-[13px] bg-surface-default">
+                  <AppIcon
+                    name={{
+                      ios: 'stethoscope',
+                      android: 'medical_information',
+                      web: 'medical_information',
+                    }}
+                    size={24}
+                    tone="action"
+                  />
+                </View>
+                <View className="min-w-0 flex-1 items-end gap-1">
+                  <AppText align="right" variant="heading-4">
+                    مو متأكد من حالتك؟
+                  </AppText>
+                  <AppText align="right" variant="caption" numberOfLines={2}>
+                    جاوب على أسئلة بسيطة لنساعدك تختار الخطوة المناسبة.
+                  </AppText>
+                </View>
+              </View>
+              <HeroButton
+                variant="primary"
+                className="min-h-[48px] rounded-[12px] bg-action-primary"
+                onPress={() => router.push('/assessment/start')}
               >
-                ابدأ من هون
-              </AppText>
-              <AppText
-                className="mt-[2px]"
-                style={{ color: colors.text.onAction, fontSize: 11, lineHeight: 17 }}
-                variant="caption"
+                <HeroButton.Label className="font-ui-semibold text-content-on-action">
+                  ساعدني أحدد حالتي
+                </HeroButton.Label>
+              </HeroButton>
+            </HeroCard>
+
+            <View className="gap-3">
+              <SectionTitle
+                title="استكشف خدمات الأسنان"
+                action="عرض الكل"
+                onAction={() => router.push('/(tabs)/discover')}
+              />
+              <View className="flex-row-reverse flex-wrap justify-between gap-y-2.5">
+                {penServiceGroups.map((group) => (
+                  <Pressable
+                    key={group.code}
+                    accessibilityRole="button"
+                    accessibilityLabel={'استكشف ' + group.title}
+                    className="w-[49%]"
+                    onPress={() =>
+                      router.push({
+                        pathname: '/discover/group/[groupCode]',
+                        params: { groupCode: group.code },
+                      })
+                    }
+                  >
+                    <HeroCard
+                      variant="default"
+                      className="min-h-[110px] items-center justify-center gap-2 rounded-[16px] border border-border-subtle bg-surface-default px-3 py-3"
+                    >
+                      <ServiceIcon serviceId={groupIcons[group.code]} size={34} />
+                      <AppText
+                        align="center"
+                        numberOfLines={2}
+                        variant="label"
+                        className="font-ui-semibold"
+                      >
+                        {group.title}
+                      </AppText>
+                    </HeroCard>
+                  </Pressable>
+                ))}
+              </View>
+              <HeroButton
+                variant="outline"
+                className="min-h-[48px] rounded-[12px] border-action-primary"
+                onPress={() => router.push('/(tabs)/discover')}
               >
-                إذا مو متأكد من الخدمة
-              </AppText>
-            </Pressable>
-            <Pressable
-              accessibilityLabel="إخفاء التلميح"
-              accessibilityRole="button"
-              className="h-11 w-8 shrink-0 items-center justify-center"
-              onPress={() => setShowCoachMark(false)}
-            >
-              <AppIcon name={{ ios: 'xmark', android: 'close', web: 'close' }} size={18} tone="onAction" />
-            </Pressable>
-          </View>
-        ) : null}
+                <HeroButton.Label className="font-ui-semibold text-content-link">
+                  ابحث عن طبيب أو خدمة
+                </HeroButton.Label>
+              </HeroButton>
+            </View>
 
-        <View className="mt-[7px] flex-row gap-[7px]">
-          <Button
-            className="min-w-0 flex-1"
-            endIcon={{ ios: 'square.grid.2x2', android: 'grid_view', web: 'grid_view' }}
-            label="أعرف الخدمة"
-            onPress={() => router.push('/discover')}
-            size="sm"
-            variant="outline"
-          />
-          <Button
-            className="min-w-0 flex-1"
-            endIcon={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-            label="أبحث عن طبيب"
-            onPress={() => router.push('/discover/search')}
-            size="sm"
-            variant="outline"
-          />
-        </View>
+            {attention.length > 0 ? (
+              <View className="gap-2.5">
+                <SectionTitle
+                  title="يحتاج انتباهك"
+                  action="عرض الكل"
+                  onAction={() => router.push('/needs-attention')}
+                />
+                {attention.map((item) => (
+                  <Pressable
+                    key={item.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.title}
+                    onPress={() => router.push(item.href)}
+                  >
+                    <HeroCard
+                      variant="default"
+                      className="rounded-[16px] border border-tone-warning-border bg-tone-warning-fill px-3 py-3"
+                    >
+                      <View className="flex-row-reverse items-center gap-3">
+                        <AppIcon
+                          name={{
+                            ios: 'exclamationmark.circle',
+                            android: 'error_outline',
+                            web: 'error_outline',
+                          }}
+                          size={22}
+                          tone={item.tone}
+                        />
+                        <View className="min-w-0 flex-1 items-end gap-1">
+                          <AppText
+                            align="right"
+                            variant="label"
+                            className="font-ui-semibold"
+                            numberOfLines={1}
+                          >
+                            {item.title}
+                          </AppText>
+                          <AppText align="right" variant="caption" numberOfLines={2}>
+                            {item.detail}
+                          </AppText>
+                        </View>
+                        <AppIcon
+                          name={{
+                            ios: 'chevron.left',
+                            android: 'chevron_left',
+                            web: 'chevron_left',
+                          }}
+                          size={17}
+                          tone="secondary"
+                        />
+                      </View>
+                    </HeroCard>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
 
-        <AppText align="right" className="mt-[8px] font-ui-bold" style={{ fontSize: 14, lineHeight: 21 }} variant="heading-4">
-          اختار حسب نوع العناية
-        </AppText>
+            {upcomingBookings.length > 0 ? (
+              <View className="gap-2.5">
+                <SectionTitle
+                  title="مواعيدك القادمة"
+                  action="عرض الكل"
+                  onAction={() => router.push('/(tabs)/care')}
+                />
+                {upcomingBookings.slice(0, 3).map((item) => (
+                  <AppointmentPreview
+                    key={item.id}
+                    item={item}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/booking/[bookingId]',
+                        params: { bookingId: item.id },
+                      })
+                    }
+                  />
+                ))}
+              </View>
+            ) : null}
 
-        <View className="mt-[7px] flex-row flex-wrap justify-between gap-y-[6px]">
-          {groups.map((group, index) => (
-            <HomeCareGroup group={group} index={index} key={group.code} />
-          ))}
-        </View>
+            {pendingBookings.length > 0 ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="متابعة طلبات الحجز قيد التأكيد"
+                onPress={() => router.push('/(tabs)/care')}
+              >
+                <HeroCard
+                  variant="default"
+                  className="rounded-[16px] border border-border-subtle bg-surface-default px-3 py-3"
+                >
+                  <View className="flex-row-reverse items-center gap-3">
+                    <CenteredActionIcon name="clock" frameSize={44} iconSize={22} warning />
+                    <View className="min-w-0 flex-1 items-end gap-1">
+                      <AppText align="right" variant="label" className="font-ui-semibold">
+                        بانتظار تأكيد العيادة
+                      </AppText>
+                      <AppText align="right" variant="caption">
+                        {pendingBookings.length} طلب حجز غير مؤكّد
+                      </AppText>
+                    </View>
+                    <AppIcon
+                      name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
+                      size={18}
+                      tone="secondary"
+                    />
+                  </View>
+                </HeroCard>
+              </Pressable>
+            ) : null}
 
-        <HomeSummaryCards />
-      </ScrollView>
+            {activeCases.length > 0 ? (
+              <View className="gap-2.5">
+                <SectionTitle
+                  title="الحالات التي تتابعها"
+                  action="عرض الكل"
+                  onAction={() => router.push('/(tabs)/care')}
+                />
+                {activeCases.slice(0, 3).map((item) => (
+                  <CarePreview
+                    key={item.id}
+                    item={item}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/care/[caseId]/timeline',
+                        params: { caseId: item.id },
+                      })
+                    }
+                  />
+                ))}
+              </View>
+            ) : null}
+          </ScrollView>
+        </ReadStateBoundary>
+      </View>
     </Screen>
   );
 }

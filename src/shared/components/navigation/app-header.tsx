@@ -8,7 +8,9 @@ import { useAppDirection } from '@/providers/app-direction-provider';
 import { usePreferredLocation } from '@/features/location/state/preferred-location-provider';
 import { BrandLogo } from '@/shared/components/brand';
 import { AppText, ThemeToggle } from '@/shared/components/ui';
-import { mockWorldIds, useMockScenario } from '@/shared/mock';
+import { CenteredActionIcon } from '@/shared/components/ui/centered-action-icon';
+import { useMockScenario } from '@/shared/mock';
+import { getMockNotificationsForScenario } from '@/features/platform/mocks/platform.mock';
 import { theme } from '@/shared/theme';
 import { useAppTheme } from '@/shared/theme/theme-provider';
 import { cn } from '@/shared/utils/cn';
@@ -42,34 +44,45 @@ export function AppHeader({
   const { rowClassName } = useAppDirection();
   const { colors } = useAppTheme();
   const { location } = usePreferredLocation();
-  const { getSurfaceState, readNotificationIds } = useMockScenario();
+  const { scenario, getSurfaceState, readNotificationIds } = useMockScenario();
   const primary = variant === 'primary';
   const notificationsVisible = showNotifications ?? primary;
   const notificationsState = getSurfaceState('notifications');
   const hasUnreadNotifications =
     notificationsState !== 'empty-no-data' &&
-    mockWorldIds.notification.unreadByDefault.some(
-      (notificationId) => !readNotificationIds.includes(notificationId),
+    getMockNotificationsForScenario(scenario).some(
+      (notification) => notification.unread && !readNotificationIds.includes(notification.id),
     );
 
   const notificationButton = notificationsVisible ? (
     <Pressable
       accessibilityLabel="الإشعارات"
       accessibilityRole="button"
-      className="h-11 w-11 items-center justify-center rounded-full border border-border-default bg-surface-default active:bg-state-selected"
+      className="rounded-full active:bg-state-selected"
+      style={{
+        width: 44,
+        height: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
       hitSlop={4}
       onPress={() => router.push('/notifications')}
     >
-      <View className="relative">
-        <SymbolView
-          name={{ ios: 'bell', android: 'notifications', web: 'notifications' }}
-          size={20}
-          tintColor={theme.brand.mark}
+      <CenteredActionIcon name="bell" frameSize={44} iconSize={22} color={colors.text.primary} />
+      {hasUnreadNotifications ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 7,
+            right: 7,
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: colors.tone.danger.text,
+          }}
         />
-        {hasUnreadNotifications ? (
-          <View className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-surface-canvas bg-tone-danger-text" />
-        ) : null}
-      </View>
+      ) : null}
     </Pressable>
   ) : null;
 
@@ -77,7 +90,7 @@ export function AppHeader({
     <View
       className={cn(
         'w-full',
-        primary ? 'bg-surface-canvas' : 'border-b border-border-subtle bg-surface-default',
+        primary ? 'bg-surface-default' : 'border-b border-border-subtle bg-surface-default',
         className,
       )}
     >

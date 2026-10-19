@@ -8,9 +8,8 @@ import {
   useFonts,
 } from '@expo-google-fonts/ibm-plex-sans-arabic';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import * as NativeSplashScreen from 'expo-splash-screen';
-import { I18nManager, Image, View } from 'react-native';
+import { I18nManager, Image, StatusBar, View } from 'react-native';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -41,7 +40,11 @@ function RootNavigator() {
 
   return (
     <>
-      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar
+        barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor="transparent"
+        translucent
+      />
       <Stack
         screenOptions={{
           contentStyle: {
@@ -74,7 +77,7 @@ export default function RootLayout() {
           justifyContent: 'center',
         }}
       >
-        <StatusBar style="dark" />
+        <StatusBar barStyle="dark-content" />
         <Image
           accessibilityLabel="UperTib"
           resizeMode="contain"

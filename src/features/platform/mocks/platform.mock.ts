@@ -23,8 +23,8 @@ interface MockNotification {
 export const mockNeedsAttention: MockAttentionItem[] = [
   {
     id: 'attention-booking',
-    title: 'موعدك غداً',
-    detail: 'فحص الأسنان · 10:30 ص',
+    title: 'موعد فحص مؤكد',
+    detail: 'فحص الأسنان · السبت 24 تشرين الأول · 10:30 ص',
     actionLabel: 'عرض الحجز',
     href: '/booking/booking-001' as const,
     tone: 'info' as const,
@@ -51,8 +51,8 @@ export const mockNotifications: MockNotification[] = [
   {
     id: 'notification-001',
     title: 'تم تأكيد موعدك',
-    detail: 'فحص الأسنان مع د. ليان منصور.',
-    timeLabel: 'منذ ساعتين',
+    detail: 'فحص الأسنان مع د. ليان يوسف.',
+    timeLabel: '18 تشرين الأول',
     unread: true,
     href: '/booking/booking-001' as const,
   },
@@ -60,7 +60,7 @@ export const mockNotifications: MockNotification[] = [
     id: 'notification-002',
     title: 'تم تحديث الحالة العلاجية',
     detail: 'أصبحت مرحلة علاج القنوات هي المرحلة الحالية.',
-    timeLabel: 'أمس',
+    timeLabel: '14 أيلول',
     unread: true,
     href: '/care/case-001/timeline' as const,
   },
@@ -76,6 +76,8 @@ export const mockNotifications: MockNotification[] = [
 
 export function getMockNeedsAttentionForScenario(scenario: MockScenarioDefinition) {
   const items = [...mockNeedsAttention];
+
+  if (scenario.flags?.emptyNewPatient) return [];
 
   if (scenario.flags?.bookingAlternative) {
     items.unshift({
@@ -161,6 +163,8 @@ export function getMockNeedsAttentionForScenario(scenario: MockScenarioDefinitio
 
 export function getMockNotificationsForScenario(scenario: MockScenarioDefinition) {
   const items = [...mockNotifications];
+
+  if (scenario.flags?.emptyNewPatient) return [];
 
   if (scenario.flags?.bookingAlternative) {
     items.unshift({

@@ -1,189 +1,291 @@
 import { useRouter } from 'expo-router';
+import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import {
-  CareFilterTabs,
-  CareV5Badge,
-  CareV5Card,
-  CareV5Header,
-  CareV5BottomNav,
-} from '@/features/my-care/components/care-v5-ui';
+  getMockBookingsForScenario,
+  isUpcomingMockBooking,
+  type MockBooking,
+} from '@/features/booking/mocks/bookings.mock';
 import {
   getMockCareCaseForScenario,
-  getMockCareReferenceLabel,
   mockCareCases,
   type MockCareCase,
 } from '@/features/my-care/mocks/care.mock';
-import { AppIcon, AppText, Screen } from '@/shared/components/ui';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { AppHeader } from '@/shared/components/navigation';
+import { CenteredActionIcon } from '@/shared/components/ui/centered-action-icon';
+import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-tab-metrics';
+import { AppIcon, AppText, ReadStateNotice, Screen, StatusIndicator } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
-import { cn } from '@/shared/utils/cn';
+import type { MockBookingRequest } from '@/shared/mock/scenario-provider';
 
-const filters = ['الكل', 'قيد العلاج', 'قادمة', 'مكتملة'] as const;
-type CaseFilter = (typeof filters)[number];
+const filters = ['الكل', 'بانتظار التأكيد', 'القادمة', 'قيد العلاج', 'مكتملة', 'ملغاة'] as const;
+type CareFilter = (typeof filters)[number];
+type BookingItem = MockBooking | MockBookingRequest;
+type CareItem = { kind: 'booking'; record: BookingItem } | { kind: 'case'; record: MockCareCase };
 
-function statusTone(item: MockCareCase): 'primary' | 'info' | 'warning' | 'success' {
-  if (item.progress >= 100) return 'success';
-  if (/موعد|جلسة/.test(item.statusLabel)) return 'info';
-  if (/تعديل|انتظار|مراجعة/.test(item.statusLabel)) return 'warning';
-  return 'primary';
+function matchesFilter(item: CareItem, filter: CareFilter) {
+  if (filter === 'الكل') return true;
+  if (item.kind === 'case') {
+    return filter === (item.record.progress >= 100 ? 'مكتملة' : 'قيد العلاج');
+  }
+  const status = item.record.status;
+  if (filter === 'بانتظار التأكيد') return status === 'pending' || status === 'eligibility-review';
+  if (filter === 'القادمة') return status === 'confirmed' && isUpcomingMockBooking(item.record);
+  if (filter === 'مكتملة') return status === 'completed';
+  return filter === 'ملغاة' && status === 'cancelled';
 }
 
-function caseFilter(item: MockCareCase): Exclude<CaseFilter, 'الكل'> {
-  if (item.progress >= 100) return 'مكتملة';
-  if (/موعد|جلسة/.test(item.statusLabel)) return 'قادمة';
-  return 'قيد العلاج';
-}
-
-function CaseOverviewCard({ item, onPress }: { item: MockCareCase; onPress: () => void }) {
-  const { rowClassName } = useAppDirection();
-  const tone = statusTone(item);
-  const bg = tone === 'info' ? 'bg-tone-info-fill' : tone === 'warning'
-    ? 'bg-tone-warning-fill' : tone === 'success' ? 'bg-tone-success-fill' : 'bg-action-subtle';
-  const iconTone = tone === 'primary' ? 'action' : tone;
-
+function BookingRow({ item, onPress }: { item: BookingItem; onPress: () => void }) {
+  const tone =
+    item.status === 'confirmed'
+      ? 'success'
+      : item.status === 'completed'
+        ? 'neutral'
+        : item.status === 'cancelled'
+          ? 'danger'
+          : 'warning';
   return (
     <Pressable
-      accessibilityLabel={`فتح الحالة العلاجية: ${item.title}`}
       accessibilityRole="button"
+      accessibilityLabel={'تفاصيل الحجز: ' + item.serviceName}
       onPress={onPress}
     >
-      <CareV5Card className="min-h-[116px] gap-2 rounded-[14px] px-[11px] py-[10px]">
-        <View className={cn('items-center gap-2', rowClassName)}>
-          <View className={cn('h-9 w-9 items-center justify-center rounded-[9px]', bg)}>
-            <AppIcon
-              name={{ ios: 'cross.case', android: 'medical_services', web: 'medical_services' }}
-              size={18}
-              tone={iconTone}
-            />
+      <HeroCard
+        variant="default"
+        className="gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3"
+      >
+        <View className="flex-row-reverse items-center gap-2">
+          <CenteredActionIcon name="calendar" frameSize={40} iconSize={20} />
+          <View className="min-w-0 flex-1 items-end gap-1">
+            <AppText align="right" variant="caption">
+              حجز موعد
+            </AppText>
+            <AppText align="right" variant="body-strong" numberOfLines={2}>
+              {item.serviceName}
+            </AppText>
           </View>
-          <AppText
-            align="right"
-            className="min-w-0 flex-1 font-ui-bold text-content-primary"
-            numberOfLines={1}
-            variant="label"
-          >
-            {item.title}
-          </AppText>
-          <CareV5Badge label={item.statusLabel} tone={tone} />
+          <StatusIndicator label={item.statusLabel} tone={tone} />
         </View>
-
-        <AppText align="right" className="text-content-secondary" numberOfLines={2} variant="caption">
-          #{getMockCareReferenceLabel(item.id)} · {item.provider} · {item.branch} · الحالة
+        <AppText align="right" variant="label">
+          {item.providerName} · {item.branch}
         </AppText>
-
-        <View className={cn('mt-1 items-center justify-between gap-2', rowClassName)}>
-          <AppText
-            align="right"
-            className={cn(
-              'min-w-0 flex-1 font-ui-semibold',
-              tone === 'warning' ? 'text-tone-warning-text' : 'text-content-link',
-            )}
-            numberOfLines={1}
-            variant="caption"
-          >
-            {item.nextAction}
+        <View className="flex-row-reverse items-center gap-2">
+          <AppText className="min-w-0 flex-1" align="right" variant="caption">
+            {item.dateLabel} · {item.timeLabel}
           </AppText>
-          <AppText direction="ltr" className="shrink-0 font-ui-bold text-content-primary" variant="caption">
-            {item.acceptedTotalLabel}
+          <AppText variant="label" className="text-content-link">
+            عرض الحجز
           </AppText>
+          <AppIcon
+            name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
+            size={16}
+            tone="action"
+          />
         </View>
-
-        <View
-          accessible
-          accessibilityLabel={`تقدّم الحالة: ${item.progress} بالمئة`}
-          className={cn('h-[6px] gap-1', rowClassName)}
-        >
-          {[0, 1, 2, 3].map((step) => (
-            <View
-              className={cn(
-                'h-full flex-1 rounded-full',
-                step < Math.ceil(item.progress / 25) ? 'bg-action-primary' : 'bg-border-subtle',
-              )}
-              key={step}
-            />
-          ))}
-        </View>
-      </CareV5Card>
+      </HeroCard>
     </Pressable>
   );
 }
 
-export function MyCasesOverviewScreen({ showBottomNav = false }: { showBottomNav?: boolean }) {
-  const router = useRouter();
-  const { rowClassName } = useAppDirection();
-  const { scenario } = useMockScenario();
-  const [filter, setFilter] = useState<CaseFilter>('الكل');
-  const cases = mockCareCases.flatMap((item) => {
-    const current = getMockCareCaseForScenario(item.id, scenario);
-    return current ? [current] : [];
-  });
-  const filtered = cases.filter((item) => filter === 'الكل' || caseFilter(item) === filter);
-  const activeCount = cases.filter((item) => item.progress < 100).length;
-
+function CaseRow({ item, onPress }: { item: MockCareCase; onPress: () => void }) {
+  const complete = item.progress >= 100;
   return (
-    <Screen contentClassName="px-0 py-0">
-      <CareV5Header leftIcon="calendar" right="bell" title="علاجي" />
-      <ScrollView
-        contentContainerClassName={showBottomNav
-          ? 'mx-auto w-full max-w-[430px] px-4 pb-[96px] pt-3'
-          : 'mx-auto w-full max-w-[430px] px-4 pb-[80px] pt-3'}
-        showsVerticalScrollIndicator={false}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={'تفاصيل الحالة العلاجية: ' + item.title}
+      onPress={onPress}
+    >
+      <HeroCard
+        variant="default"
+        className="gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3"
       >
-        <View className={cn('items-center justify-between gap-3', rowClassName)}>
-          <View className="min-w-0 flex-1 items-end">
-            <AppText align="right" className="font-ui-bold text-content-primary" variant="heading-4">
-              حالاتي العلاجية
+        <View className="flex-row-reverse items-center gap-2">
+          <CenteredActionIcon name="care" frameSize={40} iconSize={20} />
+          <View className="min-w-0 flex-1 items-end gap-1">
+            <AppText align="right" variant="caption">
+              حالة علاجية
             </AppText>
-            <AppText align="right" className="text-content-secondary" variant="caption">
-              كل حجز ينتج سجلاً موحداً للحالة
+            <AppText align="right" variant="body-strong" numberOfLines={2}>
+              {item.title}
             </AppText>
           </View>
-          <CareV5Badge label={`${activeCount} حالات نشطة`} />
+          <StatusIndicator label={item.statusLabel} tone={complete ? 'success' : 'info'} />
         </View>
-
-        <CareFilterTabs
-          items={filters}
-          onChange={(value) => setFilter(value as CaseFilter)}
-          selected={filter}
-        />
-
-        <View className="mt-3 gap-2">
-          {filtered.map((item) => (
-            <CaseOverviewCard
-              item={item}
-              key={item.id}
-              onPress={() => router.push({
-                pathname: '/care/[caseId]/timeline',
-                params: { caseId: item.id },
-              })}
-            />
-          ))}
-          {filtered.length === 0 ? (
-            <CareV5Card className="items-center gap-2 p-5">
-              <AppText align="center" className="font-ui-semibold" variant="label">
-                ما في حالات ضمن هذا التصنيف
-              </AppText>
-              <AppText align="center" className="text-content-secondary" variant="caption">
-                جرّب اختيار الكل لعرض بقية الحالات
-              </AppText>
-            </CareV5Card>
-          ) : null}
-        </View>
-
-        <View className={cn('mt-2 items-center gap-2 rounded-[11px] bg-tone-info-fill px-3 py-2', rowClassName)}>
-          <AppIcon
-            name={{ ios: 'info.circle', android: 'info_outline', web: 'info_outline' }}
-            size={17}
-            tone="info"
+        <AppText align="right" variant="label">
+          {item.provider} · {item.branch}
+        </AppText>
+        <AppText align="right" variant="caption">
+          {item.nextAction}
+        </AppText>
+        <View
+          accessibilityLabel={'تقدم العلاج ' + item.progress + ' بالمئة'}
+          accessible
+          className="h-[5px] overflow-hidden rounded-full bg-surface-subtle"
+        >
+          <View
+            className="h-full rounded-full bg-action-primary"
+            style={{ width: `${Math.min(100, Math.max(0, item.progress))}%` }}
           />
-          <AppText className="min-w-0 flex-1 text-tone-info-text" variant="caption">
-            التقييم والتشخيص والخطة والدفعات والمشكلات ضمن حالة واحدة
+        </View>
+        <View className="flex-row-reverse items-center justify-between">
+          <AppText variant="caption">{item.progress}% من الخطة</AppText>
+          <AppText variant="label" className="text-content-link">
+            عرض الحالة
           </AppText>
         </View>
+      </HeroCard>
+    </Pressable>
+  );
+}
+
+export function MyCasesOverviewScreen() {
+  const router = useRouter();
+  const { scenario, bookingRequests, getSurfaceState } = useMockScenario();
+  const [filter, setFilter] = useState<CareFilter>('الكل');
+  const bookingState = getSurfaceState('booking');
+  const careState = getSurfaceState('care');
+  const visibleRead = (state: string) =>
+    !['empty-no-data', 'loading-initial', 'error-fetch', 'error-permission'].includes(state);
+  const bookings = visibleRead(bookingState)
+    ? [...bookingRequests, ...getMockBookingsForScenario(scenario)]
+    : [];
+  const cases =
+    visibleRead(careState) && !scenario.flags?.emptyNewPatient
+      ? mockCareCases.flatMap((item) => {
+          const current = getMockCareCaseForScenario(item.id, scenario);
+          return current ? [current] : [];
+        })
+      : [];
+  const records: CareItem[] = [
+    ...bookings.map((record): CareItem => ({ kind: 'booking', record })),
+    ...cases.map((record): CareItem => ({ kind: 'case', record })),
+  ];
+  const matching = records.filter((item) => matchesFilter(item, filter));
+
+  return (
+    <Screen contentClassName="px-0 py-0" header={<AppHeader title="علاجي" showNotifications />}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 pt-4"
+        contentContainerStyle={{ paddingBottom: PATIENT_TAB_BAR_HEIGHT + 28 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="gap-1 px-4">
+          <AppText align="right" variant="heading-2">
+            حجوزاتي وحالاتي العلاجية
+          </AppText>
+          <AppText align="right" variant="label" className="text-content-secondary">
+            تابع حجوزاتك وخطط علاجك، وكل سجل بيفتح تفاصيله الخاصة.
+          </AppText>
+        </View>
+
+        <ScrollView
+          horizontal
+          accessibilityRole="tablist"
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            flexDirection: 'row-reverse',
+            alignItems: 'center',
+            gap: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 4,
+          }}
+        >
+          {filters.map((value) => (
+            <HeroButton
+              key={value}
+              size="sm"
+              variant={value === filter ? 'primary' : 'outline'}
+              className={
+                value === filter
+                  ? 'min-h-[44px] rounded-[12px] bg-action-primary px-3'
+                  : 'min-h-[44px] rounded-[12px] border-border-default bg-surface-default px-3'
+              }
+              onPress={() => setFilter(value)}
+              accessibilityLabel={'تصفية: ' + value}
+              accessibilityState={{ selected: value === filter }}
+            >
+              <HeroButton.Label
+                className={
+                  value === filter
+                    ? 'font-ui-semibold text-content-on-action'
+                    : 'font-ui-medium text-content-primary'
+                }
+              >
+                {value}
+              </HeroButton.Label>
+            </HeroButton>
+          ))}
+        </ScrollView>
+
+        <View className="gap-3 px-4">
+          {bookingState === 'error-permission' || careState === 'error-permission' ? (
+            <AppText variant="caption" className="text-tone-warning-text">
+              بعض السجلات غير متاحة وفق الصلاحيات الحالية.
+            </AppText>
+          ) : null}
+          {bookingState === 'error-fetch' || careState === 'error-fetch' ? (
+            <AppText variant="caption" className="text-tone-warning-text">
+              تعذر تحميل بعض السجلات. البيانات المتاحة ما زالت ظاهرة.
+            </AppText>
+          ) : null}
+          <ReadStateNotice state={bookingState} />
+          <ReadStateNotice state={careState} />
+
+          {matching.length ? (
+            matching.map((item) =>
+              item.kind === 'booking' ? (
+                <BookingRow
+                  key={'booking-' + item.record.id}
+                  item={item.record}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/booking/[bookingId]',
+                      params: { bookingId: item.record.id },
+                    })
+                  }
+                />
+              ) : (
+                <CaseRow
+                  key={'case-' + item.record.id}
+                  item={item.record}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/care/[caseId]/timeline',
+                      params: { caseId: item.record.id },
+                    })
+                  }
+                />
+              ),
+            )
+          ) : (
+            <View className="items-center gap-3 px-3 py-12">
+              <AppIcon
+                name={{ ios: 'tray', android: 'inbox', web: 'inbox' }}
+                size={32}
+                tone="secondary"
+              />
+              <AppText variant="body-strong" align="center">
+                {filter === 'الكل'
+                  ? 'ما في حجوزات أو حالات علاجية حالياً'
+                  : 'ما في سجلات ضمن هذا التصنيف'}
+              </AppText>
+              <AppText variant="caption" align="center">
+                جرّب فلتر ثاني أو استكشف الخدمات لبدء حجز جديد.
+              </AppText>
+              <HeroButton
+                variant="outline"
+                className="min-h-[44px] rounded-[12px]"
+                onPress={() => router.push('/(tabs)/discover')}
+              >
+                <HeroButton.Label>استكشف الخدمات</HeroButton.Label>
+              </HeroButton>
+            </View>
+          )}
+        </View>
       </ScrollView>
-      {showBottomNav ? <CareV5BottomNav active="care" /> : null}
     </Screen>
   );
 }

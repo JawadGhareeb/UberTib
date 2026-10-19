@@ -5,6 +5,7 @@ import { Modal, Pressable, ScrollView, View } from 'react-native';
 import { ReferenceCard, ReferenceIcon } from '@/features/profile/components/patient-reference-ui';
 import { useProfilePhoto } from '@/features/profile/state/profile-photo-provider';
 import { EditableProfileAvatar } from '@/shared/components/media/editable-profile-avatar';
+import { AppHeader } from '@/shared/components/navigation';
 import { AppIcon, AppText, ReadStateBoundary, Screen } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { useMockScenario } from '@/shared/mock';
@@ -72,40 +73,31 @@ export function ProfileScreen() {
   const { photo, setPhoto } = useProfilePhoto();
 
   return (
-    <Screen contentClassName="px-0 py-0">
-      <View className="w-full bg-surface-default">
-        <View className="mx-auto h-[58px] w-full max-w-[430px] flex-row-reverse items-center justify-between px-4">
-          <Pressable
-            accessibilityLabel="الإشعارات"
-            accessibilityRole="button"
-            className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
-            onPress={() => router.push('/notifications')}
-          >
-            <AppIcon
-              name={{ ios: 'bell', android: 'notifications_none', web: 'notifications_none' }}
-              size={20}
-              tone="action"
-            />
-          </Pressable>
-          <AppText align="center" className="flex-1 font-ui-bold" variant="heading-3">
-            حسابي
-          </AppText>
-          <Pressable
-            accessibilityLabel="الإعدادات"
-            accessibilityRole="button"
-            className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
-            onPress={() => router.push('/profile/settings')}
-          >
-            <AppIcon
-              name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
-              size={19}
-              tone="action"
-            />
-          </Pressable>
-        </View>
-      </View>
-
+    <Screen
+      contentClassName="px-0 py-0"
+      header={
+        <AppHeader
+          title="حسابي"
+          showNotifications
+          startContent={
+            <Pressable
+              accessibilityLabel="الإعدادات"
+              accessibilityRole="button"
+              className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
+              onPress={() => router.push('/profile/settings')}
+            >
+              <AppIcon
+                name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
+                size={20}
+                tone="action"
+              />
+            </Pressable>
+          }
+        />
+      }
+    >
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-28 pt-[7px]"
         showsVerticalScrollIndicator={false}
       >

@@ -8,6 +8,7 @@ import {
 } from '@/features/discovery/components/pen-discovery-ui';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { ServiceGroupCard } from '@/features/discovery/components/service-group-card';
+import { AppHeader } from '@/shared/components/navigation';
 import { AppIcon, AppText, Button, Screen, SearchField } from '@/shared/components/ui';
 
 interface ServiceGroupsScreenProps {
@@ -31,13 +32,23 @@ export function ServiceGroupsScreen({ showBack = true }: ServiceGroupsScreenProp
   }, [query]);
 
   return (
-    <Screen contentClassName="px-0 py-0">
-      <DiscoveryHeader showBack={showBack} showSearchAction title="الخدمات السنية" />
-
+    <Screen
+      contentClassName="px-0 py-0"
+      header={
+        showBack ? (
+          <DiscoveryHeader showBack showSearchAction title="الخدمات السنية" />
+        ) : (
+          <AppHeader title="اكتشف" showNotifications />
+        )
+      }
+    >
       <ScrollView
-        contentContainerClassName={showBack
-          ? "mx-auto w-full max-w-[430px] px-4 pb-[84px]"
-          : "mx-auto w-full max-w-[430px] px-4 pb-4"}
+        style={{ flex: 1 }}
+        contentContainerClassName={
+          showBack
+            ? 'mx-auto w-full max-w-[430px] px-4 pb-[84px]'
+            : 'mx-auto w-full max-w-[430px] px-4 pb-32'
+        }
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -93,7 +104,6 @@ export function ServiceGroupsScreen({ showBack = true }: ServiceGroupsScreenProp
             </View>
           )}
         </View>
-
       </ScrollView>
 
       {showBack ? <DiscoveryBottomBar /> : null}

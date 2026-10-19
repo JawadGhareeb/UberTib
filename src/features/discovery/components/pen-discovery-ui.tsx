@@ -5,10 +5,7 @@ import { Pressable, Share, View } from 'react-native';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
-import {
-  PATIENT_TAB_BAR_HEIGHT,
-  PATIENT_TAB_HEIGHT,
-} from '@/shared/components/navigation/patient-tab-metrics';
+import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';
 
 export function DiscoveryHeader({
   title,
@@ -42,7 +39,8 @@ export function DiscoveryHeader({
     <View
       className={cn(
         'mx-auto h-16 w-full max-w-[430px] items-center justify-between px-4',
-        (showShareAction || showFavoriteAction || showFilterAction) && 'border-b border-border-subtle bg-surface-default',
+        (showShareAction || showFavoriteAction || showFilterAction) &&
+          'border-b border-border-subtle bg-surface-default',
         rowClassName,
       )}
     >
@@ -97,16 +95,20 @@ export function DiscoveryHeader({
         </Pressable>
       ) : showFavoriteAction ? (
         <Pressable
-          accessibilityLabel={favorite ? 'إلغاء تحديد الخدمة كمفضلة مؤقتاً' : 'تحديد الخدمة كمفضلة مؤقتاً'}
+          accessibilityLabel={
+            favorite ? 'إلغاء تحديد الخدمة كمفضلة مؤقتاً' : 'تحديد الخدمة كمفضلة مؤقتاً'
+          }
           accessibilityRole="button"
           accessibilityState={{ selected: favorite }}
           className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
           onPress={() => setFavorite((current) => !current)}
         >
           <AppIcon
-            name={favorite
-              ? { ios: 'heart.fill', android: 'favorite', web: 'favorite' }
-              : { ios: 'heart', android: 'favorite_border', web: 'favorite_border' }}
+            name={
+              favorite
+                ? { ios: 'heart.fill', android: 'favorite', web: 'favorite' }
+                : { ios: 'heart', android: 'favorite_border', web: 'favorite_border' }
+            }
             size={21}
             tone="action"
           />
@@ -144,53 +146,19 @@ export function DiscoveryHeader({
   );
 }
 
-export function DiscoveryBottomBar({ activeTab }: { activeTab?: 'الرئيسية' | 'حجوزاتي' | 'علاجي' | 'حسابي' }) {
-  const router = useRouter();
-  const items = [
-    ['حسابي', '/(tabs)/profile', { ios: 'person.fill', android: 'person', web: 'person' }],
-    [
-      'علاجي',
-      '/(tabs)/care',
-      { ios: 'heart.text.square.fill', android: 'favorite', web: 'favorite' },
-    ],
-    [
-      'حجوزاتي',
-      '/(tabs)/discover',
-      { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
-    ],
-    ['الرئيسية', '/(tabs)/home', { ios: 'house.fill', android: 'home', web: 'home' }],
-  ] as const;
+export function DiscoveryBottomBar({
+  activeTab = 'اكتشف',
+}: {
+  activeTab?: 'الرئيسية' | 'اكتشف' | 'علاجي' | 'حسابي';
+}) {
+  const active = {
+    الرئيسية: 'home',
+    اكتشف: 'discover',
+    علاجي: 'care',
+    حسابي: 'profile',
+  } as const;
 
-  return (
-    <View
-      className="absolute bottom-0 left-0 right-0 rounded-t-[16px] border-t border-border-subtle bg-surface-default px-3 pt-2"
-      style={{ height: PATIENT_TAB_BAR_HEIGHT }}
-    >
-      <View className="mx-auto h-[52px] w-full max-w-[430px] flex-row items-center gap-1" style={{ height: PATIENT_TAB_HEIGHT }}>
-        {items.map(([label, route, icon]) => (
-          <Pressable
-            accessibilityRole="button"
-            className={cn(
-              'h-[52px] flex-1 items-center justify-center gap-1 rounded-[12px] active:bg-action-subtle',
-              activeTab === label && 'bg-action-subtle',
-            )}
-            key={label}
-            onPress={() => router.replace(route)}
-          >
-            <AppIcon name={icon} size={21} tone={activeTab === label ? 'action' : 'secondary'} />
-            <AppText
-              align="center"
-              className={activeTab === label ? 'text-content-link font-ui-semibold' : 'text-content-secondary'}
-              style={{ fontSize: 10, lineHeight: 14 }}
-              variant="caption"
-            >
-              {label}
-            </AppText>
-          </Pressable>
-        ))}
-      </View>
-    </View>
-  );
+  return <PatientBottomBar active={active[activeTab]} />;
 }
 
 export { FamilyCard } from './service-family-card';
@@ -253,9 +221,9 @@ export function SectionCard({
 export function ScreenCard({ children, className }: PropsWithChildren<{ className?: string }>) {
   // Do not emit two competing radius utilities: NativeWind stylesheet order
   // should never decide whether a screen-specific radius overrides the token.
-  const hasRadius = className?.split(/\s+/).some((token) =>
-    /^rounded-(?!t-|r-|b-|l-|tl-|tr-|bl-|br-)/.test(token),
-  );
+  const hasRadius = className
+    ?.split(/\s+/)
+    .some((token) => /^rounded-(?!t-|r-|b-|l-|tl-|tr-|bl-|br-)/.test(token));
   return (
     <View
       className={cn(

@@ -174,7 +174,7 @@ export function ProviderSearchScreen() {
         </AppText>
       </ScrollView>
 
-      <DiscoveryBottomBar activeTab="الرئيسية" />
+      <DiscoveryBottomBar activeTab="اكتشف" />
 
       <Modal
         animationType="fade"

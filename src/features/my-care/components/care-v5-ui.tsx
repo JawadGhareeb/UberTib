@@ -7,10 +7,7 @@ import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { cn } from '@/shared/utils/cn';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { useAppTheme } from '@/shared/theme/theme-provider';
-import {
-  PATIENT_TAB_BAR_HEIGHT,
-  PATIENT_TAB_HEIGHT,
-} from '@/shared/components/navigation/patient-tab-metrics';
+import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';
 
 type Tone = 'primary' | 'success' | 'warning' | 'info' | 'danger' | 'neutral';
 
@@ -45,7 +42,16 @@ export function CareV5Header({
   onLeftPress,
 }: {
   title: string;
-  leftIcon?: 'calendar' | 'more' | 'history' | 'file' | 'image' | 'star' | 'question' | 'shield' | 'verified';
+  leftIcon?:
+    | 'calendar'
+    | 'more'
+    | 'history'
+    | 'file'
+    | 'image'
+    | 'star'
+    | 'question'
+    | 'shield'
+    | 'verified';
   leftTone?: Tone;
   right?: 'back' | 'bell' | 'chevron';
   onLeftPress?: () => void;
@@ -79,7 +85,9 @@ export function CareV5Header({
         : backIcon;
 
   const badge = (
-    <View className={cn('h-10 w-10 items-center justify-center rounded-full', toneClasses[leftTone])}>
+    <View
+      className={cn('h-10 w-10 items-center justify-center rounded-full', toneClasses[leftTone])}
+    >
       <AppIcon
         name={contextualIcon}
         size={20}
@@ -90,7 +98,9 @@ export function CareV5Header({
 
   return (
     <View className="w-full shrink-0 bg-surface-default">
-      <View className={cn('mx-auto h-16 w-full max-w-[430px] items-center px-4', rowReverseClassName)}>
+      <View
+        className={cn('mx-auto h-16 w-full max-w-[430px] items-center px-4', rowReverseClassName)}
+      >
         {onLeftPress ? (
           <Pressable
             accessibilityLabel="إجراء إضافي"
@@ -138,70 +148,7 @@ export function CareV5Header({
 }
 
 export function CareV5BottomNav({ active }: { active: 'bookings' | 'care' }) {
-  const router = useRouter();
-  const { colors } = useAppTheme();
-  const items = [
-    [
-      'حسابي',
-      'profile',
-      '/(tabs)/profile',
-      { ios: 'person.fill', android: 'person', web: 'person' },
-    ],
-    [
-      'علاجي',
-      'care',
-      '/(tabs)/care',
-      { ios: 'heart.text.square.fill', android: 'favorite', web: 'favorite' },
-    ],
-    [
-      'حجوزاتي',
-      'bookings',
-      '/booking',
-      { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
-    ],
-    ['الرئيسية', 'home', '/(tabs)/home', { ios: 'house.fill', android: 'home', web: 'home' }],
-  ] as const;
-
-  return (
-    <View
-      className="absolute bottom-0 left-0 right-0 rounded-t-[16px] border-t border-border-subtle bg-surface-default px-3 pt-2"
-      style={{ height: PATIENT_TAB_BAR_HEIGHT }}
-    >
-      <View className="mx-auto h-[52px] w-full max-w-[430px] flex-row gap-1" style={{ height: PATIENT_TAB_HEIGHT }}>
-        {items.map(([label, key, route, icon]) => {
-          const selected = key === active;
-          return (
-            <Pressable
-              accessibilityRole="button"
-              className={cn(
-                'h-[52px] flex-1 items-center justify-center gap-1 rounded-[12px]',
-                selected && 'bg-action-subtle',
-              )}
-              key={key}
-              onPress={() => router.replace(route)}
-            >
-              <AppIcon name={icon} size={21} tone={selected ? 'action' : 'secondary'} />
-              <AppText
-                align="center"
-                className={cn(
-                  'font-ui-medium',
-                  selected ? 'text-content-link font-ui-semibold' : 'text-content-secondary',
-                )}
-                variant="badge"
-                style={{
-                  color: selected ? colors.text.link : colors.text.secondary,
-                  fontSize: 10,
-                  lineHeight: 14,
-                }}
-              >
-                {label}
-              </AppText>
-            </Pressable>
-          );
-        })}
-      </View>
-    </View>
-  );
+  return <PatientBottomBar active={active === 'care' ? 'care' : 'discover'} />;
 }
 
 export function CareV5Card({ children, className }: PropsWithChildren<{ className?: string }>) {
@@ -270,11 +217,7 @@ export function CareV5ActionLink({
         </AppText>
       </View>
       <View className={cn('h-9 w-9 items-center justify-center rounded-[9px]', toneClasses[tone])}>
-        <AppIcon
-          name={icon}
-          size={17}
-          tone={tone === 'primary' ? 'action' : tone}
-        />
+        <AppIcon name={icon} size={17} tone={tone === 'primary' ? 'action' : tone} />
       </View>
     </Pressable>
   );
@@ -285,14 +228,14 @@ export function CareV5ActionLink({
  * Icons describe the category, never the index or a generic placeholder.
  */
 const defaultCareFilterIcons: Record<string, AppIconName> = {
-  'الكل': { ios: 'square.grid.2x2', android: 'apps', web: 'apps' },
+  الكل: { ios: 'square.grid.2x2', android: 'apps', web: 'apps' },
   'قيد العلاج': { ios: 'heart.text.square', android: 'favorite_border', web: 'favorite_border' },
-  'علاج': { ios: 'cross.case', android: 'medical_services', web: 'medical_services' },
-  'قادمة': { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
-  'مكتملة': { ios: 'checkmark.circle', android: 'check_circle_outline', web: 'check_circle_outline' },
-  'ماليات': { ios: 'banknote', android: 'payments', web: 'payments' },
-  'مشكلات': { ios: 'exclamationmark.triangle', android: 'warning', web: 'warning' },
-  'ملغاة': { ios: 'xmark.circle', android: 'cancel', web: 'cancel' },
+  علاج: { ios: 'cross.case', android: 'medical_services', web: 'medical_services' },
+  قادمة: { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
+  مكتملة: { ios: 'checkmark.circle', android: 'check_circle_outline', web: 'check_circle_outline' },
+  ماليات: { ios: 'banknote', android: 'payments', web: 'payments' },
+  مشكلات: { ios: 'exclamationmark.triangle', android: 'warning', web: 'warning' },
+  ملغاة: { ios: 'xmark.circle', android: 'cancel', web: 'cancel' },
 };
 
 export function CareFilterTabs({
@@ -329,7 +272,9 @@ export function CareFilterTabs({
             accessibilityState={{ selected: active }}
             className={cn(
               'min-h-[36px] min-w-0 flex-1 items-center justify-center rounded-[8px] px-1',
-              active ? 'border border-border-subtle bg-surface-default' : 'border border-transparent',
+              active
+                ? 'border border-border-subtle bg-surface-default'
+                : 'border border-transparent',
             )}
             hitSlop={2}
             key={item}
@@ -343,7 +288,11 @@ export function CareFilterTabs({
               )}
             >
               {tabIcon ? (
-                <AppIcon name={tabIcon} size={stacked ? 17 : 15} tone={active ? 'action' : 'secondary'} />
+                <AppIcon
+                  name={tabIcon}
+                  size={stacked ? 17 : 15}
+                  tone={active ? 'action' : 'secondary'}
+                />
               ) : null}
               <AppText
                 align="center"

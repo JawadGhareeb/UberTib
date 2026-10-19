@@ -1,10 +1,11 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import { View } from 'react-native';
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { theme } from '@/shared/theme';
 import { cn } from '@/shared/utils/cn';
+import { useAppTheme } from '@/shared/theme/theme-provider';
 
 interface ScreenProps extends PropsWithChildren {
   header?: ReactNode;
@@ -14,15 +15,26 @@ interface ScreenProps extends PropsWithChildren {
 }
 
 export function Screen({ children, header, context, className, contentClassName }: ScreenProps) {
+  const insets = useSafeAreaInsets();
+  const { colors } = useAppTheme();
   const resolvedContentClassName = contentClassName
     ? cn('flex-1', contentClassName)
     : 'flex-1 px-4 pb-4';
 
   return (
-    <SafeAreaView className={cn('flex-1 bg-surface-canvas', className)}>
-      {header ?? null}
+    <SafeAreaView
+      className={cn('flex-1 bg-surface-canvas', className)}
+      style={{ flex: 1 }}
+      edges={header ? ['left', 'right', 'bottom'] : undefined}
+    >
+      {header ? (
+        <View style={{ backgroundColor: colors.surface.default, paddingTop: insets.top }}>
+          {header}
+        </View>
+      ) : null}
       <Animated.View
         className={resolvedContentClassName}
+        style={{ flex: 1 }}
         entering={FadeIn.duration(theme.motion.duration.stateChange).reduceMotion(
           ReduceMotion.System,
         )}

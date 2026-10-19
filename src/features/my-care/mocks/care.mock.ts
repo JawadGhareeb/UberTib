@@ -110,7 +110,7 @@ export const mockCareCases: MockCareCase[] = [
     progress: 66,
     startedAtLabel: 'بدأت في 7 سبتمبر 2026',
     nextAction: 'دليل مالي مطلوب قبل الإكمال',
-    nextDateLabel: 'الأحد، 20 سبتمبر · 4:00 م',
+    nextDateLabel: 'الأربعاء، 28 تشرين الأول · 4:00 م',
     acceptedTotalLabel: '2,250 ل.س',
     planVersionLabel: 'الخطة 2',
     planAcceptedAtLabel: 'تمت الموافقة في 8 سبتمبر 2026',
@@ -128,7 +128,7 @@ export const mockCareCases: MockCareCase[] = [
         title: 'تنظيف وعلاج القنوات',
         status: 'current',
         statusLabel: 'الحالية',
-        dateLabel: '14–20 سبتمبر',
+        dateLabel: 'من 14 أيلول حتى 28 تشرين الأول',
         note: 'تمت الجلسة الأولى، والجلسة التالية لاستكمال تنظيف القنوات وإغلاقها.',
       },
       {
@@ -170,7 +170,7 @@ export const mockCareCases: MockCareCase[] = [
         // This root-canal visit has no linked booking fixture yet; booking-001
         // belongs to a different service and must never be opened from here.
         title: 'جلسة استكمال علاج العصب',
-        dateLabel: 'الأحد، 20 سبتمبر · 4:00 م',
+        dateLabel: 'الأربعاء، 28 تشرين الأول · 4:00 م',
         statusLabel: 'محجوزة',
         state: 'scheduled',
         actionLabel: 'عرض الموعد',
@@ -308,7 +308,7 @@ export const mockCareCases: MockCareCase[] = [
     progress: 40,
     startedAtLabel: 'بدأت في 12 سبتمبر 2026',
     nextAction: 'جلسة تنظيف عميق للجهة اليسرى',
-    nextDateLabel: 'الثلاثاء، 22 سبتمبر · 5:00 م',
+    nextDateLabel: 'الخميس، 29 تشرين الأول · 5:00 م',
     acceptedTotalLabel: '3,500 ل.س',
     planVersionLabel: 'الخطة 1',
     planAcceptedAtLabel: 'تمت الموافقة في 12 سبتمبر 2026',
@@ -326,7 +326,7 @@ export const mockCareCases: MockCareCase[] = [
         title: 'التنظيف العميق',
         status: 'current',
         statusLabel: 'الحالية',
-        dateLabel: '18–22 سبتمبر',
+        dateLabel: 'من 18 أيلول حتى 29 تشرين الأول',
         note: 'بدأ تنظيف الجهة اليمنى، والجلسة القادمة لاستكمال الجهة اليسرى.',
       },
       {
@@ -358,7 +358,7 @@ export const mockCareCases: MockCareCase[] = [
       {
         id: 'follow-up-gum-001',
         title: 'استكمال التنظيف العميق',
-        dateLabel: 'الثلاثاء، 22 سبتمبر · 5:00 م',
+        dateLabel: 'الخميس، 29 تشرين الأول · 5:00 م',
         statusLabel: 'قادمة',
         state: 'scheduled',
         actionLabel: 'عرض التفاصيل',
@@ -467,12 +467,16 @@ export const mockCareCases: MockCareCase[] = [
 
 /** Patient-visible reference numbers for development cases (never show internal IDs). */
 export function getMockCareReferenceLabel(caseId: string): string {
-  return ({
-    'case-001': '2841',
-    'case-002': '2705',
-    'case-003': '2910',
-    'case-004': '2764',
-  } as Record<string, string>)[caseId] ?? '—';
+  return (
+    (
+      {
+        'case-001': '2841',
+        'case-002': '2705',
+        'case-003': '2910',
+        'case-004': '2764',
+      } as Record<string, string>
+    )[caseId] ?? '—'
+  );
 }
 
 export function getMockCareCase(caseId: string): MockCareCase | undefined {

@@ -103,7 +103,7 @@ export function MyBookingsScreen({ showBottomNav = true }: { showBottomNav?: boo
         </View>
 
       </ScrollView>
-      {showBottomNav ? <CareV5BottomNav active="bookings" /> : null}
+      {showBottomNav ? <CareV5BottomNav active="care" /> : null}
     </Screen>
   );
 }

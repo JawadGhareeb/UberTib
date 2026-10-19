@@ -1,25 +1,48 @@
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { DiscoveryBottomBar, DiscoveryHeader } from '@/features/discovery/components/pen-discovery-ui';
+import {
+  DiscoveryBottomBar,
+  DiscoveryHeader,
+} from '@/features/discovery/components/pen-discovery-ui';
+import { AppHeader } from '@/shared/components/navigation';
 import { useDiscoverySession } from '@/features/discovery/state/discovery-session-provider';
 import { AppIcon, AppText, Screen, SearchField } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 
-const quickTypes: { label: string; icon: AppIconName; kind: 'pain' | 'service' | 'doctor' | 'area' }[] = [
-  { label: 'ألم أو شكوى', icon: { ios: 'bubble.left', android: 'chat_bubble_outline', web: 'chat_bubble_outline' }, kind: 'pain' },
-  { label: 'خدمة سنية', icon: { ios: 'stethoscope', android: 'medical_services', web: 'medical_services' }, kind: 'service' },
-  { label: 'اسم طبيب', icon: { ios: 'person', android: 'person_outline', web: 'person_outline' }, kind: 'doctor' },
+const quickTypes: {
+  label: string;
+  icon: AppIconName;
+  kind: 'pain' | 'service' | 'doctor' | 'area';
+}[] = [
+  {
+    label: 'ألم أو شكوى',
+    icon: { ios: 'bubble.left', android: 'chat_bubble_outline', web: 'chat_bubble_outline' },
+    kind: 'pain',
+  },
+  {
+    label: 'خدمة سنية',
+    icon: { ios: 'stethoscope', android: 'medical_services', web: 'medical_services' },
+    kind: 'service',
+  },
+  {
+    label: 'اسم طبيب',
+    icon: { ios: 'person', android: 'person_outline', web: 'person_outline' },
+    kind: 'doctor',
+  },
   { label: 'منطقة', icon: { ios: 'mappin', android: 'place', web: 'place' }, kind: 'area' },
 ];
 
 const recent = ['علاج جذور في الجميلية', 'د. ليان يوسف', 'تنظيف أسنان بسعر ثابت'] as const;
 
-export function UniversalDentalSearchScreen() {
+export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean } = {}) {
   const router = useRouter();
   const { catalogQuery, setCatalogQuery } = useDiscoverySession();
 
-  const submitSearch = (kind: 'all' | 'service' | 'doctor' | 'area' = 'all', query = catalogQuery) => {
+  const submitSearch = (
+    kind: 'all' | 'service' | 'doctor' | 'area' = 'all',
+    query = catalogQuery,
+  ) => {
     router.push({
       pathname: '/discover/search/results',
       params: { q: query.trim(), kind },
@@ -30,7 +53,10 @@ export function UniversalDentalSearchScreen() {
     if (kind === 'pain') {
       router.push('/assessment/start');
     } else if (kind === 'area') {
-      router.push({ pathname: '/discover/providers', params: { serviceCode: 'root-canal', openArea: '1' } });
+      router.push({
+        pathname: '/discover/providers',
+        params: { serviceCode: 'root-canal', openArea: '1' },
+      });
     } else {
       submitSearch(kind);
     }
@@ -51,15 +77,32 @@ export function UniversalDentalSearchScreen() {
   };
 
   return (
-    <Screen contentClassName="px-0 py-0">
-      <DiscoveryHeader
-        showFilterAction
-        onFilterPress={() => router.push({ pathname: '/discover/providers', params: { serviceCode: 'root-canal' } })}
-        title="البحث"
-      />
-
+    <Screen
+      contentClassName="px-0 py-0"
+      header={
+        asTab ? (
+          <AppHeader title="اكتشف" showNotifications />
+        ) : (
+          <DiscoveryHeader
+            showFilterAction
+            onFilterPress={() =>
+              router.push({
+                pathname: '/discover/providers',
+                params: { serviceCode: 'root-canal' },
+              })
+            }
+            title="البحث"
+          />
+        )
+      }
+    >
       <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-[98px] pt-1"
+        style={{ flex: 1 }}
+        contentContainerClassName={
+          asTab
+            ? 'mx-auto w-full max-w-[430px] px-4 pb-32 pt-3'
+            : 'mx-auto w-full max-w-[430px] px-4 pb-[98px] pt-1'
+        }
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -79,9 +122,13 @@ export function UniversalDentalSearchScreen() {
           accessibilityLabel="عرض أطباء علاج الجذور من التقييم الأولي"
           accessibilityRole="button"
           className="mt-3 min-h-[101px] items-end justify-center rounded-[15px] border border-action-primary/30 bg-action-subtle px-3 py-3"
-          onPress={() => router.push({ pathname: '/discover/providers', params: { serviceCode: 'root-canal' } })}
+          onPress={() =>
+            router.push({ pathname: '/discover/providers', params: { serviceCode: 'root-canal' } })
+          }
         >
-          <AppText align="right" className="text-content-link" variant="caption">من التقييم الأولي</AppText>
+          <AppText align="right" className="text-content-link" variant="caption">
+            من التقييم الأولي
+          </AppText>
           <AppText align="right" className="mt-2 font-ui-bold" variant="label">
             ألم في ضرس خلفي • علاج الجذور
           </AppText>
@@ -100,7 +147,12 @@ export function UniversalDentalSearchScreen() {
               onPress={() => openQuickType(item.kind)}
             >
               <AppIcon name={item.icon} size={18} tone="action" />
-              <AppText align="center" className="font-ui-medium" numberOfLines={1} variant="caption">
+              <AppText
+                align="center"
+                className="font-ui-medium"
+                numberOfLines={1}
+                variant="caption"
+              >
                 {item.label}
               </AppText>
             </Pressable>
@@ -131,7 +183,7 @@ export function UniversalDentalSearchScreen() {
           ))}
         </View>
       </ScrollView>
-      <DiscoveryBottomBar activeTab="الرئيسية" />
+      {asTab ? null : <DiscoveryBottomBar activeTab="اكتشف" />}
     </Screen>
   );
 }

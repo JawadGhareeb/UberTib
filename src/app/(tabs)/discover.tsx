@@ -1,5 +1,5 @@
-import { MyBookingsScreen } from '@/features/booking';
+import { UniversalDentalSearchScreen } from '@/features/discovery';
 
-export default function BookingsTabRoute() {
-  return <MyBookingsScreen showBottomNav={false} />;
+export default function DiscoverTabRoute() {
+  return <UniversalDentalSearchScreen asTab />;
 }

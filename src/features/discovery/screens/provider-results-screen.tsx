@@ -379,7 +379,7 @@ export function ProviderResultsScreen() {
         </View>
       ) : null}
 
-      <DiscoveryBottomBar activeTab="الرئيسية" />
+      <DiscoveryBottomBar activeTab="اكتشف" />
     </Screen>
   );
 }
