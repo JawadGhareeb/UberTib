@@ -8,13 +8,14 @@ import { canBookForPatient } from '@/features/booking/utils/patient-booking-perm
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
-import { mockPatientWorld } from '@/shared/mock/patient.mock';
+import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
 import { cn } from '@/shared/utils/cn';
 
 export function BookingPatientSelectionScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
   const { scenario } = useMockScenario();
+  const { members } = useFamilyMembers();
   const { providerId, serviceCode, dateKey, dateLabel, timeLabel } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
@@ -29,8 +30,8 @@ export function BookingPatientSelectionScreen() {
     selectedDate?.dateLabel === dateLabel &&
     selectedDate?.slots.includes(timeLabel ?? ''),
   );
-  const [selectedId, setSelectedId] = useState<(typeof mockPatientWorld.family)[number]['id']>(mockPatientWorld.family[0].id);
-  const chosenPatient = mockPatientWorld.family.find((patient) => patient.id === selectedId);
+  const [selectedId, setSelectedId] = useState('patient-001');
+  const chosenPatient = members.find((patient) => patient.id === selectedId);
   const canContinue = canBookForPatient(selectedId, scenario);
 
   if (!validSlot) {
@@ -40,10 +41,12 @@ export function BookingPatientSelectionScreen() {
           title="اختر الموعد أولاً"
           description="حدد اليوم والساعة قبل اختيار المريض."
           actionLabel="اختيار الموعد"
-          onAction={() => router.replace({
-            pathname: '/booking/slots',
-            params: { providerId: providerId ?? '', serviceCode: serviceCode ?? '' },
-          })}
+          onAction={() =>
+            router.replace({
+              pathname: '/booking/slots',
+              params: { providerId: providerId ?? '', serviceCode: serviceCode ?? '' },
+            })
+          }
         />
       </Screen>
     );
@@ -56,9 +59,18 @@ export function BookingPatientSelectionScreen() {
         contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-[106px] pt-2"
         showsVerticalScrollIndicator={false}
       >
-        <View className={cn('mt-3 min-h-[86px] items-center gap-3 rounded-[15px] border border-action-primary/20 bg-action-subtle p-3', rowClassName)}>
+        <View
+          className={cn(
+            'mt-3 min-h-[86px] items-center gap-3 rounded-[15px] border border-action-primary/20 bg-action-subtle p-3',
+            rowClassName,
+          )}
+        >
           <View className="h-[48px] w-[48px] items-center justify-center rounded-full bg-surface-default">
-            <AppIcon name={{ ios: 'person', android: 'person_outline', web: 'person_outline' }} size={25} tone="action" />
+            <AppIcon
+              name={{ ios: 'person', android: 'person_outline', web: 'person_outline' }}
+              size={25}
+              tone="action"
+            />
           </View>
           <View className="min-w-0 flex-1 items-end">
             <AppText align="right" className="text-content-link" variant="caption">
@@ -73,12 +85,16 @@ export function BookingPatientSelectionScreen() {
           </View>
         </View>
 
-        <AppText align="right" className="mb-2 mt-3 font-ui-bold text-content-primary" variant="label">
+        <AppText
+          align="right"
+          className="mb-2 mt-3 font-ui-bold text-content-primary"
+          variant="label"
+        >
           اختيار المريض
         </AppText>
 
         <View accessibilityRole="radiogroup" className="gap-2">
-          {mockPatientWorld.family.map((person) => {
+          {members.map((person) => {
             const allowed = canBookForPatient(person.id, scenario);
             const active = selectedId === person.id;
             return (
@@ -104,7 +120,11 @@ export function BookingPatientSelectionScreen() {
                   />
                 </View>
                 <View className="min-w-0 flex-1 items-end">
-                  <AppText align="right" className="font-ui-semibold text-content-primary" variant="label">
+                  <AppText
+                    align="right"
+                    className="font-ui-semibold text-content-primary"
+                    variant="label"
+                  >
                     {person.name}
                   </AppText>
                   <AppText align="right" className="text-content-secondary" variant="caption">
@@ -115,20 +135,37 @@ export function BookingPatientSelectionScreen() {
                         : person.relation + ' · لا يوجد تفويض حجز صالح'}
                   </AppText>
                 </View>
-                <View className={cn(
-                  'h-[23px] w-[23px] items-center justify-center rounded-full border',
-                  active ? 'border-action-primary bg-action-primary' : 'border-border-default',
-                )}>
-                  {active ? <AppIcon name={{ ios: 'checkmark', android: 'check', web: 'check' }} size={14} tone="onAction" /> : null}
+                <View
+                  className={cn(
+                    'h-[23px] w-[23px] items-center justify-center rounded-full border',
+                    active ? 'border-action-primary bg-action-primary' : 'border-border-default',
+                  )}
+                >
+                  {active ? (
+                    <AppIcon
+                      name={{ ios: 'checkmark', android: 'check', web: 'check' }}
+                      size={14}
+                      tone="onAction"
+                    />
+                  ) : null}
                 </View>
               </Pressable>
             );
           })}
         </View>
 
-        <View className={cn('mt-2 items-start gap-2 rounded-[12px] border border-tone-warning-border bg-tone-warning-fill p-3', rowClassName)}>
+        <View
+          className={cn(
+            'mt-2 items-start gap-2 rounded-[12px] border border-tone-warning-border bg-tone-warning-fill p-3',
+            rowClassName,
+          )}
+        >
           <AppIcon
-            name={{ ios: 'exclamationmark.triangle', android: 'warning_amber', web: 'warning_amber' }}
+            name={{
+              ios: 'exclamationmark.triangle',
+              android: 'warning_amber',
+              web: 'warning_amber',
+            }}
             size={18}
             tone="warning"
           />
@@ -137,17 +174,25 @@ export function BookingPatientSelectionScreen() {
               تغيير المريض يبدأ حجزاً باسمه
             </AppText>
             <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
-              اختر الشخص الصحيح. معلوماته الطبية لا تُشارك تلقائياً، ويجب أن يكون التفويض صالحاً للحجز نيابةً عنه.
+              اختر الشخص الصحيح. معلوماته الطبية لا تُشارك تلقائياً، ويجب أن يكون التفويض صالحاً
+              للحجز نيابةً عنه.
             </AppText>
           </View>
         </View>
 
         <Pressable
           accessibilityRole="button"
-          className={cn('mt-2 min-h-[42px] items-center justify-center gap-2 rounded-[11px] border border-border-subtle bg-surface-default px-3', rowClassName)}
+          className={cn(
+            'mt-2 min-h-[42px] items-center justify-center gap-2 rounded-[11px] border border-border-subtle bg-surface-default px-3',
+            rowClassName,
+          )}
           onPress={() => router.push('/profile/dependents/new')}
         >
-          <AppIcon name={{ ios: 'person.badge.plus', android: 'person_add', web: 'person_add' }} size={17} tone="action" />
+          <AppIcon
+            name={{ ios: 'person.badge.plus', android: 'person_add', web: 'person_add' }}
+            size={17}
+            tone="action"
+          />
           <AppText className="font-ui-semibold text-content-link" variant="caption">
             إضافة فرد من الأسرة
           </AppText>

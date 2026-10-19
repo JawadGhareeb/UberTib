@@ -2,123 +2,236 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
-import { ReferenceCard, ReferenceHeader, ReferenceIcon } from '@/features/profile/components/patient-reference-ui';
-import { getMockNeedsAttentionForScenario, getMockNotificationsForScenario } from '@/features/platform/mocks/platform.mock';
+import { AppHeader } from '@/shared/components/navigation';
+import {
+  getMockNeedsAttentionForScenario,
+  getMockNotificationsForScenario,
+} from '@/features/platform/mocks/platform.mock';
 import { AppIcon, AppText, ReadStateBoundary, Screen } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { useMockScenario } from '@/shared/mock';
-import { cn } from '@/shared/utils/cn';
 
-const glyphs = {
+const icons = {
   calendar: { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
-  plan: { ios: 'checkmark.seal.fill', android: 'fact_check', web: 'fact_check' },
-  receipt: { ios: 'doc.text', android: 'receipt_long', web: 'receipt_long' },
-  bell: { ios: 'bell.badge.fill', android: 'notifications_active', web: 'notifications_active' },
-  image: { ios: 'photo.badge.plus', android: 'add_photo_alternate', web: 'add_photo_alternate' },
+  care: { ios: 'heart.text.square', android: 'monitor_heart', web: 'monitor_heart' },
+  finance: { ios: 'doc.text', android: 'receipt_long', web: 'receipt_long' },
+  bell: { ios: 'bell', android: 'notifications', web: 'notifications' },
 } as const satisfies Record<string, AppIconName>;
 
-function notificationIcon(text: string): AppIconName {
-  if (text.includes('موعد') || text.includes('حجز')) return glyphs.calendar;
-  if (text.includes('دفع') || text.includes('مالي')) return glyphs.receipt;
-  if (text.includes('خطة') || text.includes('علاج')) return glyphs.plan;
-  if (text.includes('صور') || text.includes('ملف')) return glyphs.image;
-  return glyphs.bell;
+function iconFor(title: string): AppIconName {
+  if (/موعد|حجز/.test(title)) return icons.calendar;
+  if (/مالي|دفع|استرداد/.test(title)) return icons.finance;
+  if (/علاج|خطة|متابعة/.test(title)) return icons.care;
+  return icons.bell;
 }
+type NotificationTab = 'attention' | 'history';
 
 export function NotificationCentreScreen() {
   const router = useRouter();
-  const { getSurfaceState, markNotificationRead, readNotificationIds, scenario } = useMockScenario();
-  const [tab, setTab] = useState<'attention' | 'history'>('attention');
-  const readState = getSurfaceState('notifications');
-  const attentionState = getSurfaceState('attention');
+  const { getSurfaceState, markNotificationRead, readNotificationIds, scenario } =
+    useMockScenario();
+  const [tab, setTab] = useState<NotificationTab>('attention');
+  const actions = getMockNeedsAttentionForScenario(scenario);
   const notifications = getMockNotificationsForScenario(scenario).map((item) => ({
     ...item,
     unread: item.unread && !readNotificationIds.includes(item.id),
   }));
-  const actions = getMockNeedsAttentionForScenario(scenario);
-  const unreadCount = readState === 'empty-no-data' ? 0 : notifications.filter((x) => x.unread).length;
-  const isHistory = tab === 'history';
-  const actionRows = actions;
-  const historyRows = notifications;
+  const unread = notifications.filter((item) => item.unread).length;
 
   return (
-    <Screen contentClassName="px-0 py-0">
-      <ReferenceHeader title="الإشعارات" icon={{ ios: 'checkmark.circle', android: 'done_all', web: 'done_all' }} />
+    <Screen
+      contentClassName="px-0 py-0"
+      header={<AppHeader title="الإشعارات" variant="detail" showBack />}
+    >
       <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-20 pt-2"
+        style={{ flex: 1 }}
+        contentContainerClassName="mx-auto w-full max-w-[430px] gap-4 px-4 pb-20 pt-4"
         showsVerticalScrollIndicator={false}
       >
-        <View className="h-[43px] flex-row-reverse gap-1 rounded-[12px] bg-surface-subtle p-1">
+        <View
+          className="flex-row-reverse gap-1 rounded-[15px] bg-surface-subtle p-1"
+          accessibilityRole="tablist"
+        >
           {[
-            { id: 'attention' as const, label: `${actions.length} · مطلوب الآن` },
-            { id: 'history' as const, label: 'سجل الإشعارات' },
+            { key: 'attention' as const, title: 'مطلوب منك', count: actions.length },
+            { key: 'history' as const, title: 'كل الإشعارات', count: unread },
           ].map((item) => (
-            <Pressable accessibilityRole="tab" accessibilityState={{ selected: tab === item.id }}
-              className={cn('min-w-0 flex-1 items-center justify-center rounded-[9px]', tab === item.id && 'bg-surface-default')}
-              key={item.id} onPress={() => setTab(item.id)}>
-              <AppText align="center" className={cn('font-ui-semibold', tab === item.id ? 'text-content-link' : 'text-content-secondary')} style={{ fontSize: 11, lineHeight: 17 }} variant="caption">{item.label}</AppText>
+            <Pressable
+              key={item.key}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: tab === item.key }}
+              onPress={() => setTab(item.key)}
+              className={
+                'min-h-[48px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-2 rounded-[12px] ' +
+                (tab === item.key ? 'bg-action-primary' : 'bg-surface-default')
+              }
+            >
+              <AppText
+                variant="label"
+                className={
+                  tab === item.key
+                    ? 'font-ui-semibold text-content-on-action'
+                    : 'text-content-secondary'
+                }
+              >
+                {item.title}
+              </AppText>
+              {item.count ? (
+                <View
+                  className={
+                    'min-w-[23px] items-center justify-center rounded-full px-1.5 ' +
+                    (tab === item.key ? 'bg-white/20' : 'bg-action-subtle')
+                  }
+                >
+                  <AppText
+                    variant="caption"
+                    className={
+                      tab === item.key
+                        ? 'font-ui-semibold text-content-on-action'
+                        : 'font-ui-semibold text-content-link'
+                    }
+                  >
+                    {item.count}
+                  </AppText>
+                </View>
+              ) : null}
             </Pressable>
           ))}
         </View>
-
-        {!isHistory ? (
-          <ReadStateBoundary state={attentionState} emptyTitle="ما في شي يحتاج إجراء حالياً" emptyDescription="بتظهر هنا المواعيد والمهام اللي بتحتاج انتباهك.">
-            <View className="mt-3 flex-row-reverse items-center gap-3 rounded-[15px] bg-action-subtle p-3">
-              <ReferenceIcon icon={glyphs.bell} warm size={64} />
-              <View className="min-w-0 flex-1 items-end gap-1">
-                <AppText align="right" className="font-ui-bold" style={{ fontSize: 15, lineHeight: 22 }} variant="label">لديك إجراءات تحتاج انتباهك</AppText>
-                <AppText align="right" className="text-content-secondary" style={{ fontSize: 11, lineHeight: 18 }} variant="caption">تابع المهام الظاهرة قبل انتهاء مهلتها عند وجود موعد محدد.</AppText>
-              </View>
-            </View>
-
-            <View className="mt-3 flex-row-reverse items-center justify-between">
-              <AppText className="font-ui-bold" variant="label">يتطلب إجراء</AppText>
-              <AppText className="text-content-secondary" variant="caption">مرتبة حسب أولوية الحالة</AppText>
-            </View>
-            <View className="mt-2 gap-[7px]">
-              {actionRows.map((item, index) => (
+        {tab === 'attention' ? (
+          <ReadStateBoundary
+            state={getSurfaceState('attention')}
+            emptyTitle="ما في شي يحتاج إجراء حالياً"
+            emptyDescription="أي مهام أو مواعيد بحاجة لقرار منك رح تظهر هون."
+          >
+            <View className="gap-2">
+              <AppText variant="heading-4" align="right">
+                إجراءات تحتاج انتباهك
+              </AppText>
+              {actions.map((item) => (
                 <Pressable
+                  key={item.id}
                   accessibilityRole="button"
                   accessibilityLabel={item.title}
-                  key={item.id}
+                  className="min-h-[90px] flex-row-reverse items-center gap-3 rounded-[15px] border border-border-subtle bg-surface-default p-3"
                   onPress={() => router.push(item.href)}
                 >
-                  <ReferenceCard className="min-h-[74px] flex-row-reverse items-center gap-2.5 px-[10px] py-2">
-                    <ReferenceIcon icon={notificationIcon(item.title)} warm={item.tone === 'warning'} size={42} />
-                    <View className="min-w-0 flex-1 items-end">
-                      <AppText align="right" className="font-ui-semibold" numberOfLines={2} style={{ fontSize: 12, lineHeight: 19 }} variant="label">{item.title}</AppText>
-                      <AppText align="right" className="mt-1 text-content-secondary" numberOfLines={2} style={{ fontSize: 10, lineHeight: 17 }} variant="caption">{item.detail}</AppText>
-                    </View>
-                    <View className={cn('rounded-[8px] px-2 py-1', index === 0 ? 'bg-tone-warning-fill' : 'bg-action-subtle')}>
-                      <AppText className={index === 0 ? 'text-tone-warning-text' : 'text-content-link'} style={{ fontSize: 9, lineHeight: 15 }} variant="caption">{item.actionLabel}</AppText>
-                    </View>
-                  </ReferenceCard>
+                  <View
+                    className={
+                      'h-11 w-11 shrink-0 items-center justify-center rounded-[12px] ' +
+                      (item.tone === 'warning' ? 'bg-tone-warning-fill' : 'bg-action-subtle')
+                    }
+                  >
+                    <AppIcon
+                      name={iconFor(item.title)}
+                      size={22}
+                      tone={item.tone === 'warning' ? 'warning' : 'action'}
+                    />
+                  </View>
+                  <View className="min-w-0 flex-1 items-end gap-1">
+                    <AppText
+                      align="right"
+                      variant="label"
+                      className="font-ui-semibold"
+                      numberOfLines={2}
+                    >
+                      {item.title}
+                    </AppText>
+                    <AppText
+                      align="right"
+                      variant="caption"
+                      className="text-content-secondary"
+                      numberOfLines={2}
+                    >
+                      {item.detail}
+                    </AppText>
+                    <AppText
+                      align="right"
+                      variant="caption"
+                      className="font-ui-semibold text-content-link"
+                    >
+                      {item.actionLabel}
+                    </AppText>
+                  </View>
+                  <AppIcon
+                    name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
+                    size={16}
+                    tone="secondary"
+                  />
                 </Pressable>
               ))}
             </View>
           </ReadStateBoundary>
-        ) : null}
-
-        <ReadStateBoundary state={readState} emptyTitle="ما عندك إشعارات حالياً" emptyDescription="بتظهر هون تحديثات الرعاية والحجوزات عند توفرها.">
-          <View className="mt-3 flex-row-reverse items-center justify-between rounded-[11px] bg-surface-subtle px-3 py-2.5">
-            <AppText className="font-ui-semibold" variant="caption">آخر الإشعارات</AppText>
-            <AppText className="text-content-link" variant="caption">{unreadCount} غير مقروءة</AppText>
-          </View>
-          <View className="mt-2 gap-1.5">
-            {historyRows.map((item) => (
-              <Pressable accessibilityLabel={item.title} accessibilityRole="button" key={item.id}
-                className="min-h-[65px] flex-row-reverse items-center gap-2 rounded-[11px] bg-surface-subtle px-3 py-2.5"
-                onPress={() => { if (item.unread) markNotificationRead(item.id); router.push(item.href); }}>
-                <ReferenceIcon icon={notificationIcon(item.title)} size={34} />
-                <View className="min-w-0 flex-1 items-end">
-                  <AppText align="right" className="font-ui-semibold" style={{ fontSize: 11, lineHeight: 17 }} variant="caption">{item.title}{item.unread ? ' · جديد' : ''}</AppText>
-                  <AppText align="right" className="text-content-secondary" style={{ fontSize: 10, lineHeight: 16 }} variant="caption">{item.detail} · {item.timeLabel}</AppText>
-                </View>
-                <AppIcon name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }} tone="secondary" size={15} />
-              </Pressable>
-            ))}
-          </View>
-        </ReadStateBoundary>
+        ) : (
+          <ReadStateBoundary
+            state={getSurfaceState('notifications')}
+            emptyTitle="ما عندك إشعارات حالياً"
+            emptyDescription="بتظهر هون تحديثات الرعاية والحجوزات عند توفرها."
+          >
+            <View className="gap-2">
+              <View className="flex-row-reverse items-center justify-between">
+                <AppText align="right" variant="heading-4">
+                  سجل الإشعارات
+                </AppText>
+                {unread > 0 ? (
+                  <AppText variant="caption" className="text-content-link">
+                    {unread} غير مقروءة
+                  </AppText>
+                ) : null}
+              </View>
+              {notifications.map((item) => (
+                <Pressable
+                  key={item.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.title}
+                  onPress={() => {
+                    if (item.unread) markNotificationRead(item.id);
+                    router.push(item.href);
+                  }}
+                  className={
+                    'min-h-[82px] flex-row-reverse items-center gap-3 rounded-[15px] border border-border-subtle p-3 ' +
+                    (item.unread ? 'bg-action-subtle' : 'bg-surface-default')
+                  }
+                >
+                  <View className="h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-surface-default">
+                    <AppIcon name={iconFor(item.title)} size={20} tone="action" />
+                  </View>
+                  <View className="min-w-0 flex-1 items-end gap-1">
+                    <View className="flex-row-reverse items-center gap-2">
+                      <AppText
+                        align="right"
+                        variant="label"
+                        className="min-w-0 flex-1 font-ui-semibold"
+                        numberOfLines={2}
+                      >
+                        {item.title}
+                      </AppText>
+                      {item.unread ? (
+                        <View className="h-[7px] w-[7px] rounded-full bg-action-primary" />
+                      ) : null}
+                    </View>
+                    <AppText
+                      align="right"
+                      variant="caption"
+                      className="text-content-secondary"
+                      numberOfLines={2}
+                    >
+                      {item.detail}
+                    </AppText>
+                    <AppText variant="caption" className="text-content-secondary">
+                      {item.timeLabel}
+                    </AppText>
+                  </View>
+                  <AppIcon
+                    name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
+                    size={16}
+                    tone="secondary"
+                  />
+                </Pressable>
+              ))}
+            </View>
+          </ReadStateBoundary>
+        )}
       </ScrollView>
     </Screen>
   );

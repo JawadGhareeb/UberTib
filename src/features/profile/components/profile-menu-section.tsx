@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
-import { usePreferredLocation } from '@/features/location/state/preferred-location-provider';
-import { AppText } from '@/shared/components/ui';
+import { useAuthSession } from '@/providers/auth-session-provider';
+import { AppIcon, AppText, ConfirmationDialog } from '@/shared/components/ui';
 import { ProfileAppearanceSettings } from './profile-appearance-settings';
 import { ProfileMenuCard } from './profile-menu-card';
 
@@ -12,76 +13,109 @@ function MenuGroup({ title, children }: { title: string; children: React.ReactNo
       <AppText align="right" variant="heading-4">
         {title}
       </AppText>
-      {children}
+      <View className="overflow-hidden rounded-[15px] border border-border-subtle bg-surface-default">
+        {children}
+      </View>
     </View>
   );
 }
 
 export function ProfileMenuSection() {
   const router = useRouter();
-  const { location } = usePreferredLocation();
+  const { isAuthenticated, signOut } = useAuthSession();
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   return (
     <View className="mt-5 gap-5">
-      <MenuGroup title="إعدادات التطبيق">
+      <MenuGroup title="الخصوصية والأمان">
         <ProfileMenuCard
-          title="منطقتي"
-          description={location?.label ?? 'حدّد منطقتك على الخريطة'}
-          icon={{ ios: 'mappin.and.ellipse', android: 'place', web: 'place' }}
-          onPress={() => router.push('/location-picker')}
+          first
+          title="إدارة حسابك"
+          description="عرض وتعديل معلومات الملف الشخصي"
+          icon={{ ios: 'person.crop.circle', android: 'manage_accounts', web: 'manage_accounts' }}
+          onPress={() => router.push('/profile/info')}
         />
         <ProfileMenuCard
-          title="الإعدادات"
-          description="تذكيرات المواعيد وتحديثات التطبيق"
+          title="الحساب والأمان"
+          description="حماية الحساب والجلسات"
+          icon={{ ios: 'shield.lefthalf.filled', android: 'security', web: 'security' }}
+          onPress={() => router.push('/profile/security')}
+        />
+        <ProfileMenuCard
+          title="الخصوصية والموافقات"
+          description="التحكم في مشاركة البيانات"
+          icon={{ ios: 'hand.raised.fill', android: 'privacy_tip', web: 'privacy_tip' }}
+          onPress={() => router.push('/profile/privacy')}
+        />
+        <ProfileMenuCard
+          title="بياناتي"
+          description="الحصول على نسخة من بياناتك"
+          icon={{ ios: 'externaldrive', android: 'storage', web: 'storage' }}
+          onPress={() => router.push('/profile/data')}
+        />
+      </MenuGroup>
+
+      <MenuGroup title="إعدادات التطبيق">
+        <ProfileMenuCard
+          first
+          title="التفضيلات والإشعارات"
+          description="تذكير المواعيد وتحديثات العلاج"
           icon={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
           onPress={() => router.push('/profile/settings')}
         />
         <ProfileAppearanceSettings />
       </MenuGroup>
 
-      <MenuGroup title="الخصوصية والأمان">
+      <MenuGroup title="المساعدة">
         <ProfileMenuCard
-          title="الحساب والأمان"
-          description="الهاتف الموثّق · رمز الدخول · الجلسات"
-          icon={{ ios: 'shield.lefthalf.filled', android: 'security', web: 'security' }}
-          onPress={() => router.push('/profile/security')}
-        />
-        <ProfileMenuCard
-          title="الخصوصية والموافقات"
-          description="التحكم بالموافقات والاطلاع على سجلها"
-          icon={{ ios: 'hand.raised.fill', android: 'privacy_tip', web: 'privacy_tip' }}
-          onPress={() => router.push('/profile/privacy')}
-        />
-        <ProfileMenuCard
-          title="بياناتي"
-          description="طلب نسخة من البيانات ومتابعة تجهيزها"
-          icon={{ ios: 'externaldrive', android: 'storage', web: 'storage' }}
-          onPress={() => router.push('/profile/data')}
-        />
-        <AppText align="right" variant="caption" className="text-content-secondary">
-          الإجراءات الحساسة تتطلب إعادة التحقق من الهوية.
-        </AppText>
-      </MenuGroup>
-
-      <MenuGroup title="المساعدة والحساب">
-        <ProfileMenuCard
+          first
           title="المساعدة والدعم"
-          description="تذاكر الدعم والمشكلات والاعتراضات"
+          description="الأسئلة والمشكلات وطلبات الدعم"
           icon={{ ios: 'questionmark.circle', android: 'help_outline', web: 'help_outline' }}
           onPress={() => router.push('/support')}
         />
-        <ProfileMenuCard
-          title="إغلاق الحساب / طلب الحذف"
-          description="طلب محكوم مع توضيح الاحتفاظ قبل التأكيد"
-          icon={{
-            ios: 'person.crop.circle.badge.xmark',
-            android: 'person_off',
-            web: 'person_off',
-          }}
-          danger
-          onPress={() => router.push('/profile/account-closure')}
-        />
       </MenuGroup>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={isAuthenticated ? 'تسجيل الخروج' : 'تسجيل الدخول'}
+        className="min-h-[48px] flex-row-reverse items-center justify-center gap-2 rounded-[13px]"
+        onPress={() => {
+          if (isAuthenticated) setLogoutOpen(true);
+          else router.push('/auth/phone');
+        }}
+      >
+        <AppIcon
+          name={{ ios: 'rectangle.portrait.and.arrow.right', android: 'logout', web: 'logout' }}
+          size={18}
+          tone={isAuthenticated ? 'danger' : 'action'}
+        />
+        <AppText
+          variant="label"
+          className={
+            isAuthenticated
+              ? 'font-ui-semibold text-tone-danger-text'
+              : 'font-ui-semibold text-content-link'
+          }
+        >
+          {isAuthenticated ? 'تسجيل الخروج' : 'تسجيل الدخول'}
+        </AppText>
+      </Pressable>
+      <ConfirmationDialog
+        visible={logoutOpen}
+        title="تسجيل الخروج؟"
+        description="رح تنتهي جلستك على هالجهاز. بتقدر تسجّل الدخول مرة تانية بأي وقت."
+        confirmLabel="تسجيل الخروج"
+        cancelLabel="إلغاء"
+        destructive
+        icon={{ ios: 'rectangle.portrait.and.arrow.right', android: 'logout', web: 'logout' }}
+        onCancel={() => setLogoutOpen(false)}
+        onConfirm={() => {
+          setLogoutOpen(false);
+          signOut();
+          router.replace('/');
+        }}
+      />
     </View>
   );
 }

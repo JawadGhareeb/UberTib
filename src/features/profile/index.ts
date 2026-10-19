@@ -1,4 +1,3 @@
-export { ActivePatientContextScreen } from './screens/active-patient-context-screen';
 export { AddDependentScreen } from './screens/add-dependent-screen';
 export { CreateGrantScreen } from './screens/create-grant-screen';
 export { FamilyRepresentationScreen } from './screens/family-representation-screen';

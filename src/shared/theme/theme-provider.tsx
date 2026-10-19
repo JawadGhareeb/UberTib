@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from 'react';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo } from 'react';
 import { View } from 'react-native';
-import { Uniwind } from 'uniwind';
+import { Uniwind, useUniwind } from 'uniwind';
 
 import { secureStorage } from '@/shared/storage/secure-storage';
 import { getThemeColors, type ThemeColors, type ThemeScheme } from '@/shared/theme';
@@ -16,7 +16,10 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: PropsWithChildren) {
-  const [scheme, setSchemeState] = useState<ThemeScheme>('light');
+  // Uniwind drives the native light/dark theme. This context only exposes legacy color
+  // values to screens still using JS colors; it does not own theme state.
+  const { theme: nativeTheme } = useUniwind();
+  const scheme: ThemeScheme = nativeTheme === 'dark' ? 'dark' : 'light';
   const colors = useMemo(() => getThemeColors(scheme), [scheme]);
 
   useEffect(() => {
@@ -25,7 +28,6 @@ export function ThemeProvider({ children }: PropsWithChildren) {
       try {
         const stored = await secureStorage.getThemeScheme();
         if (active && (stored === 'light' || stored === 'dark')) {
-          setSchemeState(stored);
           Uniwind.setTheme(stored);
         } else if (active) {
           Uniwind.setTheme('light');
@@ -41,7 +43,6 @@ export function ThemeProvider({ children }: PropsWithChildren) {
   }, []);
 
   const setScheme = (next: ThemeScheme) => {
-    setSchemeState(next);
     Uniwind.setTheme(next);
     void secureStorage.setThemeScheme(next);
   };

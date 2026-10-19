@@ -1,155 +1,203 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
-import {
-  ProfileReferenceBadge,
-  ProfileReferenceCard,
-  ProfileReferenceFact,
-  ProfileReferenceNotice,
-  ProfileReferenceSectionTitle,
-} from '@/features/profile/components/profile-reference-ui';
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
+import { ProfilePhoneChangeDialogs } from '@/features/profile/components/profile-phone-change-dialogs';
 import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-provider';
-import { AppText, Button, ConfirmationDialog, ReadStateBoundary, StatusIndicator } from '@/shared/components/ui';
+import { useAccountDetails } from '@/features/profile/state/account-details-provider';
+import { AppIcon, AppText, ConfirmationDialog, ReadStateBoundary } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
-type PendingAction =
-  { type: 'session'; sessionId: string } | { type: 'all' } | { type: 'method' } | null;
-
 export function AccountSecurityScreen() {
+  const router = useRouter();
   const { getSurfaceState } = useMockScenario();
-  const { securityMethod, setSecurityMethod, sessions, endSession, endOtherSessions } =
-    useProfilePrivacy();
-  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-
-  const confirmAction = () => {
-    if (!pendingAction || submitting) return;
-    setSubmitting(true);
-    setSuccessMessage('');
-    setTimeout(() => {
-      if (pendingAction.type === 'session') endSession(pendingAction.sessionId);
-      if (pendingAction.type === 'all') endOtherSessions();
-      if (pendingAction.type === 'method') setSecurityMethod('إعادة التحقق مطلوبة قبل التغيير');
-      setSuccessMessage(
-        pendingAction.type === 'session'
-          ? 'تم تحديث قائمة الجلسات التجريبية.'
-          : pendingAction.type === 'all'
-            ? 'تم تحديث الجلسات الأخرى في العرض التجريبي.'
-            : 'طلب تغيير طريقة الأمان ينتظر إعادة التحقق.',
-      );
-      setPendingAction(null);
-      setSubmitting(false);
-    }, 550);
-  };
+  const { phone } = useAccountDetails();
+  const { securityMethod, sessions, endSession, endOtherSessions } = useProfilePrivacy();
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  const [pending, setPending] = useState<{ type: 'session'; id: string } | { type: 'all' } | null>(
+    null,
+  );
 
   return (
-    <ProfileScreenShell eyebrow="الحساب والأمان" title="الحساب والأمان" layout="reference">
+    <ProfileScreenShell
+      eyebrow="الحساب والأمان"
+      title="الحساب والأمان"
+      description="معلومات الحماية والتحكم بالجلسات على أجهزتك."
+    >
       <ReadStateBoundary
-        emptyTitle="لا توجد بيانات أمان متاحة"
-        permissionDescription="لا يمكن عرض إعدادات الأمان بهذه الصلاحية."
-        permissionTitle="لا توجد صلاحية لإدارة الأمان"
         state={getSurfaceState('profile')}
+        emptyTitle="معلومات الأمان غير متاحة"
+        permissionTitle="ما عندك صلاحية لعرض معلومات الأمان"
       >
-        <ProfileReferenceSectionTitle>الحساب والأمان</ProfileReferenceSectionTitle>
-        <View className="gap-[7px]">
-          <ProfileReferenceFact
-            icon={{ ios: 'phone.circle', android: 'phone', web: 'phone' }}
-            label="الهاتف الموثّق"
-            value="+963 9••• 421 · موثّق"
-          />
-          <ProfileReferenceFact
-            icon={{ ios: 'key', android: 'vpn_key', web: 'vpn_key' }}
-            label="طريقة الأمان"
-            value={securityMethod}
-          />
-        </View>
-
-        <ProfileReferenceSectionTitle>الجلسات النشطة</ProfileReferenceSectionTitle>
-        <View className="gap-[7px]">
-          {sessions.map((session) => (
-            <ProfileReferenceCard
-              className={session.current ? 'border-action-primary/35 bg-action-subtle' : undefined}
-              key={session.id}
-            >
-              <View className="flex-row items-center justify-between gap-2">
-                {session.trusted ? <ProfileReferenceBadge label="موثوق" tone="success" /> : <View />}
-                <AppText align="right" className="min-w-0 flex-1 font-ui-bold" numberOfLines={2} variant="label">
-                  {session.label}
+        <View className="mt-4 gap-2">
+          <AppText variant="heading-4" align="right">
+            معلومات الأمان
+          </AppText>
+          <View className="overflow-hidden rounded-[15px] border border-border-subtle bg-surface-default">
+            <View className="min-h-[62px] flex-row-reverse items-center gap-3 px-3 py-3">
+              <AppIcon
+                name={{ ios: 'phone', android: 'phone', web: 'phone' }}
+                size={21}
+                tone="action"
+              />
+              <View className="min-w-0 flex-1 items-end gap-0.5">
+                <AppText align="right" variant="label" className="font-ui-semibold">
+                  رقم الهاتف الموثّق
+                </AppText>
+                <AppText
+                  align="right"
+                  direction="ltr"
+                  variant="caption"
+                  className="text-content-secondary"
+                >
+                  {phone}
                 </AppText>
               </View>
-              <AppText align="right" className="mt-1 text-content-secondary" style={{ fontSize: 10.5, lineHeight: 17 }} variant="caption">
-                {session.locationLabel} · {session.activityLabel}
-              </AppText>
-              {session.current ? (
-                <AppText align="right" className="mt-1 text-content-secondary" style={{ fontSize: 9.5, lineHeight: 16 }} variant="caption">
-                  لا يمكن إنهاء الجلسة الحالية من هنا.
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="تغيير رقم الهاتف"
+                className="min-h-[42px] justify-center rounded-[10px] bg-action-subtle px-3"
+                onPress={() => setPhoneDialogOpen(true)}
+              >
+                <AppText variant="label" className="font-ui-semibold text-content-link">
+                  تغيير
                 </AppText>
-              ) : (
-                <Pressable
-                  accessibilityLabel="إنهاء هذه الجلسة"
-                  accessibilityRole="button"
-                  className="mt-2 min-h-[43px] items-center justify-center rounded-[10px] bg-tone-danger-fill px-3"
-                  onPress={() => setPendingAction({ type: 'session', sessionId: session.id })}
-                >
-                  <AppText align="center" className="font-ui-semibold text-tone-danger-text" variant="label">
-                    إنهاء هذه الجلسة
-                  </AppText>
-                </Pressable>
-              )}
-            </ProfileReferenceCard>
-          ))}
-        </View>
-
-        <View className="mt-[9px] flex-row gap-[7px]">
-          <Button
-            className="h-11 min-w-0 flex-1"
-            label="تغيير طريقة الأمان"
-            onPress={() => setPendingAction({ type: 'method' })}
-            size="sm"
-            variant="outline"
-          />
-          <Button
-            className="h-11 min-w-0 flex-1"
-            disabled={sessions.every((session) => session.current)}
-            label="إنهاء الجلسات الأخرى"
-            onPress={() => setPendingAction({ type: 'all' })}
-            size="sm"
-            variant="destructive"
-          />
-        </View>
-
-        {successMessage ? (
-          <View className="mt-2">
-            <StatusIndicator label={successMessage} tone="info" />
+              </Pressable>
+            </View>
+            <View className="h-px bg-border-subtle" />
+            <View className="min-h-[62px] flex-row-reverse items-center gap-3 px-3 py-3">
+              <AppIcon
+                name={{ ios: 'lock.shield', android: 'verified_user', web: 'verified_user' }}
+                size={21}
+                tone="action"
+              />
+              <View className="min-w-0 flex-1 items-end gap-0.5">
+                <AppText align="right" variant="label" className="font-ui-semibold">
+                  طريقة حماية الحساب
+                </AppText>
+                <AppText align="right" variant="caption" className="text-content-secondary">
+                  {securityMethod}
+                </AppText>
+              </View>
+            </View>
           </View>
-        ) : null}
+        </View>
 
-        <View className="mt-[9px]">
-          <ProfileReferenceNotice
-            title="إعادة التحقق مطلوبة"
-            description="يلزم التحقق من الهوية قبل تغيير الأمان أو إنهاء كل الجلسات على الحساب الفعلي."
-            tone="warning"
-          />
+        <View className="mt-5 gap-2">
+          <AppText align="right" variant="heading-4">
+            الجلسات والأجهزة
+          </AppText>
+          <View className="overflow-hidden rounded-[15px] border border-border-subtle bg-surface-default">
+            {sessions.map((session, index) => (
+              <View
+                key={session.id}
+                className={
+                  'min-h-[64px] flex-row-reverse items-center gap-3 px-3 py-3 ' +
+                  (index ? 'border-t border-border-subtle' : '')
+                }
+              >
+                <AppIcon
+                  name={{ ios: 'iphone', android: 'smartphone', web: 'smartphone' }}
+                  size={22}
+                  tone="secondary"
+                />
+                <View className="min-w-0 flex-1 items-end gap-1">
+                  <AppText align="right" variant="label" className="font-ui-semibold">
+                    {session.label}
+                  </AppText>
+                  <AppText
+                    align="right"
+                    variant="caption"
+                    className="text-content-secondary"
+                    numberOfLines={2}
+                  >
+                    {session.activityLabel}
+                  </AppText>
+                </View>
+                {session.current ? (
+                  <AppText variant="caption" className="text-content-link">
+                    هذا الجهاز
+                  </AppText>
+                ) : (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={'إنهاء جلسة ' + session.label}
+                    onPress={() => setPending({ type: 'session', id: session.id })}
+                    className="min-h-[40px] justify-center rounded-[10px] bg-tone-danger-fill px-2"
+                  >
+                    <AppText variant="caption" className="font-ui-semibold text-tone-danger-text">
+                      إنهاء
+                    </AppText>
+                  </Pressable>
+                )}
+              </View>
+            ))}
+          </View>
+          {sessions.some((session) => !session.current) ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setPending({ type: 'all' })}
+              className="min-h-[44px] self-end justify-center px-2"
+            >
+              <AppText variant="label" className="text-tone-danger-text">
+                إنهاء الجلسات الأخرى
+              </AppText>
+            </Pressable>
+          ) : null}
+          <AppText variant="caption" align="right" className="text-content-secondary">
+            الجلسات المعروضة تجريبية. التغييرات الفعلية تحتاج تحقق من النظام.
+          </AppText>
+        </View>
+
+        <View className="mt-5 gap-2">
+          <AppText variant="heading-4" align="right">
+            إجراءات الحساب
+          </AppText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="إغلاق الحساب أو طلب الحذف"
+            onPress={() => router.push('/profile/account-closure')}
+            className="min-h-[58px] flex-row-reverse items-center gap-3 rounded-[14px] border border-border-subtle bg-surface-default px-3"
+          >
+            <AppIcon
+              name={{
+                ios: 'person.crop.circle.badge.xmark',
+                android: 'person_off',
+                web: 'person_off',
+              }}
+              size={20}
+              tone="danger"
+            />
+            <View className="min-w-0 flex-1 items-end">
+              <AppText variant="label" className="font-ui-semibold text-tone-danger-text">
+                إغلاق الحساب / طلب الحذف
+              </AppText>
+            </View>
+            <AppIcon
+              name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
+              size={17}
+              tone="secondary"
+            />
+          </Pressable>
         </View>
       </ReadStateBoundary>
+      {phoneDialogOpen ? (
+        <ProfilePhoneChangeDialogs visible onClose={() => setPhoneDialogOpen(false)} />
+      ) : null}
       <ConfirmationDialog
-        visible={pendingAction !== null}
-        title={
-          pendingAction?.type === 'session'
-            ? 'إنهاء هذه الجلسة؟'
-            : pendingAction?.type === 'all'
-              ? 'إنهاء الجلسات الأخرى؟'
-              : 'تغيير طريقة الأمان؟'
-        }
-        description="هذا إجراء تجريبي فقط. يحتاج التنفيذ الحقيقي إلى إعادة التحقق من الهوية، ولا تُعتبر العملية معتمدة من السيرفر."
-        confirmLabel="متابعة المعاينة"
+        visible={pending !== null}
+        title="إنهاء الجلسة؟"
+        description="هذا تغيير ضمن البيانات التجريبية، وتنفيذ الإنهاء على حساب فعلي يحتاج إعادة التحقق."
+        confirmLabel="إنهاء"
         cancelLabel="إلغاء"
-        destructive={pendingAction?.type !== 'method'}
-        loading={submitting}
-        onCancel={() => { if (!submitting) setPendingAction(null); }}
-        onConfirm={confirmAction}
+        destructive
+        onCancel={() => setPending(null)}
+        onConfirm={() => {
+          if (pending?.type === 'session') endSession(pending.id);
+          if (pending?.type === 'all') endOtherSessions();
+          setPending(null);
+        }}
       />
     </ProfileScreenShell>
   );

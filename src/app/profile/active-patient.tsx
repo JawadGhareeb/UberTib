@@ -1,5 +1,6 @@
-import { ActivePatientContextScreen } from '@/features/profile';
+import { Redirect } from 'expo-router';
 
-export default function ActivePatientContextRoute() {
-  return <ActivePatientContextScreen />;
+/** Patient identity never switches globally. Choose family member at booking only. */
+export default function LegacyActivePatientRoute() {
+  return <Redirect href="/profile/family" />;
 }

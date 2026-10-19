@@ -22,12 +22,13 @@ import { useMockScenario } from '@/shared/mock';
 import { useAppTheme } from '@/shared/theme/theme-provider';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { cn } from '@/shared/utils/cn';
-import { mockPatientWorld } from '@/shared/mock/patient.mock';
+import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
 
 export function BookingReviewScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthSession();
   const { scenario, submitBookingRequest } = useMockScenario();
+  const { members } = useFamilyMembers();
   const { note, attachment, shareAttachment, clearDraft } = useBookingDraft();
   const { providerId, serviceCode, dateKey, dateLabel, timeLabel, patientId, reason } =
     useLocalSearchParams<{
@@ -48,7 +49,7 @@ export function BookingReviewScreen() {
   >();
 
   const provider = getMockProvider(providerId);
-  const chosenPatient = mockPatientWorld.family.find((p) => p.id === patientId);
+  const chosenPatient = members.find((p) => p.id === patientId);
   const patientCanBook = canBookForPatient(patientId, scenario);
   const slotStillInSnapshot = Boolean(
     provider?.availability.some(

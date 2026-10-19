@@ -1,21 +1,16 @@
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { useAppTheme } from '@/shared/theme/theme-provider';
-import { ProfileAppearanceModal } from './profile-appearance-modal';
 import { ProfileMenuCard } from './profile-menu-card';
 
 export function ProfileAppearanceSettings() {
+  const router = useRouter();
   const { scheme } = useAppTheme();
-  const [appearanceOpen, setAppearanceOpen] = useState(false);
-
   return (
-    <>
-      <ProfileMenuCard
-        title="المظهر"
-        description={'المظهر الحالي: ' + (scheme === 'dark' ? 'داكن' : 'فاتح')}
-        icon={{ ios: 'paintbrush', android: 'palette', web: 'palette' }}
-        onPress={() => setAppearanceOpen(true)}
-      />
-      <ProfileAppearanceModal visible={appearanceOpen} onClose={() => setAppearanceOpen(false)} />
-    </>
+    <ProfileMenuCard
+      title="المظهر"
+      description={'المظهر الحالي: ' + (scheme === 'dark' ? 'داكن' : 'فاتح')}
+      icon={{ ios: 'paintbrush', android: 'palette', web: 'palette' }}
+      onPress={() => router.push('/profile/appearance')}
+    />
   );
 }

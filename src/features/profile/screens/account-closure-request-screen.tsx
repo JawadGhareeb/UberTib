@@ -1,134 +1,122 @@
 import { View } from 'react-native';
-
-import {
-  ProfileReferenceCard,
-  ProfileReferenceNotice,
-  ProfileReferenceSectionTitle,
-} from '@/features/profile/components/profile-reference-ui';
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-provider';
-import { AppText, Button, ConfirmationDialog, ReadStateBoundary, StatusIndicator } from '@/shared/components/ui';
+import {
+  AppIcon,
+  AppText,
+  Button,
+  ConfirmationDialog,
+  ReadStateBoundary,
+} from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
-
-const lifecycle = ['طلب الإغلاق', 'قيد المراجعة', 'مجدول', 'مغلق'] as const;
 
 export function AccountClosureRequestScreen() {
   const { getSurfaceState } = useMockScenario();
   const { accountClosureStatus, setAccountClosureStatus } = useProfilePrivacy();
+  const pending = ['requested', 'review', 'scheduled', 'closed'].includes(accountClosureStatus);
+  const busy = accountClosureStatus === 'submitting';
 
-  const submitClosure = () => {
-    if (accountClosureStatus !== 'confirm') return;
+  const confirm = () => {
+    if (accountClosureStatus !== 'confirm' || busy) return;
     setAccountClosureStatus('submitting');
-    setTimeout(() => setAccountClosureStatus('requested'), 650);
+    // This records a review request in mock state; it never deletes the real account.
+    setTimeout(() => setAccountClosureStatus('requested'), 600);
   };
 
-  const isWaiting = ['requested', 'review', 'scheduled', 'closed'].includes(accountClosureStatus);
-
   return (
-    <ProfileScreenShell eyebrow="إغلاق الحساب" title="إغلاق الحساب" layout="reference">
+    <ProfileScreenShell eyebrow="إغلاق الحساب" title="إغلاق الحساب">
       <ReadStateBoundary
-        emptyTitle="طلب الإغلاق غير متاح"
-        permissionDescription="لا يمكنك إنشاء طلب إغلاق بهذه الصلاحية."
-        permissionTitle="لا توجد صلاحية لإغلاق الحساب"
         state={getSurfaceState('profile')}
+        emptyTitle="طلب الإغلاق غير متاح"
+        permissionTitle="لا توجد صلاحية لإغلاق الحساب"
       >
-        <View className="rounded-[12px] border border-tone-danger-border bg-tone-danger-fill p-[11px]">
-          <AppText align="right" className="font-ui-bold text-tone-danger-text" variant="label">
-            طلب إغلاق الحساب
-          </AppText>
-          <AppText align="right" className="mt-1 text-content-primary" style={{ fontSize: 10.5, lineHeight: 18 }} variant="caption">
-            قد يلزم الاحتفاظ ببعض السجلات المرتبطة بالعلاج أو النزاعات أو الالتزامات النظامية، وفق السياسة المعمول بها. إغلاق الحساب لا يعني حذف كل سجل فوراً.
+        <View className="mt-4 gap-3 rounded-[16px] border border-tone-danger-border bg-tone-danger-fill p-4">
+          <View className="flex-row-reverse items-center gap-2">
+            <AppIcon
+              name={{ ios: 'exclamationmark.triangle', android: 'warning', web: 'warning' }}
+              size={23}
+              tone="danger"
+            />
+            <AppText variant="heading-4" className="font-ui-bold text-tone-danger-text">
+              قبل طلب الإغلاق
+            </AppText>
+          </View>
+          <AppText variant="label" align="right" className="text-content-primary">
+            إغلاق الحساب قد يوقف إمكانية الدخول بعد اعتماد الطلب. بعض السجلات المرتبطة بالعلاج أو
+            المطالبات قد تبقى محفوظة للفترة المطلوبة قانونياً.
           </AppText>
         </View>
-
-        <ProfileReferenceSectionTitle>قبل المتابعة</ProfileReferenceSectionTitle>
-        <ProfileReferenceCard className="gap-[5px]">
+        <View className="mt-4 gap-3 rounded-[15px] border border-border-subtle bg-surface-default p-4">
+          <AppText align="right" variant="heading-4">
+            شو بيصير بعد الطلب؟
+          </AppText>
           {[
-            'يتوقف تسجيل الدخول بعد إغلاق الحساب.',
-            'تبقى السجلات الخاضعة للاحتفاظ غير متاحة للاستخدام العادي.',
-            'يمكنك متابعة الطلب حتى صدور القرار.',
-          ].map((text) => (
-            <AppText align="right" className="text-content-primary" style={{ fontSize: 10.5, lineHeight: 19 }} variant="caption" key={text}>
-              • {text}
-            </AppText>
+            'بيوصل طلب الإغلاق للمراجعة.',
+            'قد يُطلب منك التحقق من الهوية قبل الإغلاق الفعلي.',
+            'بإمكانك متابعة حالة الطلب من هون.',
+          ].map((item) => (
+            <View key={item} className="flex-row-reverse items-start gap-2">
+              <AppIcon
+                name={{
+                  ios: 'checkmark.circle',
+                  android: 'check_circle_outline',
+                  web: 'check_circle_outline',
+                }}
+                size={19}
+                tone="action"
+              />
+              <AppText variant="label" align="right" className="min-w-0 flex-1">
+                {item}
+              </AppText>
+            </View>
           ))}
-        </ProfileReferenceCard>
-
-        <ProfileReferenceSectionTitle>دورة الطلب</ProfileReferenceSectionTitle>
-        <ProfileReferenceCard className="py-[10px]">
-          <View className="flex-row-reverse items-center justify-between gap-[3px]">
-            {lifecycle.map((label, index) => {
-              const selected = accountClosureStatus === 'requested' && index === 0
-                || accountClosureStatus === 'review' && index === 1
-                || accountClosureStatus === 'scheduled' && index === 2
-                || accountClosureStatus === 'closed' && index === 3;
-              return (
-                <View className="min-h-[48px] flex-1 items-center justify-center gap-1" key={label}>
-                  <AppText
-                    align="center"
-                    className={selected ? 'font-ui-bold text-content-link' : 'text-content-secondary'}
-                    style={{ fontSize: 9, lineHeight: 15 }}
-                    variant="caption"
-                  >
-                    {selected ? '●' : '○'}
-                  </AppText>
-                  <AppText align="center" className={selected ? 'font-ui-semibold text-content-link' : 'text-content-secondary'} numberOfLines={2} style={{ fontSize: 9.5, lineHeight: 16 }} variant="caption">
-                    {label}
-                  </AppText>
-                </View>
-              );
-            })}
-          </View>
-        </ProfileReferenceCard>
-
-        {!isWaiting ? (
-          <View className="mt-[9px] gap-[8px]">
-            <ProfileReferenceNotice
-              title="يلزم إعادة التحقق من الهوية ثم تأكيد الطلب"
-              description="سيبقى الطلب غير منفّذ حتى اكتمال التحقق والمراجعة المطلوبة."
-              tone="warning"
+        </View>
+        {pending ? (
+          <View className="mt-4 items-center gap-2 rounded-[14px] bg-action-subtle px-4 py-5">
+            <AppIcon
+              name={{ ios: 'clock', android: 'schedule', web: 'schedule' }}
+              size={25}
+              tone="action"
             />
-            {accountClosureStatus === 'idle' ? (
-              <Button label="متابعة للتحقق والتأكيد" onPress={() => setAccountClosureStatus('reverify')} variant="destructive" />
-            ) : null}
-            {accountClosureStatus === 'reverify' ? (
-              <View className="gap-2">
-                <AppText align="right" className="text-content-secondary" variant="caption">
-                  واجهة التحقق هنا تجريبية. لا تُعد الهوية مؤكدة من دون استجابة تحقق مستقلة.
-                </AppText>
-                <Button label="متابعة لمراجعة الطلب التجريبي" onPress={() => setAccountClosureStatus('confirm')} variant="destructive" />
-              </View>
-            ) : null}
-            <ConfirmationDialog
-              visible={accountClosureStatus === 'confirm'}
-              title="تأكيد إنشاء طلب الإغلاق"
-              description="إنشاء الطلب التجريبي لا يغلق الحساب فعلياً ولا يمحو السجلات. يتطلب التنفيذ الحقيقي إعادة تحقق مستقلة ومراجعة."
-              confirmLabel="تأكيد إنشاء الطلب"
-              destructive
-              onConfirm={submitClosure}
-              onCancel={() => setAccountClosureStatus('reverify')}
-            />
-            {accountClosureStatus === 'submitting' ? (
-              <Button label="جاري إنشاء الطلب" loading onPress={() => {}} variant="destructive" />
-            ) : null}
-            {accountClosureStatus === 'failure' ? (
-              <View className="gap-2">
-                <StatusIndicator label="تعذر إنشاء الطلب" tone="danger" />
-                <Button label="إعادة المحاولة" onPress={() => setAccountClosureStatus('confirm')} variant="outline" />
-              </View>
-            ) : null}
-            <Button label="العودة دون إنشاء طلب" onPress={() => setAccountClosureStatus('idle')} variant="outline" />
+            <AppText variant="body-strong" align="center">
+              {accountClosureStatus === 'requested'
+                ? 'طلب الإغلاق قيد المراجعة'
+                : accountClosureStatus === 'review'
+                  ? 'تتم مراجعة الطلب'
+                  : accountClosureStatus === 'scheduled'
+                    ? 'الإغلاق مجدول'
+                    : 'الحساب مغلق'}
+            </AppText>
+            <AppText variant="caption" align="center" className="text-content-secondary">
+              هذا عرض تجريبي؛ لم يتم حذف الحساب فعلياً.
+            </AppText>
           </View>
         ) : (
-          <View className="mt-[9px]">
-            <ProfileReferenceNotice
-              title={accountClosureStatus === 'requested' ? 'تم تسجيل الطلب للمراجعة' : accountClosureStatus === 'review' ? 'الطلب قيد المراجعة' : accountClosureStatus === 'scheduled' ? 'الإغلاق مجدول' : 'الحساب مغلق'}
-              description="يمكن متابعة حالة الطلب. السجلات الخاضعة للاحتفاظ لا تُحذف تلقائياً."
-              tone="info"
+          <View className="mt-5 items-center gap-2">
+            <Button
+              className="min-h-[50px] w-full max-w-[320px]"
+              label={busy ? 'جاري تسجيل طلبك...' : 'متابعة للتحقق والتأكيد'}
+              variant="destructive"
+              loading={busy}
+              disabled={busy}
+              onPress={() => setAccountClosureStatus('confirm')}
             />
+            <AppText variant="caption" align="center" className="text-content-secondary">
+              تأكيدك بيسجل طلباً للمراجعة، مو حذفاً فورياً للحساب.
+            </AppText>
           </View>
         )}
       </ReadStateBoundary>
+      <ConfirmationDialog
+        visible={accountClosureStatus === 'confirm'}
+        title="تأكيد طلب إغلاق الحساب"
+        description="هل تريد إرسال طلب الإغلاق للمراجعة؟ لا يتم حذف حسابك فوراً، وقد يلزم تحقق مستقل من الهوية."
+        confirmLabel="تأكيد طلب الإغلاق"
+        cancelLabel="إلغاء"
+        destructive
+        onConfirm={confirm}
+        onCancel={() => setAccountClosureStatus('idle')}
+      />
     </ProfileScreenShell>
   );
 }
