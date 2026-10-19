@@ -38,7 +38,7 @@ export function ServiceGroupsScreen({ showBack = true }: ServiceGroupsScreenProp
         showBack ? (
           <DiscoveryHeader showBack showSearchAction title="الخدمات السنية" />
         ) : (
-          <AppHeader title="اكتشف" showNotifications />
+          <AppHeader variant="primary" title="اكتشف" />
         )
       }
     >

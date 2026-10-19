@@ -25,7 +25,7 @@ export function CareScreenShell({
       {showBack ? (
         <AppHeader backLabel="العودة" showBack title={eyebrow} />
       ) : (
-        <AppHeader variant="primary" />
+        <AppHeader variant="primary" title={eyebrow} />
       )}
 
       <ScrollView

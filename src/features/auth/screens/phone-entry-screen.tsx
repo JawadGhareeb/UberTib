@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CountryFlag } from '@/features/auth/components/country-flag';
+import { normalizeDigits } from '@/features/auth/utils/phone-input';
 import { requestMockVerification } from '@/features/auth/mocks/auth.mock';
 import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
@@ -13,13 +14,6 @@ import { toE164 } from '@/shared/components/ui/phone-number-field';
 import { useMockScenario } from '@/shared/mock';
 
 const DEFAULT_COUNTRY = phoneCountries[0]!;
-
-function normalizeDigits(input: string): string {
-  return input
-    .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x0660))
-    .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x06f0))
-    .replace(/\D/g, '');
-}
 
 export function PhoneEntryScreen() {
   const router = useRouter();

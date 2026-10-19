@@ -11,8 +11,8 @@ import {
   CareFilterTabs,
   CareV5Badge,
   CareV5BottomNav,
-  CareV5Header,
 } from '@/features/my-care/components/care-v5-ui';
+import { AppHeader } from '@/shared/components/navigation';
 import { AppText, Screen } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
@@ -36,12 +36,13 @@ export function MyBookingsScreen({ showBottomNav = true }: { showBottomNav?: boo
   const upcomingCount = bookings.filter((booking) => bookingFilter(booking) === 'قادمة').length;
 
   return (
-    <Screen contentClassName="px-0 py-0">
-      <CareV5Header leftIcon="calendar" right="bell" title="حجوزاتي" />
+    <Screen contentClassName="px-0 py-0" header={<AppHeader variant="primary" title="حجوزاتي" />}>
       <ScrollView
-        contentContainerClassName={showBottomNav
-          ? "mx-auto w-full max-w-[430px] px-4 pb-[86px] pt-[7px]"
-          : "mx-auto w-full max-w-[430px] px-4 pb-4 pt-[7px]"}
+        contentContainerClassName={
+          showBottomNav
+            ? 'mx-auto w-full max-w-[430px] px-4 pb-[86px] pt-[7px]'
+            : 'mx-auto w-full max-w-[430px] px-4 pb-4 pt-[7px]'
+        }
         showsVerticalScrollIndicator={false}
       >
         <View className="flex-row items-center justify-between gap-3">
@@ -79,9 +80,14 @@ export function MyBookingsScreen({ showBottomNav = true }: { showBottomNav?: boo
                   tone,
                   amount: booking.priceLabel,
                   note: booking.note ?? `${booking.dateLabel} · ${booking.timeLabel}`,
-                  completedSteps: booking.status === 'completed' ? 4
-                    : booking.status === 'confirmed' ? 2
-                    : booking.status === 'cancelled' ? 0 : 1,
+                  completedSteps:
+                    booking.status === 'completed'
+                      ? 4
+                      : booking.status === 'confirmed'
+                        ? 2
+                        : booking.status === 'cancelled'
+                          ? 0
+                          : 1,
                 }}
                 key={booking.id}
                 onPress={() =>
@@ -101,7 +107,6 @@ export function MyBookingsScreen({ showBottomNav = true }: { showBottomNav?: boo
             </View>
           ) : null}
         </View>
-
       </ScrollView>
       {showBottomNav ? <CareV5BottomNav active="care" /> : null}
     </Screen>

@@ -14,6 +14,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandedDateField } from '@/features/auth/components/branded-date-field';
+import { formatDate, type Gender } from '@/features/auth/utils/profile-fields';
 import { useProfilePhoto } from '@/features/profile/state/profile-photo-provider';
 import { EditableProfileAvatar } from '@/shared/components/media/editable-profile-avatar';
 import { OutlineIcon } from '@/shared/components/media/outline-icon';
@@ -22,16 +23,6 @@ import { usePreferredLocation } from '@/features/location/state/preferred-locati
 import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { useAppTheme } from '@/shared/theme/theme-provider';
-
-type Gender = 'female' | 'male';
-
-function formatDate(date: Date): string {
-  return [
-    String(date.getDate()).padStart(2, '0'),
-    String(date.getMonth() + 1).padStart(2, '0'),
-    String(date.getFullYear()),
-  ].join(' / ');
-}
 
 export function ProfileSetupScreen() {
   const router = useRouter();

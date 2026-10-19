@@ -6,31 +6,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { requestMockVerification, verifyMockCode } from '@/features/auth/mocks/auth.mock';
 import { resolveSafeReturnTo } from '@/features/auth/navigation/auth-intent';
+import {
+  CODE_LENGTH,
+  countdown,
+  displayPhone,
+  formatTimer,
+} from '@/features/auth/utils/otp-formatters';
 import { useAuthSession } from '@/providers/auth-session-provider';
 import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { useMockScenario } from '@/shared/mock';
-
-const CODE_LENGTH = 6;
-
-function countdown(raw: string | undefined, defaultSeconds: number): number {
-  const value = Number(raw);
-  return Number.isFinite(value) && value > 0 ? Math.min(Math.floor(value), 900) : defaultSeconds;
-}
-
-function displayPhone(value?: string): string {
-  if (!value) return 'رقم موبايلك';
-  const international = value.replace(/[^\d+]/g, '');
-  const ending = international.slice(-3);
-  const prefix = international.slice(0, -Math.min(6, international.length));
-  return prefix + '•••' + ending;
-}
-
-function formatTimer(seconds: number): string {
-  return (
-    String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0')
-  );
-}
 
 export function CodeVerificationScreen() {
   const router = useRouter();
