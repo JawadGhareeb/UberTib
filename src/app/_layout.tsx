@@ -10,14 +10,15 @@ import {
 import { Stack } from 'expo-router';
 import * as NativeSplashScreen from 'expo-splash-screen';
 import { I18nManager, Image, StatusBar, View } from 'react-native';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native/provider';
 
 import { AppProviders } from '@/providers/app-providers';
 import { RootErrorBoundary } from '@/shared/components/error-boundary/root-error-boundary';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
+import { initializePreferredTheme } from '@/shared/theme/theme-preference';
 
 // Same direction model used by Scent World:
 // - React Native / Yoga always stays physically LTR.
@@ -58,6 +59,7 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  const [themeReady, setThemeReady] = useState(false);
   const [fontsLoaded] = useFonts({
     IBMPlexSansArabic_400Regular,
     IBMPlexSansArabic_500Medium,
@@ -65,7 +67,17 @@ export default function RootLayout() {
     IBMPlexSansArabic_700Bold,
   });
 
-  if (!fontsLoaded) {
+  useEffect(() => {
+    let active = true;
+    void initializePreferredTheme().finally(() => {
+      if (active) setThemeReady(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!fontsLoaded || !themeReady) {
     // Never show an empty screen while the Arabic fonts load.
     // This requires no custom font and uses the bundled logo on every platform.
     return (

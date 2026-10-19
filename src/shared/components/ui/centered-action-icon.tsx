@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 export type CenteredActionIconName = 'bell' | 'calendar' | 'care' | 'clock';
 

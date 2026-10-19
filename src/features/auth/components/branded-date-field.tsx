@@ -3,7 +3,7 @@ import { Button, Dialog, FieldError, Input, Label, TextField, Typography } from 
 import { useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
 
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { OutlineIcon } from '@/shared/components/media/outline-icon';
 
 const MIN_DATE = new Date(1900, 0, 1);

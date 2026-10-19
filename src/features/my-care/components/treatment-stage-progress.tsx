@@ -3,7 +3,7 @@ import Svg, { Circle } from 'react-native-svg';
 
 import type { MockCareStage } from '@/features/my-care/mocks/care.mock';
 import { AppText } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 const SIZE = 62;
 const STROKE_WIDTH = 7;

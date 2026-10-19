@@ -7,7 +7,7 @@ import { CareActionFooter } from '@/features/my-care/components/care-financial-u
 import { getMockCareCaseForScenario, getMockCareReferenceLabel } from '@/features/my-care/mocks/care.mock';
 import { AppIcon, AppText, Button, RatingInput, ReadStateBoundary, Screen, StateView } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 interface SubmitReviewScreenProps {
   caseId: string;

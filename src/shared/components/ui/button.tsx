@@ -11,7 +11,7 @@ import Animated, {
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, type AppIconName } from '@/shared/components/ui/app-icon';
 import { AppText } from '@/shared/components/ui/app-text';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);

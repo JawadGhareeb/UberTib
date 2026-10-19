@@ -17,6 +17,11 @@ const expected = [
   '@theme inline {',
   '  --color-brand-mark: var(--brand-mark);',
   ...light.map(([name]) => '  --color-' + name + ': var(--' + name + ');'),
+  // Components use text-content-* utilities. Map those semantic aliases back
+  // to the one text token palette rather than silently emitting missing styles.
+  ...Object.keys(tokens.color.text).map(
+    (key) => '  --color-content-' + kebab(key) + ': var(--text-' + kebab(key) + ');',
+  ),
   '  --font-ui-regular: "' + tokens.font.regular + '";',
   '  --font-ui-medium: "' + tokens.font.medium + '";',
   '  --font-ui-semibold: "' + tokens.font.semibold + '";',

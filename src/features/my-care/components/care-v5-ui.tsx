@@ -6,7 +6,7 @@ import { AppIcon, AppText } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { cn } from '@/shared/utils/cn';
 import { useAppDirection } from '@/providers/app-direction-provider';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 

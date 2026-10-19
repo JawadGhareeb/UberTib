@@ -4,7 +4,7 @@ import { View } from 'react-native';
 
 import { AppIcon } from '@/shared/components/ui';
 import type { Coordinate, ProfileLocationMapProps } from './profile-location-map.types';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 type LngLat = [longitude: number, latitude: number];
 

@@ -5,7 +5,7 @@ import {
   PATIENT_TAB_BAR_HEIGHT,
   PATIENT_TAB_HEIGHT,
 } from '@/shared/components/navigation/patient-tab-metrics';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { patientTabDestinations, type PatientTabName } from './patient-tab-configuration';
 import { PatientTabItem } from './patient-tab-item';
 
@@ -44,7 +44,7 @@ export function PatientBottomBar({
           height: PATIENT_TAB_BAR_HEIGHT,
           borderRadius: 36,
           backgroundColor: colors.surface.default,
-          shadowColor: '#111111',
+          shadowColor: colors.surface.scrim,
           shadowOffset: { width: 0, height: 3 },
           shadowOpacity: 0.14,
           shadowRadius: 14,

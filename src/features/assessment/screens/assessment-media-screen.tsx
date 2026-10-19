@@ -15,26 +15,66 @@ import {
   type AssessmentMediaAttachment,
 } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
+import { theme } from '@/shared/theme';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
 const MAX_ATTACHMENTS = 6;
 const acceptedExtensions = new Set([
-  'jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'bmp', 'tif', 'tiff',
-  'pdf', 'doc', 'docx', 'dcm', 'dicom', 'stl', 'ply', 'obj', 'zip',
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'heic',
+  'heif',
+  'bmp',
+  'tif',
+  'tiff',
+  'pdf',
+  'doc',
+  'docx',
+  'dcm',
+  'dicom',
+  'stl',
+  'ply',
+  'obj',
+  'zip',
 ]);
-const imageExtensions = new Set(['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'bmp', 'tif', 'tiff']);
+const imageExtensions = new Set([
+  'jpg',
+  'jpeg',
+  'png',
+  'webp',
+  'heic',
+  'heif',
+  'bmp',
+  'tif',
+  'tiff',
+]);
 const acceptedMimes = new Set([
-  'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
-  'image/bmp', 'image/tiff', 'application/pdf', 'application/msword',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+  'image/bmp',
+  'image/tiff',
+  'application/pdf',
+  'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/dicom', 'application/zip', 'application/x-zip-compressed',
+  'application/dicom',
+  'application/zip',
+  'application/x-zip-compressed',
 ]);
 const mediaTypes: { label: string; icon: AppIconName }[] = [
   { label: 'صورة المريض', icon: { ios: 'person.crop.square', android: 'person', web: 'person' } },
   { label: 'داخل الفم', icon: { ios: 'camera', android: 'photo_camera', web: 'photo_camera' } },
   { label: 'بانوراما', icon: { ios: 'viewfinder', android: 'panorama', web: 'panorama' } },
-  { label: 'حول الذروة', icon: { ios: 'viewfinder', android: 'center_focus_strong', web: 'center_focus_strong' } },
+  {
+    label: 'حول الذروة',
+    icon: { ios: 'viewfinder', android: 'center_focus_strong', web: 'center_focus_strong' },
+  },
   { label: 'عضّية', icon: { ios: 'rectangle.split.3x1', android: 'view_week', web: 'view_week' } },
   { label: 'CBCT / 3D', icon: { ios: 'cube.fill', android: 'view_in_ar', web: 'view_in_ar' } },
   { label: 'مسح', icon: { ios: 'viewfinder', android: 'scanner', web: 'scanner' } },
@@ -48,7 +88,9 @@ function extensionOf(name: string): string {
 }
 
 function isImage(file: AssessmentMediaAttachment): boolean {
-  return Boolean(file.mimeType?.startsWith('image/') || imageExtensions.has(extensionOf(file.fileName)));
+  return Boolean(
+    file.mimeType?.startsWith('image/') || imageExtensions.has(extensionOf(file.fileName)),
+  );
 }
 
 function readableSize(size?: number): string {
@@ -59,32 +101,78 @@ function readableSize(size?: number): string {
 }
 
 function FocusGuide() {
+  const { scheme, colors } = useAppTheme();
   return (
     <Svg width="100%" height={110} viewBox="0 0 320 110" accessible={false}>
-      <Rect x={67} y={21} width={186} height={70} rx={35} fill="#F9EDE5" stroke="#087F76" strokeWidth={2} />
-      <Rect x={122} y={38} width={76} height={37} rx={19} fill="#D8F3EB" stroke="#00C9B6" strokeWidth={2} />
-      <Circle cx={219} cy={56} r={8} stroke="#087F76" strokeWidth={2} strokeDasharray="3 5" fill="none" />
-      <Path d="M25 48 V39 H34 M48 39 H57 V48 M25 62 V71 H34 M48 71 H57 V62 M263 48 V39 H272 M286 39 H295 V48 M263 62 V71 H272 M286 71 H295 V62"
-        stroke="#087F76" strokeWidth={2.3} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <Rect
+        x={67}
+        y={21}
+        width={186}
+        height={70}
+        rx={35}
+        fill={theme.illustration.warm[scheme].surface}
+        stroke={theme.illustration.warm[scheme].border}
+        strokeWidth={2}
+      />
+      <Rect
+        x={122}
+        y={38}
+        width={76}
+        height={37}
+        rx={19}
+        fill={colors.action.subtle}
+        stroke={colors.action.primary}
+        strokeWidth={2}
+      />
+      <Circle
+        cx={219}
+        cy={56}
+        r={8}
+        stroke={colors.action.primary}
+        strokeWidth={2}
+        strokeDasharray="3 5"
+        fill="none"
+      />
+      <Path
+        d="M25 48 V39 H34 M48 39 H57 V48 M25 62 V71 H34 M48 71 H57 V62 M263 48 V39 H272 M286 39 H295 V48 M263 62 V71 H272 M286 71 H295 V62"
+        stroke={colors.action.primary}
+        strokeWidth={2.3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
     </Svg>
   );
 }
 
 function QualityExample({ good }: { good: boolean }) {
   return (
-    <View className={'min-h-[97px] flex-1 items-center justify-center gap-1.5 rounded-[13px] ' +
-      (good ? 'bg-tone-success-fill' : 'bg-surface-subtle')}>
+    <View
+      className={
+        'min-h-[97px] flex-1 items-center justify-center gap-1.5 rounded-[13px] ' +
+        (good ? 'bg-tone-success-fill' : 'bg-surface-subtle')
+      }
+    >
       <AppIcon
-        name={good
-          ? { ios: 'checkmark.seal', android: 'verified', web: 'verified' }
-          : { ios: 'photo', android: 'hide_image', web: 'hide_image' }}
+        name={
+          good
+            ? { ios: 'checkmark.seal', android: 'verified', web: 'verified' }
+            : { ios: 'photo', android: 'hide_image', web: 'hide_image' }
+        }
         size={30}
         tone={good ? 'success' : 'secondary'}
       />
-      <AppText className={'font-ui-bold ' + (good ? 'text-tone-success-text' : 'text-content-secondary')} variant="label">
+      <AppText
+        className={'font-ui-bold ' + (good ? 'text-tone-success-text' : 'text-content-secondary')}
+        variant="label"
+      >
         {good ? 'واضح' : 'غير واضح'}
       </AppText>
-      <AppText className="text-content-secondary" style={{ fontSize: 10, lineHeight: 15 }} variant="caption">
+      <AppText
+        className="text-content-secondary"
+        style={{ fontSize: 10, lineHeight: 15 }}
+        variant="caption"
+      >
         {good ? 'المنطقة كاملة' : 'بعيد أو مظلم'}
       </AppText>
     </View>
@@ -101,16 +189,21 @@ export function AssessmentMediaScreen() {
   const [sourceLaunching, setSourceLaunching] = useState(false);
   const pickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => () => {
-    if (pickerTimerRef.current !== null) clearTimeout(pickerTimerRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (pickerTimerRef.current !== null) clearTimeout(pickerTimerRef.current);
+    },
+    [],
+  );
 
   const validateAndAdd = (files: AssessmentMediaAttachment[]) => {
     const accepted: AssessmentMediaAttachment[] = [];
     for (const file of files) {
       const mimeType = file.mimeType?.toLowerCase();
-      if (!acceptedExtensions.has(extensionOf(file.fileName)) &&
-          !(mimeType && acceptedMimes.has(mimeType))) {
+      if (
+        !acceptedExtensions.has(extensionOf(file.fileName)) &&
+        !(mimeType && acceptedMimes.has(mimeType))
+      ) {
         setPickerError('نوع الملف غير مدعوم. اختر صورة أو PDF أو ملف أشعة أو تقرير طبي.');
         continue;
       }
@@ -151,18 +244,20 @@ export function AssessmentMediaScreen() {
             quality: 0.85,
           });
       if (result.canceled) return;
-      validateAndAdd(result.assets.map((asset) => ({
-        uri: asset.uri,
-        fileName: asset.fileName ?? 'صورة الأسنان.jpg',
-        mimeType: asset.mimeType ?? 'image/jpeg',
-        size: asset.fileSize,
-        width: asset.width,
-        height: asset.height,
-      })));
+      validateAndAdd(
+        result.assets.map((asset) => ({
+          uri: asset.uri,
+          fileName: asset.fileName ?? 'صورة الأسنان.jpg',
+          mimeType: asset.mimeType ?? 'image/jpeg',
+          size: asset.fileSize,
+          width: asset.width,
+          height: asset.height,
+        })),
+      );
     } catch {
-      setPickerError(camera
-        ? 'تعذر تشغيل الكاميرا. يمكنك الاختيار من المعرض.'
-        : 'تعذر فتح الصور. حاول مجدداً.');
+      setPickerError(
+        camera ? 'تعذر تشغيل الكاميرا. يمكنك الاختيار من المعرض.' : 'تعذر فتح الصور. حاول مجدداً.',
+      );
     } finally {
       setPicking(false);
     }
@@ -183,12 +278,14 @@ export function AssessmentMediaScreen() {
         multiple: true,
       });
       if (result.canceled) return;
-      validateAndAdd(result.assets.map((asset) => ({
-        uri: asset.uri,
-        fileName: asset.name,
-        mimeType: asset.mimeType,
-        size: asset.size,
-      })));
+      validateAndAdd(
+        result.assets.map((asset) => ({
+          uri: asset.uri,
+          fileName: asset.name,
+          mimeType: asset.mimeType,
+          size: asset.size,
+        })),
+      );
     } catch {
       setPickerError('تعذر فتح ملفات الجهاز. حاول مجدداً.');
     } finally {
@@ -238,7 +335,12 @@ export function AssessmentMediaScreen() {
         }
       }}
       topContent={
-        <AppText align="right" className="pt-1 text-content-secondary" style={{ fontSize: 11, lineHeight: 18 }} variant="caption">
+        <AppText
+          align="right"
+          className="pt-1 text-content-secondary"
+          style={{ fontSize: 11, lineHeight: 18 }}
+          variant="caption"
+        >
           الصور والملفات تساعد في توجيه البحث، ولا تغني عن فحص الطبيب.
         </AppText>
       }
@@ -252,13 +354,19 @@ export function AssessmentMediaScreen() {
             disabled={picking || sourceLaunching}
             onPress={openMediaSource}
           >
-            <AppIcon name={{ ios: 'camera', android: 'photo_camera', web: 'photo_camera' }} size={21} tone="action" />
+            <AppIcon
+              name={{ ios: 'camera', android: 'photo_camera', web: 'photo_camera' }}
+              size={21}
+              tone="action"
+            />
           </Pressable>
           <AppText className="min-w-0 flex-1 font-ui-bold text-content-link" variant="label">
             صور المنطقة المتأثرة
           </AppText>
           <View className="rounded-full bg-surface-default px-2.5 py-1">
-            <AppText style={{ fontSize: 10 }} variant="caption">اختياري</AppText>
+            <AppText style={{ fontSize: 10 }} variant="caption">
+              اختياري
+            </AppText>
           </View>
         </View>
 
@@ -280,7 +388,12 @@ export function AssessmentMediaScreen() {
             <FocusGuide />
           )}
         </Pressable>
-        <AppText align="right" className="mt-2 text-content-link" style={{ fontSize: 10.5, lineHeight: 17 }} variant="caption">
+        <AppText
+          align="right"
+          className="mt-2 text-content-link"
+          style={{ fontSize: 10.5, lineHeight: 17 }}
+          variant="caption"
+        >
           قرّب الكاميرا · استخدم ضوءاً واضحاً · أظهر المنطقة كاملة
         </AppText>
         <Button
@@ -294,7 +407,12 @@ export function AssessmentMediaScreen() {
       </View>
 
       <View className="mt-2 rounded-[18px] border border-border-subtle bg-surface-default p-3">
-        <AppText align="right" className="font-ui-semibold" style={{ fontSize: 11, lineHeight: 18 }} variant="label">
+        <AppText
+          align="right"
+          className="font-ui-semibold"
+          style={{ fontSize: 11, lineHeight: 18 }}
+          variant="label"
+        >
           مثال سريع قبل الالتقاط
         </AppText>
         <View className="mt-2 flex-row-reverse gap-2">
@@ -304,12 +422,24 @@ export function AssessmentMediaScreen() {
       </View>
       <View className="mt-2 flex-row-reverse gap-2">
         <View className="min-h-[33px] flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[9px] bg-tone-success-fill">
-          <AppIcon name={{ ios: 'checkmark.circle', android: 'check_circle', web: 'check_circle' }} size={14} tone="success" />
-          <AppText className="text-tone-success-text" style={{ fontSize: 10.5 }} variant="caption">الجودة مناسبة</AppText>
+          <AppIcon
+            name={{ ios: 'checkmark.circle', android: 'check_circle', web: 'check_circle' }}
+            size={14}
+            tone="success"
+          />
+          <AppText className="text-tone-success-text" style={{ fontSize: 10.5 }} variant="caption">
+            الجودة مناسبة
+          </AppText>
         </View>
         <View className="min-h-[33px] flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[9px] bg-surface-subtle">
-          <AppIcon name={{ ios: 'photo', android: 'hide_image', web: 'hide_image' }} size={14} tone="secondary" />
-          <AppText style={{ fontSize: 10.5 }} variant="caption">أعد الالتقاط</AppText>
+          <AppIcon
+            name={{ ios: 'photo', android: 'hide_image', web: 'hide_image' }}
+            size={14}
+            tone="secondary"
+          />
+          <AppText style={{ fontSize: 10.5 }} variant="caption">
+            أعد الالتقاط
+          </AppText>
         </View>
       </View>
 
@@ -321,14 +451,27 @@ export function AssessmentMediaScreen() {
           {mediaAttachments.map((file) => (
             <View className="min-h-[49px] flex-row-reverse items-center gap-2 py-1" key={file.uri}>
               {isImage(file) ? (
-                <Image className="h-10 w-10 rounded-[8px] bg-surface-subtle" source={{ uri: file.uri }} />
+                <Image
+                  className="h-10 w-10 rounded-[8px] bg-surface-subtle"
+                  source={{ uri: file.uri }}
+                />
               ) : (
                 <View className="h-10 w-10 items-center justify-center rounded-[8px] bg-action-subtle">
-                  <AppIcon name={{ ios: 'doc', android: 'description', web: 'description' }} size={18} tone="action" />
+                  <AppIcon
+                    name={{ ios: 'doc', android: 'description', web: 'description' }}
+                    size={18}
+                    tone="action"
+                  />
                 </View>
               )}
               <View className="min-w-0 flex-1 items-end">
-                <AppText align="right" className="font-ui-semibold" numberOfLines={1} style={{ fontSize: 11 }} variant="label">
+                <AppText
+                  align="right"
+                  className="font-ui-semibold"
+                  numberOfLines={1}
+                  style={{ fontSize: 11 }}
+                  variant="label"
+                >
                   {file.fileName}
                 </AppText>
                 <AppText style={{ fontSize: 10 }} variant="caption">
@@ -341,11 +484,20 @@ export function AssessmentMediaScreen() {
                 className="h-10 w-10 items-center justify-center rounded-[9px] bg-surface-subtle"
                 onPress={() => removeMediaAttachment(file.uri)}
               >
-                <AppIcon name={{ ios: 'trash', android: 'delete_outline', web: 'delete_outline' }} size={16} tone="danger" />
+                <AppIcon
+                  name={{ ios: 'trash', android: 'delete_outline', web: 'delete_outline' }}
+                  size={16}
+                  tone="danger"
+                />
               </Pressable>
             </View>
           ))}
-          <AppText align="right" className="mt-1 text-content-secondary" style={{ fontSize: 10, lineHeight: 16 }} variant="caption">
+          <AppText
+            align="right"
+            className="mt-1 text-content-secondary"
+            style={{ fontSize: 10, lineHeight: 16 }}
+            variant="caption"
+          >
             المرفقات ضمن جلسة التقييم فقط ولم تُرفع إلى الخادم.
           </AppText>
         </View>
@@ -353,8 +505,16 @@ export function AssessmentMediaScreen() {
 
       {pickerError ? (
         <View className="mt-2 flex-row-reverse items-center gap-2 rounded-[10px] border border-tone-danger-border bg-tone-danger-fill px-3 py-2.5">
-          <AppIcon name={{ ios: 'exclamationmark.circle', android: 'error', web: 'error' }} size={16} tone="danger" />
-          <AppText accessibilityLiveRegion="polite" className="min-w-0 flex-1 text-tone-danger-text" variant="caption">
+          <AppIcon
+            name={{ ios: 'exclamationmark.circle', android: 'error', web: 'error' }}
+            size={16}
+            tone="danger"
+          />
+          <AppText
+            accessibilityLiveRegion="polite"
+            className="min-w-0 flex-1 text-tone-danger-text"
+            variant="caption"
+          >
             {pickerError}
           </AppText>
         </View>
@@ -362,7 +522,9 @@ export function AssessmentMediaScreen() {
 
       <View className="mt-3">
         <View className="flex-row-reverse items-center justify-between gap-2">
-          <AppText className="font-ui-bold" variant="label">أنواع ملفات نتعرّف عليها</AppText>
+          <AppText className="font-ui-bold" variant="label">
+            أنواع ملفات نتعرّف عليها
+          </AppText>
           <AppText className="text-content-secondary" style={{ fontSize: 9.5 }} variant="caption">
             صورة، تقرير، أشعة أو مسح
           </AppText>
@@ -374,19 +536,38 @@ export function AssessmentMediaScreen() {
               key={type.label}
             >
               <AppIcon name={type.icon} size={20} tone="action" />
-              <AppText align="center" className="font-ui-semibold" numberOfLines={1} style={{ fontSize: 9.5, lineHeight: 15 }} variant="caption">
+              <AppText
+                align="center"
+                className="font-ui-semibold"
+                numberOfLines={1}
+                style={{ fontSize: 9.5, lineHeight: 15 }}
+                variant="caption"
+              >
                 {type.label}
               </AppText>
             </View>
           ))}
         </View>
-        <AppText align="right" className="mt-1.5 text-content-secondary" style={{ fontSize: 9.5, lineHeight: 15 }} variant="caption">
+        <AppText
+          align="right"
+          className="mt-1.5 text-content-secondary"
+          style={{ fontSize: 9.5, lineHeight: 15 }}
+          variant="caption"
+        >
           JPG، PNG، PDF، Word، DICOM، 3D · حتى 25 ميغابايت للملف
         </AppText>
       </View>
       <View className="mt-2 flex-row-reverse items-center gap-2 rounded-[11px] bg-tone-warning-fill px-3 py-2.5">
-        <AppIcon name={{ ios: 'checkmark.shield', android: 'verified_user', web: 'verified_user' }} size={16} tone="warning" />
-        <AppText className="min-w-0 flex-1 text-tone-warning-text" style={{ fontSize: 10.5, lineHeight: 17 }} variant="caption">
+        <AppIcon
+          name={{ ios: 'checkmark.shield', android: 'verified_user', web: 'verified_user' }}
+          size={16}
+          tone="warning"
+        />
+        <AppText
+          className="min-w-0 flex-1 text-tone-warning-text"
+          style={{ fontSize: 10.5, lineHeight: 17 }}
+          variant="caption"
+        >
           لا نطلب منك إجراء أشعة جديدة بنفسك.
         </AppText>
       </View>

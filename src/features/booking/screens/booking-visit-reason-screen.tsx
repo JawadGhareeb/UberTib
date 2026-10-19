@@ -10,7 +10,7 @@ import { useMockScenario } from '@/shared/mock';
 import { useBookingDraft, type BookingVisitReason } from '@/features/booking/state/booking-draft-provider';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 const reasons = [

@@ -2,7 +2,7 @@ import { Platform, Text, View } from 'react-native';
 
 import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { theme } from '@/shared/theme';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 interface BrandLogoProps {
   size?: number;

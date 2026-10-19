@@ -20,7 +20,7 @@ import {
 } from '@/shared/components/ui';
 import type { CountryOption } from '@/shared/components/ui/country-select';
 import { useMockScenario } from '@/shared/mock';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 type Stage = 'number' | 'otp' | null;
 

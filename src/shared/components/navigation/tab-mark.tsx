@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { theme } from '@/shared/theme';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 type TabMarkKind = 'home' | 'discover' | 'care' | 'profile';
 

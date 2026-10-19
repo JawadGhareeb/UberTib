@@ -2,7 +2,7 @@ import { Button, Dialog, Typography } from 'heroui-native';
 import { View } from 'react-native';
 
 import { OutlineIcon, type OutlineIconName } from '@/shared/components/media/outline-icon';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 export type MediaSource = 'camera' | 'gallery' | 'files';
 

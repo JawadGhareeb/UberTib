@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { TextInput, View } from 'react-native';
 
 import { AppIcon } from '@/shared/components/ui/app-icon';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 type InputProps = ComponentProps<typeof TextInput>;

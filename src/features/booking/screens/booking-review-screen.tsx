@@ -19,7 +19,7 @@ import { useAuthSession } from '@/providers/auth-session-provider';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { cn } from '@/shared/utils/cn';
 import { useFamilyMembers } from '@/features/profile/state/family-members-provider';

@@ -1,6 +1,6 @@
 import Svg, { Circle, G, Path } from 'react-native-svg';
 
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 /**
  * Dental procedure pictograms, not generic app glyphs.

@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { getMockNotificationsForScenario } from '@/features/platform/mocks/platform.mock';
 import { CenteredActionIcon } from '@/shared/components/ui/centered-action-icon';
 import { useMockScenario } from '@/shared/mock';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 export function HeaderNotificationButton() {
   const router = useRouter();

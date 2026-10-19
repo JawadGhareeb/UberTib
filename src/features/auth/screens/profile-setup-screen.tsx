@@ -22,7 +22,7 @@ import { resolveSafeReturnTo } from '@/features/auth/navigation/auth-intent';
 import { usePreferredLocation } from '@/features/location/state/preferred-location-provider';
 import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 export function ProfileSetupScreen() {
   const router = useRouter();

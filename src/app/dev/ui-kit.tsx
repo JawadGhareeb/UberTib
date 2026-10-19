@@ -6,7 +6,7 @@ import { Card } from 'heroui-native/card';
 import { Input } from 'heroui-native/input';
 
 import { AppText } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 /**
  * Development-only preview for validating HeroUI, Uniwind, Arabic/RTL and theme.

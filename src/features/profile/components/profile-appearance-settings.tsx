@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { ProfileMenuCard } from './profile-menu-card';
 
 export function ProfileAppearanceSettings() {

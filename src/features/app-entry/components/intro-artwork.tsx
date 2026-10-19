@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 import { theme } from '@/shared/theme';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 export function IntroArtwork({ step }: { step: 0 | 1 }) {
   const { colors } = useAppTheme();
@@ -106,7 +106,7 @@ export function IntroArtwork({ step }: { step: 0 | 1 }) {
             />
             <Path
               d="M221 212l10 10 19-21"
-              stroke="#111111"
+              stroke={colors.text.onAction}
               strokeWidth="5"
               strokeLinecap="round"
               strokeLinejoin="round"

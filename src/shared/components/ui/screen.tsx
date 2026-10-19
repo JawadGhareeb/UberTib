@@ -5,7 +5,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { theme } from '@/shared/theme';
 import { cn } from '@/shared/utils/cn';
-import { useAppTheme } from '@/shared/theme/theme-provider';
 
 interface ScreenProps extends PropsWithChildren {
   header?: ReactNode;
@@ -16,7 +15,6 @@ interface ScreenProps extends PropsWithChildren {
 
 export function Screen({ children, header, context, className, contentClassName }: ScreenProps) {
   const insets = useSafeAreaInsets();
-  const { colors } = useAppTheme();
   const resolvedContentClassName = contentClassName
     ? cn('flex-1', contentClassName)
     : 'flex-1 px-4 pb-4';
@@ -28,7 +26,7 @@ export function Screen({ children, header, context, className, contentClassName 
       edges={header ? ['left', 'right', 'bottom'] : undefined}
     >
       {header ? (
-        <View style={{ backgroundColor: colors.surface.default, paddingTop: insets.top }}>
+        <View className="bg-surface-default" style={{ paddingTop: insets.top }}>
           {header}
         </View>
       ) : null}

@@ -12,7 +12,7 @@ import { reverseGeocodeArabic } from '@/features/location/api/reverse-geocode';
 import { usePreferredLocation } from '@/features/location/state/preferred-location-provider';
 import { OutlineIcon } from '@/shared/components/media/outline-icon';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 const DEFAULT_CENTER: Coordinate = { latitude: 36.2021, longitude: 37.1343 };
 

@@ -2,7 +2,7 @@ import { View } from 'react-native';
 
 import { ToothSvg, type ToothShape } from '@/shared/components/ui/tooth-svg';
 import { theme } from '@/shared/theme';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 /**
  * Dental-service icon treatment from the Pen home cards.

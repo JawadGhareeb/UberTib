@@ -8,7 +8,7 @@ import { getMockCareCaseForScenario, getMockCareReferenceLabel } from '@/feature
 import { CareActionFooter } from '@/features/my-care/components/care-financial-ui';
 import { AppIcon, AppText, Button, ReadStateBoundary, Screen, StateView } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 interface ClaimsScreenProps {

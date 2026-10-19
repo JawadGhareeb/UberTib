@@ -7,7 +7,7 @@ import {
   type CountryOption,
 } from '@/shared/components/ui/country-select';
 import { FieldSurface } from '@/shared/components/ui/field-surface';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 interface PhoneNumberFieldProps {

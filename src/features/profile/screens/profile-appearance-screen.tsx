@@ -3,8 +3,8 @@ import { Pressable, View } from 'react-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { AppIcon, AppText, Button, type AppIconName } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
-import type { ThemeScheme } from '@/shared/theme';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
+import { darkTheme, lightTheme, type ThemeScheme } from '@/shared/theme';
 
 const options: {
   scheme: ThemeScheme;
@@ -15,13 +15,32 @@ const options: {
   label: string;
   ink: string;
 }[] = [
-  { scheme: 'light', name: 'الفاتح', icon: { ios: 'sun.max.fill', android: 'light_mode', web: 'light_mode' },
-    canvas: '#F7FAFA', panel: '#FFFFFF', label: '#0A9D86', ink: '#1A3332' },
-  { scheme: 'dark', name: 'الداكن', icon: { ios: 'moon.stars.fill', android: 'dark_mode', web: 'dark_mode' },
-    canvas: '#142021', panel: '#253335', label: '#00E0B8', ink: '#F0F9F7' },
+  {
+    scheme: 'light',
+    name: 'الفاتح',
+    icon: { ios: 'sun.max.fill', android: 'light_mode', web: 'light_mode' },
+    canvas: lightTheme.surface.canvas,
+    panel: lightTheme.surface.default,
+    label: lightTheme.action.primary,
+    ink: lightTheme.text.primary,
+  },
+  {
+    scheme: 'dark',
+    name: 'الداكن',
+    icon: { ios: 'moon.stars.fill', android: 'dark_mode', web: 'dark_mode' },
+    canvas: darkTheme.surface.canvas,
+    panel: darkTheme.surface.default,
+    label: darkTheme.action.primary,
+    ink: darkTheme.text.primary,
+  },
 ];
 
-function AppearanceChoice({ selected, active, item, onPress }: {
+function AppearanceChoice({
+  selected,
+  active,
+  item,
+  onPress,
+}: {
   selected: boolean;
   active: boolean;
   item: (typeof options)[number];
@@ -33,31 +52,52 @@ function AppearanceChoice({ selected, active, item, onPress }: {
       accessibilityLabel={'اختيار المظهر ' + item.name}
       accessibilityState={{ checked: selected }}
       onPress={onPress}
-      className={'min-h-[222px] min-w-0 flex-1 items-center gap-3 rounded-[17px] border p-3 ' +
-        (selected ? 'border-action-primary bg-action-subtle' : 'border-border-subtle bg-surface-default')}
+      className={
+        'min-h-[222px] min-w-0 flex-1 items-center gap-3 rounded-[17px] border p-3 ' +
+        (selected
+          ? 'border-action-primary bg-action-subtle'
+          : 'border-border-subtle bg-surface-default')
+      }
     >
       <View className="h-12 w-12 items-center justify-center rounded-full bg-surface-subtle">
         <AppIcon name={item.icon} size={26} tone={selected ? 'action' : 'secondary'} />
       </View>
-      <AppText align="center" variant="label" className="font-ui-semibold">{item.name}</AppText>
+      <AppText align="center" variant="label" className="font-ui-semibold">
+        {item.name}
+      </AppText>
       <View className="w-full gap-2 rounded-[12px] p-2" style={{ backgroundColor: item.canvas }}>
-        <View className="h-4 w-11 self-end rounded" style={{ backgroundColor: item.ink, opacity: 0.7 }} />
+        <View
+          className="h-4 w-11 self-end rounded"
+          style={{ backgroundColor: item.ink, opacity: 0.7 }}
+        />
         <View className="h-8 w-full rounded-[7px] p-1.5" style={{ backgroundColor: item.panel }}>
-          <View className="h-2 w-9 self-end rounded" style={{ backgroundColor: item.ink, opacity: 0.55 }} />
+          <View
+            className="h-2 w-9 self-end rounded"
+            style={{ backgroundColor: item.ink, opacity: 0.55 }}
+          />
         </View>
         <View className="h-4 w-16 self-end rounded-[6px]" style={{ backgroundColor: item.label }} />
       </View>
       <View className="min-h-[23px] flex-row-reverse items-center justify-center gap-1">
         {selected ? (
-          <AppIcon name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
-            size={17} tone="action" />
+          <AppIcon
+            name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
+            size={17}
+            tone="action"
+          />
         ) : null}
         {active ? (
-          <AppText variant="caption" className="font-ui-semibold text-content-link">المظهر الحالي</AppText>
+          <AppText variant="caption" className="font-ui-semibold text-content-link">
+            المظهر الحالي
+          </AppText>
         ) : selected ? (
-          <AppText variant="caption" className="text-content-link">مختار للتطبيق</AppText>
+          <AppText variant="caption" className="text-content-link">
+            مختار للتطبيق
+          </AppText>
         ) : (
-          <AppText variant="caption" className="text-content-secondary">اختار المظهر</AppText>
+          <AppText variant="caption" className="text-content-secondary">
+            اختار المظهر
+          </AppText>
         )}
       </View>
     </Pressable>
@@ -69,8 +109,11 @@ export function ProfileAppearanceScreen() {
   const [draft, setDraft] = useState<ThemeScheme | null>(null);
   const selected = draft ?? scheme;
   return (
-    <ProfileScreenShell eyebrow="المظهر" title="المظهر"
-      description="اختار المظهر اللي بناسبك، وبعدها اضغط تطبيق الثيم.">
+    <ProfileScreenShell
+      eyebrow="المظهر"
+      title="المظهر"
+      description="اختار المظهر اللي بناسبك، وبعدها اضغط تطبيق الثيم."
+    >
       <View className="mt-3 gap-5">
         <View accessibilityRole="radiogroup" className="flex-row-reverse gap-3">
           {options.map((item) => (

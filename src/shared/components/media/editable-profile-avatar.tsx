@@ -8,6 +8,7 @@ import {
   type SelectedMediaFile,
 } from '@/shared/components/media/media-picker';
 import { OutlineIcon } from '@/shared/components/media/outline-icon';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 export interface EditableProfileAvatarProps {
   value: SelectedMediaFile | null;
@@ -21,6 +22,7 @@ export function EditableProfileAvatar({
   onChange,
   disabled = false,
 }: EditableProfileAvatarProps) {
+  const { colors } = useAppTheme();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -74,7 +76,7 @@ export function EditableProfileAvatar({
           pointerEvents="none"
           className="absolute -bottom-1 -right-2 h-8 w-8 items-center justify-center rounded-full border-2 border-surface-default bg-action-primary"
         >
-          <OutlineIcon name="camera" size={17} color="#111111" />
+          <OutlineIcon name="camera" size={17} color={colors.surface.inverse} />
         </View>
       </Pressable>
       {busy ? (

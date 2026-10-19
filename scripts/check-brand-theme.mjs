@@ -50,10 +50,11 @@ for (const file of [...sourceFiles('src'), 'global.css']) {
 }
 
 const tabs = readFileSync('src/app/(tabs)/_layout.tsx', 'utf8');
+const tabItem = readFileSync('src/shared/components/navigation/patient-tab-item.tsx', 'utf8');
 if (
-  !tabs.includes("focused ? 'bg-action-primary'") ||
-  !tabs.includes('activeTintColor={colors.text.onAction}') ||
-  !tabs.includes('focused ? colors.text.onAction')
+  !tabItem.includes("focused ? 'bg-action-primary") ||
+  !tabItem.includes('activeTintColor={colors.text.onAction}') ||
+  !tabItem.includes('color: colors.text.onAction')
 ) {
   throw new Error('Focused bottom tabs must be solid primary with white icon/text');
 }
@@ -73,12 +74,17 @@ if (!fields.includes('border-action-primary')) {
 
 const tabMetrics = readFileSync('src/shared/components/navigation/patient-tab-metrics.ts', 'utf8');
 const careTabs = readFileSync('src/features/my-care/components/care-v5-ui.tsx', 'utf8');
-const discoveryTabs = readFileSync('src/features/discovery/components/pen-discovery-ui.tsx', 'utf8');
+const discoveryTabs = readFileSync(
+  'src/features/discovery/components/pen-discovery-ui.tsx',
+  'utf8',
+);
+const bottomBar = readFileSync('src/shared/components/navigation/patient-bottom-bar.tsx', 'utf8');
 if (
-  !tabs.includes('PATIENT_TAB_BAR_HEIGHT') ||
-  !careTabs.includes('PATIENT_TAB_BAR_HEIGHT') ||
-  !discoveryTabs.includes('PATIENT_TAB_BAR_HEIGHT') ||
-  !tabMetrics.includes('PATIENT_TAB_HEIGHT = 52')
+  !tabs.includes('PatientBottomBar') ||
+  !bottomBar.includes('PATIENT_TAB_BAR_HEIGHT') ||
+  !careTabs.includes('PatientBottomBar') ||
+  !discoveryTabs.includes('PatientBottomBar') ||
+  !tabMetrics.includes('PATIENT_TAB_HEIGHT = 56')
 ) {
   throw new Error('All patient tabs must share one compact height contract');
 }

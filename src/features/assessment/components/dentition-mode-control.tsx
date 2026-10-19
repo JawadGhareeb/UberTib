@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import type { DentitionMode } from '@/features/assessment/state/assessment-session-provider';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppText } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 const modes: { value: DentitionMode; label: string }[] = [

@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import type { PenServiceGroup } from '@/features/discovery/presentation/pen-discovery-data';
 import { ServiceIcon, type DentalServiceIconId } from '@/features/discovery/components/service-icon';
 import { AppText, Button } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 const previewFamilies: Record<PenServiceGroup['code'], readonly string[]> = {
   G01: ['extraction', 'periodontics', 'implant'],

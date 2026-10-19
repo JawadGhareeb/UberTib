@@ -51,6 +51,14 @@
   --color-state-selected-border: var(--state-selected-border);
   --color-state-readonly: var(--state-readonly);
   --color-state-readonly-border: var(--state-readonly-border);
+  --color-content-primary: var(--text-primary);
+  --color-content-secondary: var(--text-secondary);
+  --color-content-placeholder: var(--text-placeholder);
+  --color-content-disabled: var(--text-disabled);
+  --color-content-link: var(--text-link);
+  --color-content-on-action: var(--text-on-action);
+  --color-content-on-inverse: var(--text-on-inverse);
+  --color-content-on-destructive: var(--text-on-destructive);
   --font-ui-regular: "IBMPlexSansArabic_400Regular";
   --font-ui-medium: "IBMPlexSansArabic_500Medium";
   --font-ui-semibold: "IBMPlexSansArabic_600SemiBold";

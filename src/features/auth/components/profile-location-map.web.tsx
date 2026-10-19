@@ -1,13 +1,16 @@
-import { createElement, useEffect, useRef, useState } from 'react';
+import { createElement, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import type { ProfileLocationMapProps } from './profile-location-map.types';
+import { getThemeColors, type ThemeScheme } from '@/shared/theme';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 // Web fallback uses the same OpenFreeMap / MapLibre style as the native picker.
 // The iframe is sandboxed: the pinned third-party map script cannot access app state.
 const MAP_MESSAGE = 'upertib-location-picker';
 
-function createMapDocument(latitude: number, longitude: number): string {
+function createMapDocument(latitude: number, longitude: number, scheme: ThemeScheme): string {
+  const colors = getThemeColors(scheme);
   return `<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -16,10 +19,10 @@ function createMapDocument(latitude: number, longitude: number): string {
 <link href="https://unpkg.com/maplibre-gl@5.15.0/dist/maplibre-gl.css" rel="stylesheet" />
 <style>
 html,body,#map { margin:0; padding:0; width:100%; height:100%; overflow:hidden; }
-body { font-family:system-ui,sans-serif; background:#f6f6f6; }
+body { font-family:system-ui,sans-serif; background:${colors.surface.subtle}; }
 .maplibregl-control-container { direction:ltr; }
 #unavailable { display:none; position:absolute; inset:0; place-items:center;
-  text-align:center; padding:20px; color:#111111; background:#f6f6f6; }
+  text-align:center; padding:20px; color:${colors.text.primary}; background:${colors.surface.subtle}; }
 </style>
 </head>
 <body>
@@ -34,7 +37,7 @@ body { font-family:system-ui,sans-serif; background:#f6f6f6; }
   try {
     const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://tiles.openfreemap.org/styles/liberty',
+      style: 'https://tiles.openfreemap.org/styles/${scheme === 'dark' ? 'dark' : 'liberty'}',
       center: start, zoom: 13.5,
       attributionControl: true,
     });
@@ -51,7 +54,7 @@ body { font-family:system-ui,sans-serif; background:#f6f6f6; }
     map.on('load', () => parent.postMessage({type:'${MAP_MESSAGE}', ready:true}, '*'));
     // The pin stays fixed on screen while the user moves the map underneath it.
     const pin = document.createElement('div');
-    pin.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);pointer-events:none;z-index:2;font-size:35px;color:#00c9ae;text-shadow:0 1px 4px #ffffff;';
+    pin.style.cssText = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);pointer-events:none;z-index:2;font-size:35px;color:${colors.action.primary};text-shadow:0 1px 4px ${colors.surface.default};';
     pin.textContent = '📍';
     document.body.appendChild(pin);
     function notifyCenter() {
@@ -78,9 +81,17 @@ body { font-family:system-ui,sans-serif; background:#f6f6f6; }
 </body></html>`;
 }
 
-export function ProfileLocationMap({ coordinate, onChange, onInteractiveChange, recenterToken = 0 }: ProfileLocationMapProps) {
-  const [mapDocument] = useState(() =>
-    createMapDocument(coordinate.latitude, coordinate.longitude),
+export function ProfileLocationMap({
+  coordinate,
+  onChange,
+  onInteractiveChange,
+  recenterToken = 0,
+}: ProfileLocationMapProps) {
+  const { scheme } = useAppTheme();
+  const [initialCoordinate] = useState(() => coordinate);
+  const mapDocument = useMemo(
+    () => createMapDocument(initialCoordinate.latitude, initialCoordinate.longitude, scheme),
+    [initialCoordinate, scheme],
   );
   const onChangeRef = useRef(onChange);
   const coordinateRef = useRef(coordinate);
@@ -105,10 +116,13 @@ export function ProfileLocationMap({ coordinate, onChange, onInteractiveChange, 
         onInteractiveChangeRef.current?.(value.ready);
         if (value.ready) {
           const point = coordinateRef.current;
-          frameRef.current.contentWindow?.postMessage({
-            type: MAP_MESSAGE,
-            recenter: [point.longitude, point.latitude],
-          }, '*');
+          frameRef.current.contentWindow?.postMessage(
+            {
+              type: MAP_MESSAGE,
+              recenter: [point.longitude, point.latitude],
+            },
+            '*',
+          );
         }
         return;
       }
@@ -131,16 +145,20 @@ export function ProfileLocationMap({ coordinate, onChange, onInteractiveChange, 
   useEffect(() => {
     if (recenterToken < 1) return;
     const point = coordinateRef.current;
-    frameRef.current?.contentWindow?.postMessage({
-      type: MAP_MESSAGE,
-      recenter: [point.longitude, point.latitude],
-    }, '*');
+    frameRef.current?.contentWindow?.postMessage(
+      {
+        type: MAP_MESSAGE,
+        recenter: [point.longitude, point.latitude],
+      },
+      '*',
+    );
   }, [recenterToken]);
 
   return (
     <View className="flex-1 bg-surface-subtle">
       {createElement('iframe', {
         ref: frameRef,
+        key: scheme,
         title: 'خريطة تحديد الموقع',
         srcDoc: mapDocument,
         sandbox: 'allow-scripts',

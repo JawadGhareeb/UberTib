@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { AppIcon } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { mirrorToothPath } from '@/shared/utils/mirror-tooth-path';
 
 /**

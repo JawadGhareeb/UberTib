@@ -1,6 +1,6 @@
 import Svg, { Path } from 'react-native-svg';
 
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { mirrorToothPath } from '@/shared/utils/mirror-tooth-path';
 
 export type ToothShape = 'incisor' | 'canine' | 'premolar' | 'molar';

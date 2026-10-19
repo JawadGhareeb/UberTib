@@ -6,7 +6,7 @@ import { AppIcon, type AppIconName } from '@/shared/components/ui/app-icon';
 import { AppText } from '@/shared/components/ui/app-text';
 import { Button } from '@/shared/components/ui/button';
 import { theme } from '@/shared/theme';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 interface ConfirmationDialogProps {

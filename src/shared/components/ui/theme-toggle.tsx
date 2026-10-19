@@ -2,7 +2,7 @@ import { SymbolView } from 'expo-symbols';
 import { Pressable } from 'react-native';
 
 import { useAppDirection } from '@/providers/app-direction-provider';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 interface ThemeToggleProps {

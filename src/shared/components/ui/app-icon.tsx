@@ -1,7 +1,7 @@
 import { SymbolView } from 'expo-symbols';
 import type { ComponentProps } from 'react';
 
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 export type AppIconTone =
   | 'primary'

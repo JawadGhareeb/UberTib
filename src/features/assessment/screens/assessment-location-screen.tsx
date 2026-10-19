@@ -8,7 +8,7 @@ import { DentitionModeControl } from '@/features/assessment/components/dentition
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 const regions = ['يمين علوي', 'يسار علوي', 'يمين سفلي', 'يسار سفلي'] as const;

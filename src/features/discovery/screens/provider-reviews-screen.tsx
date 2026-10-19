@@ -7,7 +7,7 @@ import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { penReviews } from '@/features/discovery/presentation/pen-discovery-data';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 type ReviewTab = 'الأحدث' | 'مع تعليق' | 'الخدمة نفسها';

@@ -3,7 +3,7 @@ import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
 import { TabMark } from './tab-mark';
 import type { PatientTabName } from './patient-tab-configuration';
 import { theme } from '@/shared/theme';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 export function PatientTabItem({

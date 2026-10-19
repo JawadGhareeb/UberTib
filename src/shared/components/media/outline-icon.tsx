@@ -16,7 +16,7 @@ export type OutlineIconName =
 export function OutlineIcon({
   name,
   size = 24,
-  color = '#111111',
+  color = 'currentColor',
   strokeWidth = 2,
 }: {
   name: OutlineIconName;

@@ -1,7 +1,7 @@
 import { Button } from 'heroui-native';
 
 import { OutlineIcon } from '@/shared/components/media/outline-icon';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 export function AuthBackButton({
   onPress,

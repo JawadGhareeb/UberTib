@@ -4,7 +4,7 @@ import { Pressable, TextInput, View } from 'react-native';
 
 import { AppIcon, type AppIconName } from '@/shared/components/ui/app-icon';
 import { FieldSurface } from '@/shared/components/ui/field-surface';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
 type NativeTextInputProps = ComponentProps<typeof TextInput>;

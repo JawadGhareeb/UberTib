@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import { ServiceIcon } from '@/features/discovery/components/service-icon';
 import type { PenServiceFamily } from '@/features/discovery/presentation/pen-discovery-data';
 import { AppIcon, AppText } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 export function FamilyCard({ family, onPress }: { family: PenServiceFamily; onPress: () => void }) {
   const { colors } = useAppTheme();

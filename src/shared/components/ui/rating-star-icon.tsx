@@ -1,6 +1,6 @@
 import Svg, { Path } from 'react-native-svg';
 
-import { useAppTheme } from '@/shared/theme/theme-provider';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 interface RatingStarIconProps {
   filled: boolean;
