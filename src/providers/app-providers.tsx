@@ -6,6 +6,7 @@ import { ProfilePrivacyProvider } from '@/features/profile/state/profile-privacy
 import { ProfilePhotoProvider } from '@/features/profile/state/profile-photo-provider';
 import { FamilyMembersProvider } from '@/features/profile/state/family-members-provider';
 import { AccountDetailsProvider } from '@/features/profile/state/account-details-provider';
+import { SupportTicketsProvider } from '@/features/profile/state/support-tickets-provider';
 import { PreferredLocationProvider } from '@/features/location/state/preferred-location-provider';
 import { AppDirectionProvider } from '@/providers/app-direction-provider';
 import { AuthSessionProvider } from '@/providers/auth-session-provider';
@@ -21,16 +22,18 @@ export function AppProviders({ children }: PropsWithChildren) {
           <PreferredLocationProvider>
             <AccountDetailsProvider>
               <FamilyMembersProvider>
-              <DiscoverySessionProvider>
-                <MockScenarioProvider>
-                  <ProfilePrivacyProvider>
-                    <ProfilePhotoProvider>
-                      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-                    </ProfilePhotoProvider>
-                  </ProfilePrivacyProvider>
-                </MockScenarioProvider>
-              </DiscoverySessionProvider>
-            </FamilyMembersProvider>
+                <DiscoverySessionProvider>
+                  <MockScenarioProvider>
+                    <ProfilePrivacyProvider>
+                      <ProfilePhotoProvider>
+                        <SupportTicketsProvider>
+                          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+                        </SupportTicketsProvider>
+                      </ProfilePhotoProvider>
+                    </ProfilePrivacyProvider>
+                  </MockScenarioProvider>
+                </DiscoverySessionProvider>
+              </FamilyMembersProvider>
             </AccountDetailsProvider>
           </PreferredLocationProvider>
         </AuthSessionProvider>
