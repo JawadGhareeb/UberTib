@@ -1,8 +1,8 @@
-import { Chip } from 'heroui-native';
-import { View } from 'react-native';
-
 import { findPenFamily, findPenGroup } from '@/features/discovery/presentation/pen-discovery-data';
-import { AppIcon } from '@/shared/components/ui';
+import {
+  AppliedFilterChips,
+  type AppliedFilterItem,
+} from '@/shared/components/filters/applied-filter-chips';
 import {
   selectedDiscoveryAreas,
   withSelectedDiscoveryAreas,
@@ -16,14 +16,14 @@ export function DiscoverAppliedFilterChips({
   selection: DiscoveryFilterSelection;
   onChange: (selection: DiscoveryFilterSelection) => void;
 }) {
-  const chips: { key: string; label: string; clear: () => void }[] = [];
+  const chips: AppliedFilterItem[] = [];
 
   const areas = selectedDiscoveryAreas(selection);
   areas.forEach((area) =>
     chips.push({
       key: 'area-' + area,
       label: area,
-      clear: () =>
+      onRemove: () =>
         onChange(
           withSelectedDiscoveryAreas(
             selection,
@@ -37,7 +37,7 @@ export function DiscoverAppliedFilterChips({
     chips.push({
       key: 'group',
       label: findPenGroup(selection.groupCode)?.title ?? 'المجال',
-      clear: () =>
+      onRemove: () =>
         onChange({
           ...selection,
           groupCode: null,
@@ -51,7 +51,7 @@ export function DiscoverAppliedFilterChips({
     chips.push({
       key: 'service',
       label: findPenFamily(selection.serviceCode)?.title ?? 'الخدمة',
-      clear: () => onChange({ ...selection, serviceCode: null, priceRange: null }),
+      onRemove: () => onChange({ ...selection, serviceCode: null, priceRange: null }),
     });
   }
 
@@ -63,33 +63,9 @@ export function DiscoverAppliedFilterChips({
         ' – ' +
         selection.priceRange[1].toLocaleString('en-US') +
         ' ل.س',
-      clear: () => onChange({ ...selection, priceRange: null }),
+      onRemove: () => onChange({ ...selection, priceRange: null }),
     });
   }
 
-  if (!chips.length) return null;
-
-  return (
-    <View className="flex-row-reverse flex-wrap gap-2" accessibilityLabel="الفلاتر المختارة">
-      {chips.map((item) => (
-        <Chip
-          key={item.key}
-          variant="soft"
-          color="accent"
-          size="md"
-          accessibilityRole="button"
-          accessibilityLabel={'إزالة فلتر ' + item.label}
-          onPress={item.clear}
-          className="min-h-[34px] flex-row-reverse items-center gap-1.5"
-        >
-          <Chip.Label>{item.label}</Chip.Label>
-          <AppIcon
-            name={{ ios: 'xmark', android: 'close', web: 'close' }}
-            size={13}
-            tone="action"
-          />
-        </Chip>
-      ))}
-    </View>
-  );
+  return <AppliedFilterChips items={chips} />;
 }

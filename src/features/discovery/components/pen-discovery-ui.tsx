@@ -6,6 +6,7 @@ import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
 import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';
+import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 
 export function DiscoveryHeader({
   title,
@@ -44,23 +45,14 @@ export function DiscoveryHeader({
         rowClassName,
       )}
     >
-      <Pressable
-        accessibilityLabel="رجوع"
-        accessibilityRole="button"
-        className="h-11 w-11 items-center justify-center rounded-full"
+      <AuthBackButton
         onPress={() => {
           if (!showBack) return router.replace('/(tabs)/home');
           if (onBackPress) return onBackPress();
           if (router.canGoBack()) return router.back();
           return router.replace('/discover');
         }}
-      >
-        <AppIcon
-          name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }}
-          size={21}
-          tone={showShareAction || showFavoriteAction || showFilterAction ? 'secondary' : 'action'}
-        />
-      </Pressable>
+      />
 
       <View className="min-w-0 flex-1 items-center px-2">
         <AppText

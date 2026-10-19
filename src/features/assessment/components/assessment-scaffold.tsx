@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import type { PropsWithChildren, ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 import { useAppDirection } from '@/providers/app-direction-provider';
-import { AppIcon, AppText, Button, Screen } from '@/shared/components/ui';
+import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
+import { AppText, Button, Screen } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { cn } from '@/shared/utils/cn';
 
@@ -32,7 +33,6 @@ export function AssessmentScaffold({
   topContent,
   scroll = true,
   hideBack = false,
-  backIcon,
   children,
 }: AssessmentScaffoldProps) {
   const router = useRouter();
@@ -56,18 +56,12 @@ export function AssessmentScaffold({
         {hideBack ? (
           <View className="h-10 w-10" />
         ) : (
-          <Pressable
-            accessibilityLabel="رجوع"
-            accessibilityRole="button"
-            className="h-10 w-10 items-center justify-center rounded-full bg-surface-default"
-            onPress={() => router.back()}
-          >
-            <AppIcon
-              name={backIcon ?? { ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
-              size={19}
-              tone="primary"
-            />
-          </Pressable>
+          <AuthBackButton
+            onPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace('/(tabs)/home');
+            }}
+          />
         )}
 
         <View className="min-w-0 flex-1 items-end gap-0.5">

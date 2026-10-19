@@ -2,7 +2,7 @@ import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import { Button, Typography } from 'heroui-native';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProfileLocationMap } from '@/features/auth/components/profile-location-map';
@@ -11,6 +11,7 @@ import { getDevelopmentDeviceLocation } from '@/features/location/api/device-loc
 import { reverseGeocodeArabic } from '@/features/location/api/reverse-geocode';
 import { usePreferredLocation } from '@/features/location/state/preferred-location-provider';
 import { OutlineIcon } from '@/shared/components/media/outline-icon';
+import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { useAppTheme } from '@/shared/theme/theme-provider';
 
 const DEFAULT_CENTER: Coordinate = { latitude: 36.2021, longitude: 37.1343 };
@@ -117,14 +118,7 @@ export function LocationPickerScreen() {
           className="min-h-14 flex-row items-center justify-between"
           style={{ direction: 'rtl' }}
         >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="رجوع إلى إكمال الملف"
-            className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
-            onPress={() => router.back()}
-          >
-            <OutlineIcon name="arrow-right" size={23} color={colors.action.primary} />
-          </Pressable>
+          <AuthBackButton label="رجوع إلى إكمال الملف" onPress={() => router.back()} />
           <Typography.Heading
             type="h3"
             className="font-ui-bold text-text-primary"

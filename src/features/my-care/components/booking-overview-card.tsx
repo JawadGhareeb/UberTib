@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import { AppIcon, AppText, StatusIndicator } from '@/shared/components/ui';
 import { CenteredActionIcon } from '@/shared/components/ui/centered-action-icon';
+import { CareRecordTitle } from './care-record-title';
 import type { BookingItem } from '../model/overview-items';
 
 export function BookingRow({ item, onPress }: { item: BookingItem; onPress: () => void }) {
@@ -14,7 +15,6 @@ export function BookingRow({ item, onPress }: { item: BookingItem; onPress: () =
         : item.status === 'cancelled'
           ? 'danger'
           : 'warning';
-
   return (
     <Pressable
       accessibilityRole="button"
@@ -23,21 +23,19 @@ export function BookingRow({ item, onPress }: { item: BookingItem; onPress: () =
     >
       <HeroCard
         variant="default"
-        className="gap-2.5 rounded-[15px] border border-border-subtle bg-surface-default p-3.5"
+        className="gap-3 rounded-[15px] border border-border-subtle bg-surface-default p-3.5"
       >
-        <View className="flex-row-reverse items-center gap-3">
-          <CenteredActionIcon name="calendar" frameSize={46} iconSize={21} />
+        <View className="flex-row-reverse items-center gap-2.5">
+          <CenteredActionIcon name="calendar" frameSize={44} iconSize={20} />
           <View className="min-w-0 flex-1 items-end gap-1">
-            <AppText align="right" variant="body-strong" numberOfLines={1}>
-              {item.serviceName}
-            </AppText>
+            <CareRecordTitle title={item.serviceName} provider={item.providerName} />
             <AppText
+              variant="caption"
               align="right"
-              variant="label"
               className="text-content-secondary"
               numberOfLines={1}
             >
-              {item.providerName}
+              {item.branch}
             </AppText>
           </View>
           <AppIcon
@@ -47,14 +45,21 @@ export function BookingRow({ item, onPress }: { item: BookingItem; onPress: () =
           />
         </View>
         <View className="flex-row-reverse items-center justify-between gap-2">
-          <AppText
-            align="right"
-            variant="caption"
-            className="min-w-0 flex-1 text-content-secondary"
-            numberOfLines={2}
-          >
-            {item.dateLabel} · {item.timeLabel}
-          </AppText>
+          <View className="min-w-0 flex-1 flex-row-reverse items-center gap-1.5">
+            <AppIcon
+              name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }}
+              size={15}
+              tone="secondary"
+            />
+            <AppText
+              align="right"
+              variant="caption"
+              className="min-w-0 flex-1 text-content-secondary"
+              numberOfLines={2}
+            >
+              {item.dateLabel} · {item.timeLabel}
+            </AppText>
+          </View>
           <StatusIndicator label={item.statusLabel} tone={tone} />
         </View>
       </HeroCard>

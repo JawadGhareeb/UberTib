@@ -304,7 +304,7 @@ export const mockCareCases: MockCareCase[] = [
     service: 'علاج اللثة',
     provider: 'د. رنا الخطيب',
     branch: 'مركز الحمدانية لطب الأسنان',
-    statusLabel: 'قيد المتابعة',
+    statusLabel: 'قيد العلاج',
     progress: 40,
     startedAtLabel: 'بدأت في 12 سبتمبر 2026',
     nextAction: 'جلسة تنظيف عميق للجهة اليسرى',

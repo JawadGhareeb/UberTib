@@ -1,10 +1,14 @@
 import { useRouter } from 'expo-router';
 import type { PropsWithChildren } from 'react';
-import { Image, Pressable, View } from 'react-native';
-import { DEMO_CLINIC_PHOTOS, ProviderPortrait } from '@/features/discovery/components/provider-photo-gallery';
+import { Image, View } from 'react-native';
+import {
+  DEMO_CLINIC_PHOTOS,
+  ProviderPortrait,
+} from '@/features/discovery/components/provider-photo-gallery';
 
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
+import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { cn } from '@/shared/utils/cn';
 
 export function BookingHeader({
@@ -33,28 +37,21 @@ export function BookingHeader({
       )}
     >
       {showBack ? (
-        <Pressable
-          accessibilityLabel="رجوع"
-          accessibilityRole="button"
-          className="h-10 w-10 items-center justify-center rounded-full bg-surface-default"
+        <AuthBackButton
           onPress={() => {
             if (onBackPress) return onBackPress();
             if (router.canGoBack()) return router.back();
             return router.replace('/booking');
           }}
-        >
-          <AppIcon
-            name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }}
-            size={19}
-            tone="primary"
-          />
-        </Pressable>
+        />
       ) : (
-        <View className="h-10 w-10" />
+        <View className="h-11 w-11" />
       )}
 
       <View className="min-w-0 flex-1 items-center px-2">
-        <AppText align="center" className="font-ui-bold text-type-heading-4" numberOfLines={1}>{title}</AppText>
+        <AppText align="center" className="font-ui-bold text-type-heading-4" numberOfLines={1}>
+          {title}
+        </AppText>
         {subtitle ? (
           <AppText align="center" className="text-content-link" variant="caption">
             {subtitle}
@@ -62,28 +59,37 @@ export function BookingHeader({
         ) : null}
       </View>
       {leadingIcon ? (
-        <View className={cn(
-          'h-10 w-10 items-center justify-center rounded-full',
-          leadingTone === 'warning' ? 'bg-tone-warning-fill' :
-          leadingTone === 'success' ? 'bg-tone-success-fill' : 'bg-action-subtle',
-        )}>
+        <View
+          className={cn(
+            'h-10 w-10 items-center justify-center rounded-full',
+            leadingTone === 'warning'
+              ? 'bg-tone-warning-fill'
+              : leadingTone === 'success'
+                ? 'bg-tone-success-fill'
+                : 'bg-action-subtle',
+          )}
+        >
           <AppIcon
-            name={leadingIcon === 'reason'
-              ? { ios: 'list.clipboard', android: 'edit_document', web: 'edit_document' }
-              : leadingIcon === 'patient'
-                ? { ios: 'person.2', android: 'group', web: 'group' }
-                : leadingIcon === 'calendar'
-                  ? { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }
-                  : leadingIcon === 'review'
-                    ? { ios: 'checklist', android: 'fact_check', web: 'fact_check' }
-              : leadingIcon === 'confirmed'
-                ? { ios: 'checkmark.seal', android: 'verified', web: 'verified' }
-                : { ios: 'clock', android: 'schedule', web: 'schedule' }}
+            name={
+              leadingIcon === 'reason'
+                ? { ios: 'list.clipboard', android: 'edit_document', web: 'edit_document' }
+                : leadingIcon === 'patient'
+                  ? { ios: 'person.2', android: 'group', web: 'group' }
+                  : leadingIcon === 'calendar'
+                    ? { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }
+                    : leadingIcon === 'review'
+                      ? { ios: 'checklist', android: 'fact_check', web: 'fact_check' }
+                      : leadingIcon === 'confirmed'
+                        ? { ios: 'checkmark.seal', android: 'verified', web: 'verified' }
+                        : { ios: 'clock', android: 'schedule', web: 'schedule' }
+            }
             size={19}
             tone={leadingTone}
           />
         </View>
-      ) : <View className="h-10 w-10" />}
+      ) : (
+        <View className="h-10 w-10" />
+      )}
     </View>
   );
 }
@@ -117,7 +123,11 @@ export function BookingCard({ children, className }: PropsWithChildren<{ classNa
   const hasRadius = className?.split(/\s+/).some((item) => /^rounded-(?!t-|r-|b-|l-)/.test(item));
   return (
     <View
-      className={cn(!hasRadius && 'rounded-[14px]', 'border border-border-subtle bg-surface-default', className)}
+      className={cn(
+        !hasRadius && 'rounded-[14px]',
+        'border border-border-subtle bg-surface-default',
+        className,
+      )}
     >
       {children}
     </View>
@@ -147,10 +157,20 @@ export function BookingProviderMiniCard({
         />
         <ProviderPortrait size={42} uri={portraitUri} />
         <View className="min-w-0 flex-1 items-end">
-          <AppText align="right" className="font-ui-semibold text-content-primary" numberOfLines={1} variant="label">
+          <AppText
+            align="right"
+            className="font-ui-semibold text-content-primary"
+            numberOfLines={1}
+            variant="label"
+          >
             {providerName} · {serviceName}
           </AppText>
-          <AppText align="right" className="mt-0.5 text-content-secondary" numberOfLines={2} variant="caption">
+          <AppText
+            align="right"
+            className="mt-0.5 text-content-secondary"
+            numberOfLines={2}
+            variant="caption"
+          >
             {branch} · صور توضيحية
           </AppText>
         </View>

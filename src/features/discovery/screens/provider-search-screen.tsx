@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 
 import { DiscoveryBottomBar } from '@/features/discovery/components/pen-discovery-ui';
+import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { mockAreas } from '@/features/discovery/mocks/providers.mock';
 import { useDiscoverySession } from '@/features/discovery/state/discovery-session-provider';
 import type { ProviderFilterKey } from '@/features/discovery/utils/provider-filters';
@@ -73,18 +74,10 @@ export function ProviderSearchScreen() {
   return (
     <Screen contentClassName="px-0 py-0">
       <View className="mx-auto h-[64px] w-full max-w-[430px] flex-row-reverse items-center justify-between bg-surface-default px-3">
-        <Pressable
-          accessibilityLabel="العودة إلى البحث"
-          accessibilityRole="button"
-          className="h-11 w-11 items-center justify-center"
+        <AuthBackButton
+          label="العودة إلى البحث"
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/discover/search'))}
-        >
-          <AppIcon
-            name={{ ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }}
-            size={21}
-            tone="primary"
-          />
-        </Pressable>
+        />
         <AppText align="center" className="min-w-0 flex-1 font-ui-bold" variant="heading-3">
           تصفية النتائج
         </AppText>

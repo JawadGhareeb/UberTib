@@ -8,6 +8,7 @@ import { cn } from '@/shared/utils/cn';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { useAppTheme } from '@/shared/theme/theme-provider';
 import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';
+import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 
 type Tone = 'primary' | 'success' | 'warning' | 'info' | 'danger' | 'neutral';
 
@@ -57,7 +58,7 @@ export function CareV5Header({
   onLeftPress?: () => void;
 }) {
   const router = useRouter();
-  const { rowReverseClassName, isRTL } = useAppDirection();
+  const { rowReverseClassName } = useAppDirection();
   const { colors } = useAppTheme();
 
   const contextualIcon: AppIconName = {
@@ -71,18 +72,6 @@ export function CareV5Header({
     shield: { ios: 'exclamationmark.shield', android: 'gpp_maybe', web: 'gpp_maybe' },
     verified: { ios: 'checkmark.seal.fill', android: 'verified', web: 'verified' },
   }[leftIcon] as AppIconName;
-
-  const backIcon: AppIconName = isRTL
-    ? { ios: 'arrow.right', android: 'arrow_forward', web: 'arrow_forward' }
-    : { ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' };
-  const trailingIcon: AppIconName =
-    right === 'bell'
-      ? { ios: 'bell', android: 'notifications', web: 'notifications' }
-      : right === 'chevron'
-        ? isRTL
-          ? { ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }
-          : { ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }
-        : backIcon;
 
   const badge = (
     <View
@@ -121,27 +110,27 @@ export function CareV5Header({
         >
           {title}
         </AppText>
-        <Pressable
-          accessibilityLabel={right === 'bell' ? 'الإشعارات' : 'رجوع'}
-          accessibilityRole="button"
-          className="h-11 w-11 items-center justify-center rounded-full"
-          hitSlop={4}
-          onPress={() => {
-            if (right === 'bell') {
-              router.push('/notifications');
-            } else if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace('/(tabs)/care');
-            }
-          }}
-        >
-          <AppIcon
-            name={trailingIcon}
-            size={21}
-            color={right === 'bell' ? colors.action.primary : colors.text.primary}
+        {right === 'bell' ? (
+          <Pressable
+            accessibilityLabel="الإشعارات"
+            accessibilityRole="button"
+            className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
+            onPress={() => router.push('/notifications')}
+          >
+            <AppIcon
+              name={{ ios: 'bell', android: 'notifications', web: 'notifications' }}
+              size={21}
+              color={colors.action.primary}
+            />
+          </Pressable>
+        ) : (
+          <AuthBackButton
+            onPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.replace('/(tabs)/care');
+            }}
           />
-        </Pressable>
+        )}
       </View>
     </View>
   );
