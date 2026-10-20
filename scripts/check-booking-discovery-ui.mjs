@@ -133,15 +133,23 @@ const discoverySession = readFileSync('src/features/discovery/state/discovery-se
 if (!/area:\s*false,\s*soonest:\s*false/.test(filterDefaults)) {
   failures.push('Provider discovery must not hide mock doctors by area or outdated dates by default');
 }
+const doctorEmptyState = readFileSync('src/features/discovery/components/provider-results-empty-state.tsx', 'utf8');
+const providerSheet = readFileSync('src/features/discovery/components/discover-filter-sheet.tsx', 'utf8');
 if (
   !doctorResults.includes('getPenDoctorsForService(serviceCode)') ||
-  !doctorResults.includes('إلغاء الفلاتر وعرض الأطباء') ||
-  !doctorResults.includes('عرض كل المناطق') ||
-  !doctorResults.includes('عرض أطباء الفحص العام') ||
-  !doctorResults.includes('resetProviderFilters(serviceCode)') ||
-  !doctorResults.includes("params: { serviceCode: 'dental-checkup' }")
+  !doctorResults.includes('initialAppliedFilters(params)') ||
+  !doctorResults.includes('defaultProviderFilters') ||
+  !doctorResults.includes('<ProviderResultsEmptyState') ||
+  !doctorResults.includes('hasServiceDoctors={!noServiceDoctors}') ||
+  !doctorResults.includes('onClearFilters={resetFilters}') ||
+  !doctorResults.includes('providerFilters={applied.advanced}') ||
+  !doctorResults.includes('onApply={(discovery, advanced, sort) =>') ||
+  !doctorResults.includes("params: { serviceCode: 'dental-checkup' }") ||
+  !doctorEmptyState.includes('مسح الفلاتر وعرض الأطباء') ||
+  !doctorEmptyState.includes('عرض أطباء الفحص العام') ||
+  !providerSheet.includes('<ProviderAdvancedFilterOptions')
 ) {
-  failures.push('Provider results must distinguish no service providers from hidden filter/area results');
+  failures.push('Provider results must list doctors before filtering and distinguish filtered/no-provider empty states');
 }
 if (
   !assessmentResult.includes("serviceCode: 'dental-checkup'") ||
@@ -306,7 +314,7 @@ const serviceIconViews = [
   'src/features/discovery/components/service-group-card.tsx',
   'src/features/discovery/components/service-row.tsx',
   'src/features/discovery/screens/service-family-detail-screen.tsx',
-  'src/features/discovery/screens/service-detail-screen.tsx',
+  'src/features/discovery/components/service-detail-content.tsx',
 ];
 if (serviceFamilyIds.length !== 26 || new Set(serviceFamilyIds).size !== 26) {
   failures.push('Expected 26 unique dental service IDs across the four catalog families');
@@ -366,18 +374,37 @@ const branchDetail = readFileSync('src/features/discovery/screens/provider-branc
 const branchGallery = readFileSync('src/features/discovery/components/provider-photo-gallery.tsx', 'utf8');
 const sharedHeader = readFileSync('src/features/discovery/components/pen-discovery-ui.tsx', 'utf8');
 const mockProviders = readFileSync('src/features/discovery/mocks/providers.mock.ts', 'utf8');
+const serviceDetailContent = readFileSync(
+  'src/features/discovery/components/service-detail-content.tsx',
+  'utf8',
+);
+const serviceDetailCopy = readFileSync(
+  'src/features/discovery/presentation/service-detail-copy.ts',
+  'utf8',
+);
+const assessmentEntry = readFileSync(
+  'src/shared/components/assessment/assessment-entry-card.tsx',
+  'utf8',
+);
 for (const token of [
-  'showFavoriteAction',
-  'العلاج الأولي لقنوات الجذر',
-  'علاج الجذور وحماية السن',
-  'نطاق 600–900 ل.س',
-  'الهدف العملي',
-  'شو ممكن يغيّر الخطة؟',
-  'ملفات مفيدة إن وجدت',
+  '<ServiceDetailContent',
+  '<AssessmentEntryCard />',
   'ابحث عن طبيب مؤهّل',
-  "'/assessment/start'",
+  'params: { serviceCode: family.id }',
 ]) {
-  if (!serviceDetail.includes(token)) failures.push('Service reference parity: ' + token);
+  if (!serviceDetail.includes(token)) failures.push('Unified service detail missing: ' + token);
+}
+for (const token of ['العلاج الأولي لقنوات الجذر', "family.id === 'root-canal'"]) {
+  if (!serviceDetailCopy.includes(token)) failures.push('Service detail content missing: ' + token);
+}
+if (
+  !serviceDetailContent.includes('<ServiceIcon') ||
+  !serviceDetailContent.includes('التشخيص والخطة النهائية مسؤولية الطبيب') ||
+  !assessmentEntry.includes('مو متأكد من حالتك؟') ||
+  serviceDetail.includes('showFavoriteAction') ||
+  serviceDetail.includes('نطاق 600–900 ل.س')
+) {
+  failures.push('Service details must share one template and preserve clinical caution');
 }
 for (const token of [
   'ProviderPhotoGallery',

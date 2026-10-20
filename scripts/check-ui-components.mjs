@@ -45,10 +45,10 @@ for (const [name, palette] of [
 }
 
 const expected = [
-  ['src/features/discovery/screens/provider-search-screen.tsx', 'label="عرض النتائج المناسبة"'],
-  ['src/features/discovery/screens/provider-search-screen.tsx', 'variant="primary"'],
+  ['src/features/discovery/screens/provider-search-screen.tsx', '<Redirect'],
+  ['src/features/discovery/screens/provider-search-screen.tsx', "pathname: '/discover/providers/results'"],
   ['src/features/discovery/screens/provider-decision-screen.tsx', 'label="اختر موعداً"'],
-  ['src/features/discovery/screens/service-detail-screen.tsx', 'label="ابحث عن طبيب مؤهّل"'],
+  ['src/features/discovery/screens/service-detail-screen.tsx', 'ابحث عن طبيب مؤهّل'],
   ['src/features/discovery/screens/service-groups-screen.tsx', '<SearchField'],
   ['src/features/discovery/screens/service-search-results-screen.tsx', '<SearchField'],
   ['src/features/discovery/components/service-group-card.tsx', 'variant="soft"'],
@@ -316,25 +316,25 @@ expect(
   'Search queries must resolve actual service, doctor and area mock results',
 );
 expect(
-  providerFilters.includes('accessibilityRole="switch"') &&
-    providerFilters.includes('checked: filters[item.key]') &&
-    providerFilters.includes('setProviderFilter(serviceCode, item.key, !filters[item.key])') &&
-    providerFilters.includes('applyProviderFilters(serviceCode)') &&
-    providerFilters.includes('setProviderArea(serviceCode, option)') &&
-    providerFilters.includes('resetProviderFilters(serviceCode)'),
-  'Provider switches and region selection must change state and apply on submit',
+  providerFilters.includes('<Redirect') &&
+    providerResults.includes('<DiscoverFilterSheet') &&
+    providerResults.includes('providerFilters={applied.advanced}') &&
+    read('src/features/discovery/components/discover-filter-sheet.tsx').includes('<ProviderAdvancedFilterOptions') &&
+    read('src/features/discovery/components/provider-advanced-filter-options.tsx').includes('onValueChange={(enabled)'),
+  'Provider filters must share a single working BottomSheet, with legacy search redirected to initial results',
 );
 expect(
-  discoveryState.includes('filtersApplied: boolean') &&
-    discoveryState.includes('applyProviderFilters:') &&
+  providerResults.includes('initialAppliedFilters(params)') &&
+    providerResults.includes('defaultProviderFilters') &&
     providerResults.includes('filterMockProviders(') &&
-    providerResults.includes('serviceState.filtersApplied') &&
-    providerResults.includes('showFilterAction') &&
+    providerResults.includes('matchesDiscoveryFilters(') &&
+    providerResults.includes('setApplied({ discovery, advanced:') &&
+    providerResults.includes('<ProviderResultsEmptyState') &&
     filterEngine.includes('if (filters.rating') &&
     filterEngine.includes('if (filters.payment') &&
     filterEngine.includes('if (filters.branch') &&
     filterEngine.includes('if (filters.soonest'),
-  'Results must apply all six provider filters with a clear path to edit them',
+  'Provider results must display all doctors by default and apply the merged filters only after submit',
 );
 
 if (failures.length) {

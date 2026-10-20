@@ -1,3 +1,4 @@
+import { Card as HeroCard } from 'heroui-native';
 import { Pressable, View } from 'react-native';
 
 import { ServiceIcon } from '@/features/discovery/components/service-icon';
@@ -5,8 +6,42 @@ import type { PenServiceFamily } from '@/features/discovery/presentation/pen-dis
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 
-export function FamilyCard({ family, onPress }: { family: PenServiceFamily; onPress: () => void }) {
+interface FamilyCardProps {
+  family: PenServiceFamily;
+  onPress: () => void;
+  layout?: 'row' | 'grid';
+}
+
+/** Tile within a service group, descriptive row in search results. */
+export function FamilyCard({ family, onPress, layout = 'row' }: FamilyCardProps) {
   const { colors } = useAppTheme();
+
+  if (layout === 'grid') {
+    return (
+      <Pressable
+        accessibilityLabel={'عرض تفاصيل ' + family.title}
+        accessibilityHint="يفتح تفاصيل الخدمة"
+        accessibilityRole="button"
+        className="w-[48.5%] active:opacity-90"
+        onPress={onPress}
+      >
+        <HeroCard
+          variant="default"
+          className="min-h-[128px] items-center justify-center gap-2 rounded-[16px] border border-border-subtle bg-surface-default px-3 py-3"
+        >
+          <ServiceIcon serviceId={family.id} size={36} />
+          <AppText
+            align="center"
+            className="w-full font-ui-semibold"
+            numberOfLines={2}
+            variant="label"
+          >
+            {family.title}
+          </AppText>
+        </HeroCard>
+      </Pressable>
+    );
+  }
 
   return (
     <Pressable

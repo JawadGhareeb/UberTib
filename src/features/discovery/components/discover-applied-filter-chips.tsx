@@ -12,9 +12,13 @@ import {
 export function DiscoverAppliedFilterChips({
   selection,
   onChange,
+  extraItems = [],
+  onClearAll,
 }: {
   selection: DiscoveryFilterSelection;
   onChange: (selection: DiscoveryFilterSelection) => void;
+  extraItems?: readonly AppliedFilterItem[];
+  onClearAll?: () => void;
 }) {
   const chips: AppliedFilterItem[] = [];
 
@@ -67,5 +71,5 @@ export function DiscoverAppliedFilterChips({
     });
   }
 
-  return <AppliedFilterChips items={chips} />;
+  return <AppliedFilterChips items={[...chips, ...extraItems]} onClearAll={onClearAll} />;
 }

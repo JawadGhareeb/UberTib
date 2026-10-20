@@ -7,6 +7,7 @@ import { AppIcon, AppText } from '@/shared/components/ui';
 /** Identical assessment entry in Home and Discover; no duplicate visual/behavioral copies. */
 export function AssessmentEntryCard() {
   const router = useRouter();
+
   return (
     <HeroCard
       variant="default"

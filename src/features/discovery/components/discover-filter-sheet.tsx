@@ -23,6 +23,10 @@ import {
   FilterNavigationRow,
 } from './discover-filter-choices';
 import { DiscoverInlinePriceRange } from './discover-inline-price-range';
+import { ProviderAdvancedFilterOptions } from './provider-advanced-filter-options';
+import { ProviderSortOptions } from './provider-sort-options';
+import type { ProviderResultSort } from '../utils/provider-sort';
+import { defaultProviderFilters, type ProviderFilterFlags } from '../utils/provider-filters';
 
 type FilterStep = 'main' | 'area' | 'groups' | 'families';
 
@@ -38,17 +42,30 @@ export function DiscoverFilterSheet({
   onApply,
   limits: resultPriceLimits,
   serviceSelectionEnabled = false,
+  providerFilters,
+  providerSort,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selection: DiscoveryFilterSelection;
-  onApply: (selection: DiscoveryFilterSelection) => void;
+  onApply: (
+    selection: DiscoveryFilterSelection,
+    providerFilters?: ProviderFilterFlags,
+    sort?: ProviderResultSort,
+  ) => void;
   limits?: PriceRange | null;
   serviceSelectionEnabled?: boolean;
+  /** Provider results only; ordinary Discover search keeps its existing sheet. */
+  providerFilters?: ProviderFilterFlags;
+  providerSort?: ProviderResultSort;
 }) {
   const { height } = useWindowDimensions();
   const [step, setStep] = useState<FilterStep>('main');
   const [draft, setDraft] = useState<DiscoveryFilterSelection>(selection);
+  const [draftProviderFilters, setDraftProviderFilters] = useState<ProviderFilterFlags>(
+    providerFilters ?? defaultProviderFilters,
+  );
+  const [draftSort, setDraftSort] = useState<ProviderResultSort>(providerSort ?? 'default');
 
   // The sheet stays mounted even when closed so HeroUI's closed -> open animation
   // works. Synchronize draft with changes made to the applied chips while closed.
@@ -56,8 +73,10 @@ export function DiscoverFilterSheet({
     if (!open) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setDraft(selection);
+      setDraftProviderFilters(providerFilters ?? defaultProviderFilters);
+      setDraftSort(providerSort ?? 'default');
     }
-  }, [open, selection]);
+  }, [open, selection, providerFilters, providerSort]);
 
   const group = findPenGroup(draft.groupCode ?? undefined);
   const family = findPenFamily(draft.serviceCode ?? undefined);
@@ -65,11 +84,13 @@ export function DiscoverFilterSheet({
   // Keep the control visible even when a chosen service is only priced after
   // examination; use the catalog range as an explicitly labeled fallback.
   const limits =
-    scopedLimits ??
-    priceLimitsForSelection({
-      area: 'كل المناطق',
-      priceRange: null,
-    });
+    providerFilters && !serviceSelectionEnabled
+      ? (resultPriceLimits ?? null)
+      : (scopedLimits ??
+        priceLimitsForSelection({
+          area: 'كل المناطق',
+          priceRange: null,
+        }));
   const selectedAreas = selectedDiscoveryAreas(draft);
   const range = limits ? draft.priceRange : null;
 
@@ -90,13 +111,17 @@ export function DiscoverFilterSheet({
     onOpenChange(nextOpen);
   };
   const apply = () => {
-    onApply({
-      ...draft,
-      priceRange: range,
-      ...(serviceSelectionEnabled
-        ? {}
-        : { groupCode: selection.groupCode, serviceCode: selection.serviceCode }),
-    });
+    onApply(
+      {
+        ...draft,
+        priceRange: range,
+        ...(serviceSelectionEnabled
+          ? {}
+          : { groupCode: selection.groupCode, serviceCode: selection.serviceCode }),
+      },
+      providerFilters ? draftProviderFilters : undefined,
+      providerFilters ? draftSort : undefined,
+    );
     handleOpenChange(false);
   };
   const reset = () => {
@@ -106,6 +131,8 @@ export function DiscoverFilterSheet({
       priceRange: null,
       ...(serviceSelectionEnabled ? { groupCode: null, serviceCode: null } : {}),
     });
+    setDraftProviderFilters({ ...defaultProviderFilters });
+    setDraftSort('default');
     setStep('main');
   };
 
@@ -136,7 +163,7 @@ export function DiscoverFilterSheet({
                   </Pressable>
                 ) : null}
                 <BottomSheet.Title className="font-ui-semibold text-content-primary">
-                  تصفية البحث
+                  {providerFilters ? 'تصفية الأطباء' : 'تصفية البحث'}
                 </BottomSheet.Title>
               </View>
               <BottomSheet.Close />
@@ -153,6 +180,9 @@ export function DiscoverFilterSheet({
           >
             {step === 'main' ? (
               <View className="gap-3">
+                {providerFilters ? (
+                  <ProviderSortOptions value={draftSort} onChange={setDraftSort} />
+                ) : null}
                 <FilterNavigationRow
                   icon={{ ios: 'mappin.and.ellipse', android: 'place', web: 'place' }}
                   title="الموقع"
@@ -178,13 +208,25 @@ export function DiscoverFilterSheet({
                   />
                 ) : null}
                 <View className="mt-1 border-t border-border-subtle pt-3">
-                  <DiscoverInlinePriceRange
-                    limits={limits}
-                    value={range}
-                    usingCatalogLimits={scopedLimits === null || scopedLimits === undefined}
-                    onChange={(priceRange) => setDraft((current) => ({ ...current, priceRange }))}
-                  />
+                  {limits ? (
+                    <DiscoverInlinePriceRange
+                      limits={limits}
+                      value={range}
+                      usingCatalogLimits={scopedLimits === null || scopedLimits === undefined}
+                      onChange={(priceRange) => setDraft((current) => ({ ...current, priceRange }))}
+                    />
+                  ) : (
+                    <AppText align="right" variant="caption" className="text-content-secondary">
+                      ما في نطاق سعر رقمي معلن لهالخدمة حالياً.
+                    </AppText>
+                  )}
                 </View>
+                {providerFilters ? (
+                  <ProviderAdvancedFilterOptions
+                    value={draftProviderFilters}
+                    onChange={setDraftProviderFilters}
+                  />
+                ) : null}
               </View>
             ) : null}
 

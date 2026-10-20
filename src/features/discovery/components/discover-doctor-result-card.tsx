@@ -23,52 +23,93 @@ export function DiscoverDoctorResultCard({
 }) {
   const router = useRouter();
   const provider = getMockProvider(doctor.id);
+
   return (
     <HeroCard
       variant="default"
       className="gap-3 rounded-[16px] border border-border-subtle bg-surface-default p-3.5"
     >
-      <View className="flex-row-reverse items-center gap-3">
-        <View className="h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-action-subtle">
-          <AppText align="center" className="font-ui-bold text-content-link" variant="label">
+      <View className="flex-row-reverse items-start gap-3">
+        <View className="h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-action-subtle">
+          <AppText align="center" variant="body-strong" className="font-ui-bold text-content-link">
             {provider?.initials ?? 'د'}
           </AppText>
         </View>
         <View className="min-w-0 flex-1 items-end gap-1">
-          <AppText align="right" variant="body-strong" className="font-ui-bold" numberOfLines={1}>
+          <AppText
+            align="right"
+            variant="body-strong"
+            className="w-full font-ui-bold"
+            numberOfLines={2}
+          >
             {doctor.name}
           </AppText>
-          <AppText align="right" variant="caption" numberOfLines={1}>
+          <AppText
+            align="right"
+            variant="label"
+            className="w-full text-content-secondary"
+            numberOfLines={2}
+          >
             {doctor.specialty}
           </AppText>
-          <AppText align="right" variant="caption" numberOfLines={1}>
-            {doctor.branch} · {doctor.area}
-          </AppText>
-        </View>
-        <View className="flex-row items-center gap-1 rounded-full bg-action-subtle px-2 py-1">
-          <AppIcon
-            name={{ ios: 'star.fill', android: 'star', web: 'star' }}
-            size={15}
-            tone="action"
-          />
-          <AppText variant="caption">{provider?.rating ?? '—'}</AppText>
+          <View className="flex-row-reverse items-center gap-1 self-stretch">
+            <AppIcon
+              name={{ ios: 'mappin', android: 'place', web: 'place' }}
+              size={14}
+              tone="secondary"
+            />
+            <AppText
+              align="right"
+              variant="caption"
+              className="min-w-0 flex-1 text-content-secondary"
+              numberOfLines={1}
+            >
+              {doctor.branch} · {doctor.area}
+            </AppText>
+          </View>
         </View>
       </View>
 
+      {provider && provider.reviews > 0 ? (
+        <View className="flex-row-reverse items-center gap-1.5">
+          <AppIcon
+            name={{ ios: 'star.fill', android: 'star', web: 'star' }}
+            size={16}
+            tone="action"
+          />
+          <AppText align="right" variant="label" className="font-ui-semibold">
+            {provider.rating.toFixed(1)}
+          </AppText>
+          <AppText align="right" variant="caption" className="text-content-secondary">
+            ({provider.reviews} تقييم)
+          </AppText>
+        </View>
+      ) : null}
+
       <View className="flex-row-reverse gap-2">
-        <View className="min-w-0 flex-1 items-end gap-1 rounded-[11px] bg-surface-subtle px-3 py-2">
+        <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
           <AppText variant="caption" className="text-content-secondary">
             سعر الخدمة
           </AppText>
-          <AppText align="right" variant="label" className="font-ui-semibold" numberOfLines={2}>
+          <AppText
+            align="right"
+            variant="label"
+            className="w-full font-ui-semibold"
+            numberOfLines={2}
+          >
             {doctor.price}
           </AppText>
         </View>
-        <View className="min-w-0 flex-1 items-end gap-1 rounded-[11px] bg-surface-subtle px-3 py-2">
+        <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
           <AppText variant="caption" className="text-content-secondary">
-            التوافر التجريبي
+            موعد تجريبي · غير مؤكّد
           </AppText>
-          <AppText align="right" variant="caption" numberOfLines={2}>
+          <AppText
+            align="right"
+            variant="label"
+            className="w-full font-ui-medium"
+            numberOfLines={2}
+          >
             {doctor.next}
           </AppText>
         </View>
@@ -78,7 +119,7 @@ export function DiscoverDoctorResultCard({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={'عرض ملف ' + doctor.name}
-          className="min-h-[46px] min-w-0 flex-1 items-center justify-center rounded-[12px] bg-action-primary"
+          className="min-h-[46px] min-w-0 flex-1 items-center justify-center rounded-[12px] bg-action-primary px-3"
           onPress={() =>
             router.push({
               pathname: '/discover/provider/[providerId]',
@@ -99,7 +140,7 @@ export function DiscoverDoctorResultCard({
           accessibilityLabel={selected ? 'إزالة من المقارنة' : 'إضافة للمقارنة'}
           accessibilityState={{ checked: selected, disabled }}
           className={
-            'min-h-[46px] items-center justify-center rounded-[12px] border px-3 ' +
+            'min-h-[46px] flex-row-reverse items-center justify-center gap-2 rounded-[12px] border px-3 ' +
             (selected
               ? 'border-action-primary bg-action-subtle'
               : 'border-border-subtle bg-surface-default')
@@ -107,20 +148,18 @@ export function DiscoverDoctorResultCard({
           disabled={disabled}
           onPress={onToggle}
         >
-          <View className="flex-row-reverse items-center gap-1.5">
-            <AppIcon
-              name={
-                selected
-                  ? { ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }
-                  : { ios: 'square.on.square', android: 'compare_arrows', web: 'compare_arrows' }
-              }
-              size={18}
-              tone="action"
-            />
-            <AppText variant="caption" className="font-ui-medium">
-              {selected ? 'تمت الإضافة' : 'مقارنة'}
-            </AppText>
-          </View>
+          <AppIcon
+            name={
+              selected
+                ? { ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }
+                : { ios: 'square.on.square', android: 'compare_arrows', web: 'compare_arrows' }
+            }
+            size={18}
+            tone="action"
+          />
+          <AppText variant="label" className="font-ui-medium">
+            {selected ? 'تمت الإضافة' : 'مقارنة'}
+          </AppText>
         </Pressable>
       </View>
     </HeroCard>

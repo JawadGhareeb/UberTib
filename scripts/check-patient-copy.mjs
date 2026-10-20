@@ -36,7 +36,7 @@ const claims = read('src/features/my-care/screens/claims-screen.tsx');
 const support = read('src/features/profile/screens/help-support-screen.tsx');
 const patientHealth = read('src/features/assessment/screens/assessment-health-screen.tsx');
 const account = read('src/features/profile/screens/data-export-request-screen.tsx');
-const medicalGuidance = read('src/features/discovery/screens/service-detail-screen.tsx');
+const medicalGuidance = read('src/features/discovery/components/service-detail-content.tsx');
 
 if (!booking.includes("pathname: '/booking/[bookingId]'")) errors.push('Booking details route missing');
 if (!timeline.includes("pathname: '/care/[caseId]/plan'")) errors.push('Care plan route missing');

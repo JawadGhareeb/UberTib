@@ -7,14 +7,18 @@ import {
   DiscoveryBottomBar,
   DiscoveryHeader,
 } from '@/features/discovery/components/pen-discovery-ui';
+import { DiscoverAppliedFilterChips } from '@/features/discovery/components/discover-applied-filter-chips';
+import { DiscoverDoctorResultCard } from '@/features/discovery/components/discover-doctor-result-card';
+import { DiscoverFilterSheet } from '@/features/discovery/components/discover-filter-sheet';
+import { ProviderComparisonBar } from '@/features/discovery/components/provider-comparison-bar';
+import { ProviderSelectedServiceSummary } from '@/features/discovery/components/provider-selected-service-summary';
+import { providerAdvancedOptions } from '@/features/discovery/components/provider-advanced-filter-options';
+import { ProviderResultsEmptyState } from '@/features/discovery/components/provider-results-empty-state';
+import { getMockProviders } from '@/features/discovery/mocks/providers.mock';
 import {
   getPenDoctorsForService,
-  penServiceGroups,
+  findPenFamily,
 } from '@/features/discovery/presentation/pen-discovery-data';
-import { getMockProvider, getMockProviders } from '@/features/discovery/mocks/providers.mock';
-import { DiscoverFilterSheet } from '../components/discover-filter-sheet';
-import { DiscoverDoctorResultCard } from '../components/discover-doctor-result-card';
-import { filterMockProviders } from '@/features/discovery/utils/provider-filters';
 import {
   matchesDiscoveryFilters,
   priceLimitsForService,
@@ -23,307 +27,239 @@ import {
   type PriceRange,
 } from '@/features/discovery/model/discover-filters';
 import { useDiscoverySession } from '@/features/discovery/state/discovery-session-provider';
-import { useAppDirection } from '@/providers/app-direction-provider';
-import { AppIcon, AppText, Button, Screen } from '@/shared/components/ui';
-import { cn } from '@/shared/utils/cn';
+import {
+  filterMockProviders,
+  defaultProviderFilters,
+  type ProviderFilterFlags,
+} from '@/features/discovery/utils/provider-filters';
+import { AppIcon, AppText, Screen } from '@/shared/components/ui';
+import type { AppliedFilterItem } from '@/shared/components/filters/applied-filter-chips';
+import {
+  providerSortChoices,
+  sortServiceDoctors,
+  type ProviderResultSort,
+} from '@/features/discovery/utils/provider-sort';
 
+type AppliedProviderFilters = {
+  discovery: DiscoveryFilterSelection;
+  advanced: ProviderFilterFlags;
+  sort: ProviderResultSort;
+};
+
+const emptySelection: DiscoveryFilterSelection = {
+  area: 'كل المناطق',
+  areas: [],
+  priceRange: null,
+};
+
+type ProviderResultParams = {
+  serviceCode?: string;
+  area?: string;
+  areas?: string;
+  minPrice?: string;
+  maxPrice?: string;
+};
+
+function initialAppliedFilters(params: ProviderResultParams): AppliedProviderFilters {
+  const min = params.minPrice === undefined ? NaN : Number(params.minPrice);
+  const max = params.maxPrice === undefined ? NaN : Number(params.maxPrice);
+  const priceRange: PriceRange | null =
+    Number.isFinite(min) && Number.isFinite(max) && min >= 0 && max >= min ? [min, max] : null;
+  return {
+    discovery: {
+      area: params.area ?? 'كل المناطق',
+      ...(params.areas !== undefined ? { areas: params.areas.split('|').filter(Boolean) } : {}),
+      priceRange,
+    },
+    advanced: { ...defaultProviderFilters },
+    sort: 'default',
+  };
+}
+
+/** The list is always unfiltered on first entry unless explicit route filters were supplied. */
 export function ProviderResultsScreen() {
+  const params = useLocalSearchParams<ProviderResultParams>();
+  const serviceCode = params.serviceCode?.trim() || 'dental-checkup';
+  return <ProviderResultsContent key={serviceCode} serviceCode={serviceCode} params={params} />;
+}
+
+function ProviderResultsContent({
+  serviceCode,
+  params,
+}: {
+  serviceCode: string;
+  params: ProviderResultParams;
+}) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { rowClassName } = useAppDirection();
-  const {
-    serviceCode: requestedServiceCode,
-    area: routeArea,
-    areas: routeAreas,
-    minPrice,
-    maxPrice,
-  } = useLocalSearchParams<{
-    serviceCode?: string;
-    area?: string;
-    areas?: string;
-    minPrice?: string;
-    maxPrice?: string;
-  }>();
-  const serviceCode = requestedServiceCode?.trim() || 'dental-checkup';
-  const { getServiceState, toggleComparisonProvider, resetProviderFilters, setProviderArea } =
-    useDiscoverySession();
-  const serviceState = getServiceState(serviceCode);
-  const initialPriceRange: PriceRange | null =
-    minPrice !== undefined &&
-    maxPrice !== undefined &&
-    Number.isFinite(Number(minPrice)) &&
-    Number.isFinite(Number(maxPrice)) &&
-    Number(minPrice) >= 0 &&
-    Number(maxPrice) >= Number(minPrice)
-      ? [Number(minPrice), Number(maxPrice)]
-      : null;
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [discoveryFilters, setDiscoveryFilters] = useState<DiscoveryFilterSelection>({
-    area: routeArea ?? serviceState.area,
-    ...(routeAreas !== undefined ? { areas: routeAreas.split('|').filter(Boolean) } : {}),
-    priceRange: initialPriceRange,
-  });
-  const selectedAreas = selectedDiscoveryAreas(discoveryFilters);
-  const effectiveArea =
-    selectedAreas.length === 1 ? (selectedAreas[0] ?? 'كل المناطق') : 'كل المناطق';
-  const allDoctors = getPenDoctorsForService(serviceCode);
-  const serviceDoctors = getPenDoctorsForService(serviceCode);
-  const eligibleIds = serviceState.filtersApplied
-    ? filterMockProviders(
-        getMockProviders(serviceCode),
-        serviceCode,
-        effectiveArea,
-        serviceState.filters,
-      ).map((provider) => provider.id)
-    : allDoctors.map((doctor) => doctor.id);
-  const doctorById = new Map(allDoctors.map((doctor) => [doctor.id, doctor]));
-  const doctors = eligibleIds.flatMap((id) => {
-    const doctor = doctorById.get(id);
-    const provider = getMockProvider(id);
-    return doctor && provider && matchesDiscoveryFilters(provider, discoveryFilters, serviceCode)
-      ? [doctor]
-      : [];
-  });
-  const priceLimits = priceLimitsForService(serviceCode);
-  const filtersActive =
-    selectedAreas.length > 0 || discoveryFilters.priceRange !== null || serviceState.filtersApplied;
-  const selected = serviceState.comparisonProviderIds.filter((id) =>
-    doctors.some((doctor) => doctor.id === id),
+  const [applied, setApplied] = useState<AppliedProviderFilters>(() =>
+    initialAppliedFilters(params),
   );
-  const serviceTitle =
-    serviceCode === 'root-canal'
-      ? 'علاج جذور'
-      : (penServiceGroups
-          .flatMap((group) => group.families)
-          .find((family) => family.id === serviceCode)?.title ?? 'الخدمة المطلوبة');
-  const maxReached = selected.length >= 3;
-  const noServiceDoctors = serviceDoctors.length === 0;
-  const clearProviderFilters = () => {
-    resetProviderFilters(serviceCode);
-    setDiscoveryFilters({ area: 'كل المناطق', areas: [], priceRange: null });
+  const { getServiceState, toggleComparisonProvider } = useDiscoverySession();
+  const serviceState = getServiceState(serviceCode);
+
+  const allDoctors = getPenDoctorsForService(serviceCode);
+  const doctorById = new Map(allDoctors.map((doctor) => [doctor.id, doctor]));
+  const eligibleProviders = filterMockProviders(
+    getMockProviders(serviceCode),
+    serviceCode,
+    'كل المناطق',
+    applied.advanced,
+  ).filter((provider) => matchesDiscoveryFilters(provider, applied.discovery, serviceCode));
+  const matchingDoctors = eligibleProviders.flatMap((provider) => {
+    const doctor = doctorById.get(provider.id);
+    return doctor ? [doctor] : [];
+  });
+  const doctors = sortServiceDoctors(matchingDoctors, applied.sort, serviceCode);
+  const noServiceDoctors = allDoctors.length === 0;
+  const areas = selectedDiscoveryAreas(applied.discovery);
+  const activeAdvancedOptions = providerAdvancedOptions.filter(
+    (option) => applied.advanced[option.key],
+  );
+  const filtersActive = Boolean(
+    areas.length || applied.discovery.priceRange || activeAdvancedOptions.length,
+  );
+  const hasSort = applied.sort !== 'default';
+  const selectionActive = filtersActive || hasSort;
+  // Keep previously chosen doctors in the comparison even when filters hide their cards.
+  const selection = serviceState.comparisonProviderIds;
+  const maxReached = selection.length >= 3;
+  const serviceTitle = findPenFamily(serviceCode)?.title ?? 'الخدمة المطلوبة';
+
+  const resetFilters = () => {
+    setApplied({
+      discovery: { ...emptySelection },
+      advanced: { ...defaultProviderFilters },
+      sort: 'default',
+    });
   };
-  const showDoctorsEverywhere = () => {
-    setProviderArea(serviceCode, 'كل المناطق');
-    setDiscoveryFilters((previous) => ({ ...previous, area: 'كل المناطق', areas: [] }));
-  };
+  const advancedChips: AppliedFilterItem[] = activeAdvancedOptions.map((option) => ({
+    key: option.key,
+    label: option.label,
+    onRemove: () =>
+      setApplied((previous) => ({
+        ...previous,
+        advanced: { ...previous.advanced, [option.key]: false },
+      })),
+  }));
+  const sortChips: AppliedFilterItem[] = hasSort
+    ? [
+        {
+          key: 'sort',
+          label:
+            providerSortChoices.find((choice) => choice.value === applied.sort)?.label ?? 'الترتيب',
+          onRemove: () => setApplied((previous) => ({ ...previous, sort: 'default' })),
+        },
+      ]
+    : [];
 
   return (
     <Screen contentClassName="px-0 py-0">
       <DiscoveryHeader title="الأطباء المناسبون" />
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerClassName={cn(
-          'mx-auto w-full max-w-[430px] px-4 pt-2',
-          selected.length > 0 ? 'pb-[150px]' : 'pb-[90px]',
-        )}
+        contentContainerClassName="mx-auto w-full max-w-[430px] gap-4 px-4 pt-3"
+        contentContainerStyle={{ paddingBottom: selection.length ? 154 : 94 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-3 gap-3">
-          <View className="items-end gap-1">
-            <AppText align="right" variant="heading-3">
-              {serviceTitle}
-            </AppText>
-            <AppText align="right" variant="label" className="text-content-secondary">
-              {doctors.length} أطباء مناسبون ضمن المنطقة والفلاتر المختارة
-            </AppText>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={'معلومات عن خدمة ' + serviceTitle}
-              className="min-h-[38px] justify-center"
-              onPress={() =>
-                router.push({
-                  pathname: '/discover/service/[serviceCode]',
-                  params: { serviceCode },
-                })
-              }
-            >
-              <AppText variant="caption" className="text-content-link">
-                تعرف على الخدمة
-              </AppText>
-            </Pressable>
-          </View>
-          <View className="flex-row-reverse items-center gap-2">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="تصفية النتائج حسب المنطقة والسعر"
-              className="min-h-[46px] flex-row-reverse items-center justify-center gap-2 rounded-[13px] border border-border-subtle bg-surface-default px-4"
-              onPress={() => setFiltersOpen(true)}
-            >
-              <AppIcon
-                name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
-                size={19}
-                tone="action"
-              />
-              <AppText variant="label" className="font-ui-semibold">
-                تصفية
-              </AppText>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="فلاتر الأطباء المتقدمة"
-              className="min-h-[46px] min-w-0 flex-1 items-center justify-center rounded-[13px] border border-border-subtle bg-surface-default px-2"
-              onPress={() =>
-                router.push({ pathname: '/discover/providers', params: { serviceCode } })
-              }
-            >
-              <AppText align="center" variant="label" className="text-content-secondary">
-                فلاتر متقدمة
-              </AppText>
-            </Pressable>
-            {filtersActive ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="مسح الفلاتر"
-                onPress={clearProviderFilters}
-              >
-                <AppText variant="caption" className="text-content-link">
-                  مسح
-                </AppText>
-              </Pressable>
-            ) : null}
-          </View>
-        </View>
-        <View
-          className={cn(
-            'min-h-[34px] items-center gap-2 rounded-[9px] bg-action-subtle px-3 py-2',
-            rowClassName,
-          )}
+        <ProviderSelectedServiceSummary serviceCode={serviceCode} title={serviceTitle} />
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="تصفية الأطباء وترتيب النتائج"
+          className={
+            'min-h-[48px] flex-row-reverse items-center justify-center gap-2 rounded-[13px] border px-3 ' +
+            (selectionActive
+              ? 'border-action-primary bg-action-subtle'
+              : 'border-border-subtle bg-surface-default')
+          }
+          onPress={() => setFiltersOpen(true)}
         >
           <AppIcon
-            name={{ ios: 'checkmark.shield', android: 'verified_user', web: 'verified_user' }}
-            size={16}
+            name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
+            size={20}
             tone="action"
           />
-          <AppText
-            className="min-w-0 flex-1 font-ui-semibold text-content-primary"
-            variant="caption"
-          >
-            {serviceTitle} ·{' '}
-            {selectedAreas.length > 1 ? selectedAreas.length + ' مناطق' : effectiveArea}{' '}
-            {filtersActive ? '· نتائج مفلترة' : ''}
+          <AppText variant="label" className="font-ui-semibold">
+            تصفية وترتيب النتائج
+          </AppText>
+          {selectionActive ? <View className="h-2 w-2 rounded-full bg-action-primary" /> : null}
+        </Pressable>
+
+        <DiscoverAppliedFilterChips
+          selection={applied.discovery}
+          onChange={(discovery) => setApplied((previous) => ({ ...previous, discovery }))}
+          extraItems={[...advancedChips, ...sortChips]}
+          onClearAll={resetFilters}
+        />
+
+        <View className="flex-row-reverse items-center justify-between gap-2">
+          <AppText align="right" variant="heading-4" className="font-ui-bold">
+            نتائج الأطباء
+          </AppText>
+          <AppText variant="caption" className="text-content-secondary">
+            {doctors.length} {doctors.length === 1 ? 'طبيب' : 'أطباء'}
           </AppText>
         </View>
 
-        <View className="mt-[7px] gap-[5px]">
-          {doctors.length === 0 ? (
-            <View className="items-center gap-3 rounded-[13px] border border-border-subtle bg-surface-default p-4">
-              <AppText
-                align="center"
-                className="font-ui-semibold text-content-primary"
-                variant="label"
-              >
-                {noServiceDoctors
-                  ? 'ما في أطباء مسجلين لهذه الخدمة ضمن البيانات الحالية'
-                  : filtersActive
-                    ? 'الفلاتر المختارة أخفت الأطباء المسجلين'
-                    : 'ما في أطباء مسجلين بالمنطقة المختارة'}
-              </AppText>
-              <AppText align="center" className="text-content-secondary" variant="caption">
-                {noServiceDoctors
-                  ? 'لا يمكن عرض طبيب لهذه الخدمة من دون بيانات تربطه فيها.'
-                  : 'جرب عرض كل المناطق أو إلغاء الفلاتر للعودة إلى قائمة الأطباء.'}
-              </AppText>
-              {noServiceDoctors ? (
-                serviceCode !== 'dental-checkup' ? (
-                  <Button
-                    label="عرض أطباء الفحص العام"
-                    onPress={() =>
-                      router.push({
-                        pathname: '/discover/providers/results',
-                        params: { serviceCode: 'dental-checkup' },
-                      })
-                    }
-                    size="sm"
-                    variant="outline"
-                  />
-                ) : (
-                  <Button
-                    label="العودة للخدمات"
-                    onPress={() => router.push('/discover')}
-                    size="sm"
-                    variant="outline"
-                  />
-                )
-              ) : filtersActive ? (
-                <Button
-                  label="إلغاء الفلاتر وعرض الأطباء"
-                  onPress={clearProviderFilters}
-                  size="sm"
-                  variant="outline"
-                />
-              ) : (
-                <Button
-                  label="عرض كل المناطق"
-                  onPress={showDoctorsEverywhere}
-                  size="sm"
-                  variant="outline"
-                />
-              )}
-            </View>
-          ) : null}
-
-          {doctors.map((doctor) => (
-            <DiscoverDoctorResultCard
-              disabled={maxReached && !selected.includes(doctor.id)}
-              doctor={doctor}
-              serviceCode={serviceCode}
-              key={doctor.id}
-              onToggle={() => toggleComparisonProvider(serviceCode, doctor.id)}
-              selected={selected.includes(doctor.id)}
-            />
-          ))}
-        </View>
+        {doctors.length ? (
+          <View className="gap-3">
+            {doctors.map((doctor) => (
+              <DiscoverDoctorResultCard
+                key={doctor.id}
+                doctor={doctor}
+                serviceCode={serviceCode}
+                selected={selection.includes(doctor.id)}
+                disabled={maxReached && !selection.includes(doctor.id)}
+                onToggle={() => toggleComparisonProvider(serviceCode, doctor.id)}
+              />
+            ))}
+          </View>
+        ) : (
+          <ProviderResultsEmptyState
+            hasServiceDoctors={!noServiceDoctors}
+            hasFilters={filtersActive}
+            onClearFilters={resetFilters}
+            isCheckup={serviceCode === 'dental-checkup'}
+            onExploreCheckup={() =>
+              router.push({
+                pathname: '/discover/providers/results',
+                params: { serviceCode: 'dental-checkup' },
+              })
+            }
+            onExploreServices={() => router.push('/discover')}
+          />
+        )}
       </ScrollView>
 
-      {selected.length > 0 ? (
-        <View
-          className="absolute left-0 right-0 px-4"
-          style={{ bottom: 68 + Math.max(insets.bottom, 8) }}
-        >
-          <View
-            className={cn(
-              'mx-auto min-h-[54px] w-full max-w-[398px] items-center gap-2 rounded-[13px] border border-border-subtle bg-surface-default px-3 py-[6px]',
-              rowClassName,
-            )}
-          >
-            <View className="min-w-0 flex-1 items-end">
-              <AppText align="right" className="font-ui-bold text-content-primary" variant="label">
-                أطباء محددون {selected.length}
-              </AppText>
-              <AppText
-                align="right"
-                className="mt-0.5 text-content-secondary"
-                numberOfLines={1}
-                style={{ fontSize: 10, lineHeight: 15 }}
-                variant="caption"
-              >
-                {maxReached
-                  ? 'الحد الأقصى · أزل طبيباً لإضافة آخر'
-                  : 'اختر طبيبين على الأقل للمقارنة'}
-              </AppText>
-            </View>
-            <Button
-              className="min-h-[40px] w-[112px]"
-              disabled={selected.length < 2}
-              label="مقارنة"
-              onPress={() =>
-                router.push({
-                  pathname: '/discover/providers/compare',
-                  params: { providerIds: selected.join(','), serviceCode },
-                })
-              }
-              size="compact"
-            />
-          </View>
-        </View>
+      {selection.length > 0 ? (
+        <ProviderComparisonBar
+          count={selection.length}
+          bottom={68 + Math.max(insets.bottom, 8)}
+          onCompare={() =>
+            router.push({
+              pathname: '/discover/providers/compare',
+              params: { providerIds: selection.join(','), serviceCode },
+            })
+          }
+        />
       ) : null}
 
       <DiscoverFilterSheet
         open={filtersOpen}
         onOpenChange={setFiltersOpen}
-        selection={discoveryFilters}
-        onApply={setDiscoveryFilters}
-        limits={priceLimits}
+        selection={applied.discovery}
+        providerFilters={applied.advanced}
+        providerSort={applied.sort}
+        onApply={(discovery, advanced, sort) => {
+          setApplied({
+            discovery,
+            advanced: advanced ?? { ...defaultProviderFilters },
+            sort: sort ?? 'default',
+          });
+        }}
+        limits={priceLimitsForService(serviceCode)}
       />
       <DiscoveryBottomBar activeTab="اكتشف" />
     </Screen>

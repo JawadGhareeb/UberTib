@@ -7,6 +7,9 @@ const ensure = (test, message) => { if (!test) problems.push(message); };
 const group = read('src/features/discovery/screens/service-group-detail-screen.tsx');
 const search = read('src/features/discovery/screens/service-search-results-screen.tsx');
 const service = read('src/features/discovery/screens/service-detail-screen.tsx');
+const serviceContent = read('src/features/discovery/components/service-detail-content.tsx');
+const serviceCopy = read('src/features/discovery/presentation/service-detail-copy.ts');
+const assessmentCard = read('src/shared/components/assessment/assessment-entry-card.tsx');
 const results = read('src/features/discovery/screens/provider-results-screen.tsx');
 const doctor = read('src/features/discovery/screens/provider-decision-screen.tsx');
 const branch = read('src/features/discovery/screens/provider-branch-screen.tsx');
@@ -26,17 +29,19 @@ for (const [name, source] of [['service group', group], ['search results', searc
 ensure(serviceRoute.includes('ServiceDetailScreen') && branchRoute.includes('ProviderBranchScreen'),
   'Both detail routes must exist');
 ensure(service.includes("findPenFamily(serviceCode)") &&
-  service.includes('if (!isRootCanal)') &&
-  service.includes('ليش ممكن تبحث عنها؟') &&
-  service.includes('ServiceIcon serviceId={family.id}') &&
-  service.includes('rootCanalNotes') &&
-  service.includes('serviceSteps') &&
-  service.includes('showFavoriteAction'),
-  'Service details should use Pen compact/general and rich/root-canal variants');
+  service.includes('<ServiceDetailContent') &&
+  service.includes('getServiceDetailCopy(family)') &&
+  service.includes('<AssessmentEntryCard />') &&
+  serviceContent.includes('ليش ممكن تبحث عنها؟') &&
+  serviceContent.includes('<ServiceIcon serviceId={serviceId}') &&
+  serviceCopy.includes("family.id === 'root-canal'") &&
+  assessmentCard.includes('مو متأكد من حالتك؟') &&
+  !service.includes('showFavoriteAction') &&
+  !service.includes('if (!isRootCanal)'),
+  'All service families must share the same reusable detail layout');
 ensure(service.includes("pathname: '/discover/providers/results'") &&
-  service.includes('params: { serviceCode: family.id }') &&
-  service.includes('params: { serviceCode }'),
-  'Service CTA must preserve the chosen service');
+  service.includes('params: { serviceCode: family.id }'),
+  'Service CTA must preserve the chosen service family code');
 ensure(!results.includes('تفاصيل خدمة {serviceTitle}') &&
   !results.includes("pathname: '/discover/service/[serviceCode]'") &&
   doctor.includes("pathname: '/discover/service/[serviceCode]'") &&
@@ -73,8 +78,8 @@ ensure(gallery.includes('ProviderPhotoGallery') &&
   gallery.includes('صور توضيحية للتصميم، وليست صور هذا الفرع') &&
   gallery.includes('setPreviewOpen(true)'),
   'The Pen photo gallery should remain interactive and clearly labeled as demo imagery');
-ensure(service.includes('السعر النهائي والتفاصيل تُراجع مع الطبيب') &&
-  !service.includes('نطاق 600–900 ل.س'),
+ensure(serviceContent.includes('السعر النهائي والتفاصيل تُراجع مع الطبيب') &&
+  !serviceContent.includes('نطاق 600–900 ل.س'),
   'Never describe an unverified placeholder price as a current price');
 
 if (problems.length) {
