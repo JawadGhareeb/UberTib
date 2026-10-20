@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Radio } from 'heroui-native';
 
 import { AppIcon } from '@/shared/components/ui/app-icon';
 import { AppText } from '@/shared/components/ui/app-text';
@@ -26,10 +27,11 @@ export function PatientSelectionCard({
   onPress,
 }: PatientSelectionCardProps) {
   return (
-    <Pressable
+    <Radio
+      isSelected={selected}
+      isDisabled={disabled}
+      onSelectedChange={onPress}
       accessibilityLabel={`${name}، ${description}، ${status}`}
-      accessibilityRole="radio"
-      accessibilityState={{ selected: selected && !disabled, disabled }}
       className={cn(
         'min-h-[94px] flex-row items-center gap-3 rounded-[16px] border px-3 py-3',
         disabled
@@ -38,19 +40,8 @@ export function PatientSelectionCard({
             ? 'border-action-primary bg-action-subtle'
             : 'border-border-subtle bg-surface-default',
       )}
-      disabled={disabled}
-      onPress={onPress}
     >
-      <View
-        className={cn(
-          'h-[21px] w-[21px] shrink-0 items-center justify-center rounded-full border-2',
-          selected && !disabled
-            ? 'border-action-primary bg-action-primary'
-            : 'border-border-strong bg-surface-default',
-        )}
-      >
-        {selected && !disabled ? <View className="h-[8px] w-[8px] rounded-full bg-white" /> : null}
-      </View>
+      <Radio.Indicator />
 
       <View className="min-w-0 flex-1 items-end justify-center gap-[3px]">
         <AppText
@@ -101,6 +92,6 @@ export function PatientSelectionCard({
           tone={disabled ? 'secondary' : 'action'}
         />
       </View>
-    </Pressable>
+    </Radio>
   );
 }

@@ -62,6 +62,10 @@ const checks = [
     'Doctors link to their profile and retain comparison state',
     card.includes("pathname: '/discover/provider/[providerId]'") &&
       card.includes('onPress={onToggle}') &&
+      card.includes('<HeroButton') &&
+      card.includes('accessibilityState={{ selected }}') &&
+      card.includes("'تم الاختيار'") &&
+      card.includes('<ProviderAvatar') &&
       results.includes('serviceState.comparisonProviderIds'),
   ],
   [

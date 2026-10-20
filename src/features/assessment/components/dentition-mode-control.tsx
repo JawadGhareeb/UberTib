@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Radio } from 'heroui-native';
 
 import type { DentitionMode } from '@/features/assessment/state/assessment-session-provider';
 import { useAppDirection } from '@/providers/app-direction-provider';
@@ -43,16 +44,15 @@ export function DentitionModeControl({ value, onChange }: DentitionModeControlPr
           const selected = value === mode.value;
 
           return (
-            <Pressable
-              accessibilityRole="radio"
-              accessibilityState={{ selected }}
+            <Radio
+              isSelected={selected}
+              onSelectedChange={() => onChange(mode.value)}
               className={cn(
                 'min-w-0 flex-1 items-center justify-center rounded-[8px]',
                 selected ? 'bg-action-primary' : 'bg-surface-subtle',
               )}
               hitSlop={4}
               key={mode.value}
-              onPress={() => onChange(mode.value)}
             >
               <AppText
                 style={selected ? { color: colors.text.onAction } : undefined}
@@ -64,7 +64,7 @@ export function DentitionModeControl({ value, onChange }: DentitionModeControlPr
               >
                 {mode.label}
               </AppText>
-            </Pressable>
+            </Radio>
           );
         })}
       </View>

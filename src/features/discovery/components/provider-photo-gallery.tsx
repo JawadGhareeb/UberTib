@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Image, Modal, Pressable, View } from 'react-native';
 
 import { AppIcon, AppText } from '@/shared/components/ui';
+import { ProviderAvatar } from '@/features/discovery/components/provider-avatar';
 
 /** Demo imagery only. Never present these as pictures of this doctor's actual branch. */
 const CLINIC_TOUR = [
@@ -36,7 +37,11 @@ function Photo({
     <View className={`overflow-hidden rounded-[13px] bg-action-subtle ${className}`}>
       {failed ? (
         <View className="flex-1 items-center justify-center gap-1">
-          <AppIcon name={{ ios: 'photo', android: 'image', web: 'image' }} size={25} tone="action" />
+          <AppIcon
+            name={{ ios: 'photo', android: 'image', web: 'image' }}
+            size={25}
+            tone="action"
+          />
           <AppText align="center" className="text-content-secondary" variant="caption">
             {fallbackLabel}
           </AppText>
@@ -54,27 +59,15 @@ function Photo({
   );
 }
 
-export function ProviderPortrait({ size = 68, uri = DEMO_PROVIDER_PORTRAIT }: { size?: number; uri?: string }) {
-  const [failed, setFailed] = useState(false);
-  return (
-    <View
-      className="items-center justify-center overflow-hidden rounded-full bg-action-subtle"
-      style={{ height: size, width: size }}
-    >
-      {failed ? (
-        <AppIcon name={{ ios: 'person.fill', android: 'person', web: 'person' }} size={size * 0.44} tone="action" />
-      ) : (
-        <Image
-          accessibilityLabel="صورة توضيحية لطبيب الأسنان"
-          className="h-full w-full"
-          onError={() => setFailed(true)}
-          source={{ uri }}
-        />
-      )}
-    </View>
-  );
+export function ProviderPortrait({
+  size = 68,
+  uri = DEMO_PROVIDER_PORTRAIT,
+}: {
+  size?: number;
+  uri?: string;
+}) {
+  return <ProviderAvatar imageUrl={uri} size={size} />;
 }
-
 
 export function ProviderPhotoGallery({ compact = false }: { compact?: boolean }) {
   const [active, setActive] = useState(compact ? 0 : 2);
@@ -112,7 +105,11 @@ export function ProviderPhotoGallery({ compact = false }: { compact?: boolean })
             className="min-w-0 flex-1"
             onPress={() => openPreview(active)}
           >
-            <Photo className="h-full w-full" key={DEMO_CLINIC_PHOTOS[active]} uri={DEMO_CLINIC_PHOTOS[active]!} />
+            <Photo
+              className="h-full w-full"
+              key={DEMO_CLINIC_PHOTOS[active]}
+              uri={DEMO_CLINIC_PHOTOS[active]!}
+            />
           </Pressable>
           <View className="w-[95px] gap-2">
             {CLINIC_TOUR.map((photo, index) => ({ ...photo, index }))
@@ -169,9 +166,14 @@ export function ProviderPhotoGallery({ compact = false }: { compact?: boolean })
                 accessibilityLabel="الصورة السابقة"
                 accessibilityRole="button"
                 className="h-11 w-11 items-center justify-center rounded-full bg-surface-default"
-                onPress={() => setActive((index) => (index - 1 + CLINIC_TOUR.length) % CLINIC_TOUR.length)}
+                onPress={() =>
+                  setActive((index) => (index - 1 + CLINIC_TOUR.length) % CLINIC_TOUR.length)
+                }
               >
-                <AppIcon name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }} tone="secondary" />
+                <AppIcon
+                  name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
+                  tone="secondary"
+                />
               </Pressable>
               <AppText className="text-content-on-action" variant="caption">
                 {active + 1} / {CLINIC_TOUR.length}
@@ -182,7 +184,10 @@ export function ProviderPhotoGallery({ compact = false }: { compact?: boolean })
                 className="h-11 w-11 items-center justify-center rounded-full bg-surface-default"
                 onPress={() => setActive((index) => (index + 1) % CLINIC_TOUR.length)}
               >
-                <AppIcon name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }} tone="secondary" />
+                <AppIcon
+                  name={{ ios: 'chevron.right', android: 'chevron_right', web: 'chevron_right' }}
+                  tone="secondary"
+                />
               </Pressable>
             </View>
           </View>

@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Checkbox, Radio } from 'heroui-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { mockDependents } from '@/features/profile/mocks/representation.mock';
@@ -32,21 +33,21 @@ function Choice({
   disabled?: boolean;
 }) {
   return (
-    <Pressable
-      accessibilityRole="radio"
-      accessibilityState={{ selected, disabled }}
+    <Radio
+      isSelected={selected}
+      isDisabled={disabled}
+      onSelectedChange={onPress}
       className={cn(
-        'min-h-target-comfortable justify-center rounded-control border px-3 py-2.5',
+        'min-h-target-comfortable flex-row-reverse items-center gap-2 rounded-control border px-3 py-2.5',
         selected
           ? 'border-state-selected-border bg-state-selected'
           : 'border-action-primary bg-surface-default active:bg-action-subtle',
         disabled && 'opacity-50',
       )}
-      disabled={disabled}
-      onPress={onPress}
     >
+      <Radio.Indicator />
       <AppText variant="label">{label}</AppText>
-    </Pressable>
+    </Radio>
   );
 }
 
@@ -179,9 +180,10 @@ export function CreateGrantScreen() {
                   const selected = selectedActions.includes(action);
 
                   return (
-                    <Pressable
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked: selected }}
+                    <Checkbox
+                      key={action}
+                      isSelected={selected}
+                      onSelectedChange={() => toggleAction(action)}
                       className={cn(
                         rowClassName,
                         'min-h-target-comfortable items-center gap-3 rounded-control border px-3 py-2.5',
@@ -189,30 +191,12 @@ export function CreateGrantScreen() {
                           ? 'border-state-selected-border bg-state-selected'
                           : 'border-action-primary bg-surface-default active:bg-action-subtle',
                       )}
-                      key={action}
-                      onPress={() => toggleAction(action)}
                     >
-                      <AppIcon
-                        name={
-                          selected
-                            ? {
-                                ios: 'checkmark.square.fill',
-                                android: 'check_box',
-                                web: 'check_box',
-                              }
-                            : {
-                                ios: 'square',
-                                android: 'check_box_outline_blank',
-                                web: 'check_box_outline_blank',
-                              }
-                        }
-                        size={20}
-                        tone={selected ? 'action' : 'secondary'}
-                      />
+                      <Checkbox.Indicator />
                       <AppText className="min-w-0 flex-1" variant="label">
                         {action}
                       </AppText>
-                    </Pressable>
+                    </Checkbox>
                   );
                 })}
               </View>

@@ -2,12 +2,16 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Radio } from 'heroui-native';
 
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
 import { useMockScenario } from '@/shared/mock';
-import { useBookingDraft, type BookingVisitReason } from '@/features/booking/state/booking-draft-provider';
+import {
+  useBookingDraft,
+  type BookingVisitReason,
+} from '@/features/booking/state/booking-draft-provider';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
@@ -23,14 +27,15 @@ export function BookingVisitReasonScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
   const { colors } = useAppTheme();
-  const { providerId, serviceCode, dateKey, dateLabel, timeLabel, patientId } = useLocalSearchParams<{
-    providerId?: string;
-    serviceCode?: string;
-    dateKey?: string;
-    dateLabel?: string;
-    timeLabel?: string;
-    patientId?: string;
-  }>();
+  const { providerId, serviceCode, dateKey, dateLabel, timeLabel, patientId } =
+    useLocalSearchParams<{
+      providerId?: string;
+      serviceCode?: string;
+      dateKey?: string;
+      dateLabel?: string;
+      timeLabel?: string;
+      patientId?: string;
+    }>();
   const { scenario } = useMockScenario();
   const provider = getMockProvider(providerId);
   const selectedDate = provider?.availability.find((day) => day.dateKey === dateKey);
@@ -40,7 +45,17 @@ export function BookingVisitReasonScreen() {
     selectedDate?.slots.includes(timeLabel ?? ''),
   );
   const patientCanBook = canBookForPatient(patientId, scenario);
-  const { reason, setReason, note, setNote, attachment, setAttachment, shareAttachment, setShareAttachment, prepareForService } = useBookingDraft();
+  const {
+    reason,
+    setReason,
+    note,
+    setNote,
+    attachment,
+    setAttachment,
+    shareAttachment,
+    setShareAttachment,
+    prepareForService,
+  } = useBookingDraft();
   const [editingReason, setEditingReason] = useState(false);
   const [selectingFile, setSelectingFile] = useState(false);
   const [attachmentError, setAttachmentError] = useState('');
@@ -84,25 +99,31 @@ export function BookingVisitReasonScreen() {
       <Screen>
         <StateView
           title={!validSlot ? 'اختيار الموعد مطلوب' : 'اختيار المريض مطلوب'}
-          description={!validSlot
-            ? 'ابدأ باختيار الموعد قبل ملخص الحالة والمرفقات.'
-            : 'اختر مريضاً يملك صلاحية الحجز قبل المتابعة.'}
+          description={
+            !validSlot
+              ? 'ابدأ باختيار الموعد قبل ملخص الحالة والمرفقات.'
+              : 'اختر مريضاً يملك صلاحية الحجز قبل المتابعة.'
+          }
           actionLabel={!validSlot ? 'اختيار الموعد' : 'تحديد المريض'}
-          onAction={() => router.replace(!validSlot
-            ? {
-                pathname: '/booking/slots',
-                params: { providerId: providerId ?? '', serviceCode: serviceCode ?? '' },
-              }
-            : {
-                pathname: '/booking/patient',
-                params: {
-                  providerId: providerId ?? '',
-                  serviceCode: serviceCode ?? '',
-                  dateKey: dateKey ?? '',
-                  dateLabel: dateLabel ?? '',
-                  timeLabel: timeLabel ?? '',
-                },
-              })}
+          onAction={() =>
+            router.replace(
+              !validSlot
+                ? {
+                    pathname: '/booking/slots',
+                    params: { providerId: providerId ?? '', serviceCode: serviceCode ?? '' },
+                  }
+                : {
+                    pathname: '/booking/patient',
+                    params: {
+                      providerId: providerId ?? '',
+                      serviceCode: serviceCode ?? '',
+                      dateKey: dateKey ?? '',
+                      dateLabel: dateLabel ?? '',
+                      timeLabel: timeLabel ?? '',
+                    },
+                  },
+            )
+          }
         />
       </Screen>
     );
@@ -133,7 +154,11 @@ export function BookingVisitReasonScreen() {
               <AppText align="right" className="text-content-link" variant="caption">
                 سبب الزيارة المحدد
               </AppText>
-              <AppText align="right" className="mt-0.5 font-ui-bold text-content-primary" variant="label">
+              <AppText
+                align="right"
+                className="mt-0.5 font-ui-bold text-content-primary"
+                variant="label"
+              >
                 {reasons.find((item) => item.id === reason)?.label}
               </AppText>
               <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
@@ -154,9 +179,12 @@ export function BookingVisitReasonScreen() {
           {editingReason ? (
             <View className={cn('mt-2 flex-wrap gap-2', rowClassName)}>
               {reasons.map((item) => (
-                <Pressable
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: item.id === reason }}
+                <Radio
+                  isSelected={item.id === reason}
+                  onSelectedChange={() => {
+                    setReason(item.id as BookingVisitReason);
+                    setEditingReason(false);
+                  }}
                   className={cn(
                     'min-h-[42px] items-center justify-center rounded-[10px] border px-3',
                     item.id === reason
@@ -164,15 +192,17 @@ export function BookingVisitReasonScreen() {
                       : 'border-border-subtle bg-surface-subtle',
                   )}
                   key={item.id}
-                  onPress={() => {
-                    setReason(item.id as BookingVisitReason);
-                    setEditingReason(false);
-                  }}
                 >
-                  <AppText className={item.id === reason ? 'font-ui-bold text-content-link' : 'text-content-primary'} variant="caption">
+                  <Radio.Indicator />
+                  <AppText
+                    className={
+                      item.id === reason ? 'font-ui-bold text-content-link' : 'text-content-primary'
+                    }
+                    variant="caption"
+                  >
                     {item.label}
                   </AppText>
-                </Pressable>
+                </Radio>
               ))}
             </View>
           ) : null}
@@ -190,7 +220,12 @@ export function BookingVisitReasonScreen() {
             onChangeText={setNote}
             placeholder="تفاصيل، شرح الخطوات قبل أي إجراء..."
             placeholderTextColor={colors.text.placeholder}
-            style={{ writingDirection: 'rtl', textAlign: 'right', textAlignVertical: 'top', fontSize: 12 }}
+            style={{
+              writingDirection: 'rtl',
+              textAlign: 'right',
+              textAlignVertical: 'top',
+              fontSize: 12,
+            }}
             value={note}
           />
         </View>
@@ -200,15 +235,33 @@ export function BookingVisitReasonScreen() {
         </AppText>
 
         <View className="mt-2 gap-2">
-          <View className={cn('min-h-[54px] items-center gap-2 rounded-[12px] border border-border-subtle bg-surface-default px-3 py-2', rowClassName)}>
+          <View
+            className={cn(
+              'min-h-[54px] items-center gap-2 rounded-[12px] border border-border-subtle bg-surface-default px-3 py-2',
+              rowClassName,
+            )}
+          >
             <View className="h-[30px] w-[30px] items-center justify-center rounded-[8px] bg-tone-info-fill">
-              <AppIcon name={{ ios: 'photo', android: 'image', web: 'image' }} size={16} tone="info" />
+              <AppIcon
+                name={{ ios: 'photo', android: 'image', web: 'image' }}
+                size={16}
+                tone="info"
+              />
             </View>
             <View className="min-w-0 flex-1 items-end">
-              <AppText align="right" className="font-ui-semibold text-content-primary" variant="label">
+              <AppText
+                align="right"
+                className="font-ui-semibold text-content-primary"
+                variant="label"
+              >
                 صورة المنطقة
               </AppText>
-              <AppText align="right" className="text-content-secondary" numberOfLines={2} variant="caption">
+              <AppText
+                align="right"
+                className="text-content-secondary"
+                numberOfLines={2}
+                variant="caption"
+              >
                 {attachment ? attachment.fileName : 'ما تم اختيار صورة بعد'}
               </AppText>
             </View>
@@ -220,7 +273,10 @@ export function BookingVisitReasonScreen() {
             <Pressable
               accessibilityLabel="اختيار الصورة للمراجعة"
               accessibilityRole="switch"
-              accessibilityState={{ checked: Boolean(attachment && shareAttachment), disabled: !attachment }}
+              accessibilityState={{
+                checked: Boolean(attachment && shareAttachment),
+                disabled: !attachment,
+              }}
               className={cn(
                 'h-[28px] w-[42px] justify-center rounded-full px-1',
                 attachment && shareAttachment ? 'bg-action-primary' : 'bg-surface-subtle',
@@ -228,16 +284,38 @@ export function BookingVisitReasonScreen() {
               disabled={!attachment}
               onPress={() => setShareAttachment(!shareAttachment)}
             >
-              <View className={cn('h-5 w-5 rounded-full bg-surface-default', attachment && shareAttachment ? 'self-end' : 'self-start')} />
+              <View
+                className={cn(
+                  'h-5 w-5 rounded-full bg-surface-default',
+                  attachment && shareAttachment ? 'self-end' : 'self-start',
+                )}
+              />
             </Pressable>
           </View>
 
-          <View className={cn('min-h-[54px] items-center gap-2 rounded-[12px] border border-border-subtle bg-surface-default px-3 py-2', rowClassName)}>
+          <View
+            className={cn(
+              'min-h-[54px] items-center gap-2 rounded-[12px] border border-border-subtle bg-surface-default px-3 py-2',
+              rowClassName,
+            )}
+          >
             <View className="h-[30px] w-[30px] items-center justify-center rounded-[8px] bg-surface-subtle">
-              <AppIcon name={{ ios: 'viewfinder', android: 'center_focus_strong', web: 'center_focus_strong' }} size={17} tone="secondary" />
+              <AppIcon
+                name={{
+                  ios: 'viewfinder',
+                  android: 'center_focus_strong',
+                  web: 'center_focus_strong',
+                }}
+                size={17}
+                tone="secondary"
+              />
             </View>
             <View className="min-w-0 flex-1 items-end">
-              <AppText align="right" className="font-ui-semibold text-content-primary" variant="label">
+              <AppText
+                align="right"
+                className="font-ui-semibold text-content-primary"
+                variant="label"
+              >
                 أشعة حول ذروية سابقة
               </AppText>
               <AppText align="right" className="text-content-secondary" variant="caption">
@@ -245,7 +323,9 @@ export function BookingVisitReasonScreen() {
               </AppText>
             </View>
             <View className="rounded-[7px] bg-surface-subtle px-2 py-1">
-              <AppText className="text-content-secondary" variant="badge">غير مرفق</AppText>
+              <AppText className="text-content-secondary" variant="badge">
+                غير مرفق
+              </AppText>
             </View>
             <View className="h-[28px] w-[42px] items-start justify-center rounded-full bg-surface-subtle px-1">
               <View className="h-5 w-5 rounded-full bg-surface-default" />
@@ -253,12 +333,29 @@ export function BookingVisitReasonScreen() {
           </View>
         </View>
 
-        <View className={cn('mt-2 min-h-[54px] items-center gap-2 rounded-[12px] bg-tone-info-fill px-3 py-2', rowClassName)}>
+        <View
+          className={cn(
+            'mt-2 min-h-[54px] items-center gap-2 rounded-[12px] bg-tone-info-fill px-3 py-2',
+            rowClassName,
+          )}
+        >
           <View className="h-9 w-9 items-center justify-center rounded-full bg-surface-default">
-            <AppIcon name={{ ios: 'shield.lefthalf.filled', android: 'verified_user', web: 'verified_user' }} size={19} tone="info" />
+            <AppIcon
+              name={{
+                ios: 'shield.lefthalf.filled',
+                android: 'verified_user',
+                web: 'verified_user',
+              }}
+              size={19}
+              tone="info"
+            />
           </View>
           <View className="min-w-0 flex-1 items-end">
-            <AppText align="right" className="font-ui-semibold text-content-primary" variant="label">
+            <AppText
+              align="right"
+              className="font-ui-semibold text-content-primary"
+              variant="label"
+            >
               السياق الصحي المحدد للمشاركة
             </AppText>
             <AppText align="right" className="text-content-secondary" variant="caption">
@@ -281,8 +378,13 @@ export function BookingVisitReasonScreen() {
           </AppText>
         ) : null}
         {attachment ? (
-          <Pressable className="mt-1 min-h-[34px] justify-center self-end" onPress={() => setAttachment(null)}>
-            <AppText className="text-tone-danger-text" variant="caption">إزالة الصورة</AppText>
+          <Pressable
+            className="mt-1 min-h-[34px] justify-center self-end"
+            onPress={() => setAttachment(null)}
+          >
+            <AppText className="text-tone-danger-text" variant="caption">
+              إزالة الصورة
+            </AppText>
           </Pressable>
         ) : null}
         <AppText align="right" className="mt-2 text-content-secondary" variant="caption">
@@ -296,18 +398,20 @@ export function BookingVisitReasonScreen() {
             className="h-[52px] rounded-[12px]"
             endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
             label="متابعة لمراجعة طلب الحجز"
-            onPress={() => router.push({
-              pathname: '/booking/review',
-              params: {
-                providerId: providerId ?? '',
-                serviceCode: serviceCode ?? '',
-                patientId: patientId ?? '',
-                dateKey: dateKey ?? '',
-                dateLabel: dateLabel ?? '',
-                timeLabel: timeLabel ?? '',
-                reason,
-              },
-            })}
+            onPress={() =>
+              router.push({
+                pathname: '/booking/review',
+                params: {
+                  providerId: providerId ?? '',
+                  serviceCode: serviceCode ?? '',
+                  patientId: patientId ?? '',
+                  dateKey: dateKey ?? '',
+                  dateLabel: dateLabel ?? '',
+                  timeLabel: timeLabel ?? '',
+                  reason,
+                },
+              })
+            }
           />
         </View>
       </View>

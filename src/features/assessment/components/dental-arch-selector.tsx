@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { Checkbox } from 'heroui-native';
 
 import type { DentitionMode } from '@/features/assessment/state/assessment-session-provider';
 import { useAppDirection } from '@/providers/app-direction-provider';
@@ -85,13 +86,12 @@ function ToothTarget({
   const glyphHeight = primary ? 35 : 37;
 
   return (
-    <Pressable
+    <Checkbox
+      isSelected={selected}
+      onSelectedChange={onPress}
       accessibilityLabel={`السن ${code}`}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: selected }}
       className="min-h-[90px] min-w-0 flex-1 items-center justify-center overflow-visible"
       hitSlop={{ top: 3, bottom: 3 }}
-      onPress={onPress}
       style={{
         paddingTop: !lower ? toothOffset(code, lower, primary) : 0,
         paddingBottom: lower ? toothOffset(code, lower, primary) : 0,
@@ -107,7 +107,7 @@ function ToothTarget({
         width={width * scale}
         height={glyphHeight * scale}
       />
-    </Pressable>
+    </Checkbox>
   );
 }
 

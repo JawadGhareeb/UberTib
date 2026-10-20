@@ -1,3 +1,4 @@
+import { Radio } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -105,30 +106,20 @@ export function CreateSupportTicketScreen() {
               {options.map((item, index) => {
                 const selected = item.id === type;
                 return (
-                  <Pressable
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: selected }}
+                  <Radio
                     key={item.id}
+                    isSelected={selected}
+                    onSelectedChange={() => {
+                      setType(item.id);
+                      setError('');
+                    }}
                     className={
                       'min-h-[65px] flex-row-reverse items-center gap-3 px-3 py-3 ' +
                       (index ? 'border-t border-border-subtle ' : '') +
                       (selected ? 'bg-action-subtle' : '')
                     }
-                    onPress={() => {
-                      setType(item.id);
-                      setError('');
-                    }}
                   >
-                    <View
-                      className={
-                        'h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ' +
-                        (selected ? 'border-action-primary' : 'border-border-default')
-                      }
-                    >
-                      {selected ? (
-                        <View className="h-2.5 w-2.5 rounded-full bg-action-primary" />
-                      ) : null}
-                    </View>
+                    <Radio.Indicator />
                     <View className="min-w-0 flex-1 items-end gap-1">
                       <AppText variant="label" align="right" className="font-ui-semibold">
                         {item.label}
@@ -137,7 +128,7 @@ export function CreateSupportTicketScreen() {
                         {item.detail}
                       </AppText>
                     </View>
-                  </Pressable>
+                  </Radio>
                 );
               })}
             </View>
@@ -154,11 +145,10 @@ export function CreateSupportTicketScreen() {
               </AppText>
               {cases.length ? (
                 cases.map((careCase) => (
-                  <Pressable
+                  <Radio
                     key={careCase.id}
-                    accessibilityRole="radio"
-                    accessibilityState={{ checked: caseId === careCase.id }}
-                    onPress={() => setChosenCaseId(careCase.id)}
+                    isSelected={caseId === careCase.id}
+                    onSelectedChange={() => setChosenCaseId(careCase.id)}
                     className={
                       'min-h-[64px] flex-row-reverse items-center justify-between gap-3 rounded-[13px] border px-3 py-3 ' +
                       (caseId === careCase.id
@@ -174,16 +164,8 @@ export function CreateSupportTicketScreen() {
                         {careCase.branch}
                       </AppText>
                     </View>
-                    <AppIcon
-                      name={{
-                        ios: caseId === careCase.id ? 'checkmark.circle.fill' : 'circle',
-                        android: caseId === careCase.id ? 'check_circle' : 'radio_button_unchecked',
-                        web: caseId === careCase.id ? 'check_circle' : 'radio_button_unchecked',
-                      }}
-                      size={22}
-                      tone={caseId === careCase.id ? 'action' : 'secondary'}
-                    />
-                  </Pressable>
+                    <Radio.Indicator />
+                  </Radio>
                 ))
               ) : (
                 <AppText variant="label" align="right" className="text-content-secondary">

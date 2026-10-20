@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Radio } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
@@ -37,7 +38,10 @@ export function AssessmentNeedsMoreInfoScreen() {
   };
 
   const bookDentalCheckup = () =>
-    router.push({ pathname: '/discover/providers/results', params: { serviceCode: 'dental-checkup' } });
+    router.push({
+      pathname: '/discover/providers/results',
+      params: { serviceCode: 'dental-checkup' },
+    });
 
   return (
     <AssessmentScaffold
@@ -46,7 +50,12 @@ export function AssessmentNeedsMoreInfoScreen() {
       title="نحتاج معلومة إضافية"
     >
       <View className="mt-1 min-h-[196px] items-center justify-center rounded-[21px] bg-tone-info-fill px-3 pb-4 pt-2">
-        <View className={cn('h-[113px] w-[160px] items-center justify-center gap-3 rounded-[30px] bg-surface-default', rowClassName)}>
+        <View
+          className={cn(
+            'h-[113px] w-[160px] items-center justify-center gap-3 rounded-[30px] bg-surface-default',
+            rowClassName,
+          )}
+        >
           <View className="h-[53px] w-[53px] items-center justify-center rounded-[15px]">
             <AppIcon
               name={{ ios: 'eye.slash.fill', android: 'visibility_off', web: 'visibility_off' }}
@@ -62,7 +71,11 @@ export function AssessmentNeedsMoreInfoScreen() {
             />
           </View>
         </View>
-        <AppText align="center" className="mt-3 font-ui-bold text-content-primary" variant="heading-4">
+        <AppText
+          align="center"
+          className="mt-3 font-ui-bold text-content-primary"
+          variant="heading-4"
+        >
           معلومة صغيرة تساعدنا نكمل
         </AppText>
         <AppText align="center" className="mt-1 text-content-secondary" variant="caption">
@@ -74,48 +87,54 @@ export function AssessmentNeedsMoreInfoScreen() {
         <AppText align="right" className="font-ui-semibold text-content-link" variant="caption">
           خطوة واحدة لنكمل
         </AppText>
-        <AppText align="right" className="mt-1 font-ui-bold text-content-primary" variant="heading-4">
+        <AppText
+          align="right"
+          className="mt-1 font-ui-bold text-content-primary"
+          variant="heading-4"
+        >
           أي جهة هي الأقرب للألم؟
         </AppText>
         <View className={cn('mt-3 flex-wrap justify-between gap-y-2', rowClassName)}>
           {locations.map((option) => (
-            <Pressable
-              accessibilityRole="radio"
-              accessibilityState={{ checked: selected === option }}
+            <Radio
+              isSelected={selected === option}
+              onSelectedChange={() => setSelected(option)}
               className={cn(
-                'min-h-[46px] w-[48.5%] items-center justify-center rounded-[11px] border px-2',
+                'min-h-[46px] w-[48.5%] flex-row-reverse items-center justify-center gap-1 rounded-[11px] border px-2',
                 selected === option
                   ? 'border-2 border-action-primary bg-action-subtle'
                   : 'border-border-subtle bg-surface-subtle',
               )}
               key={option}
-              onPress={() => setSelected(option)}
             >
+              <Radio.Indicator />
               <AppText
                 align="center"
-                className={selected === option ? 'font-ui-bold text-content-link' : 'text-content-secondary'}
+                className={
+                  selected === option ? 'font-ui-bold text-content-link' : 'text-content-secondary'
+                }
                 variant="label"
               >
                 {option}
               </AppText>
-            </Pressable>
+            </Radio>
           ))}
         </View>
-        <Pressable
-          accessibilityRole="radio"
-          accessibilityState={{ checked: selected === unsureOption }}
+        <Radio
+          isSelected={selected === unsureOption}
+          onSelectedChange={() => setSelected(unsureOption)}
           className={cn(
-            'mt-2 min-h-[42px] items-center justify-center rounded-[10px] border',
+            'mt-2 min-h-[42px] flex-row-reverse items-center justify-center gap-2 rounded-[10px] border',
             selected === unsureOption
               ? 'border-action-primary bg-action-subtle'
               : 'border-transparent bg-action-subtle',
           )}
-          onPress={() => setSelected(unsureOption)}
         >
+          <Radio.Indicator />
           <AppText align="center" className="font-ui-semibold text-content-link" variant="label">
             {unsureOption}
           </AppText>
-        </Pressable>
+        </Radio>
       </View>
 
       <Button
@@ -126,14 +145,23 @@ export function AssessmentNeedsMoreInfoScreen() {
         onPress={continueAssessment}
       />
 
-      <View className={cn('mt-2 min-h-[52px] items-center gap-2 rounded-[11px] bg-surface-subtle px-3 py-2', rowClassName)}>
+      <View
+        className={cn(
+          'mt-2 min-h-[52px] items-center gap-2 rounded-[11px] bg-surface-subtle px-3 py-2',
+          rowClassName,
+        )}
+      >
         <AppIcon
           name={{ ios: 'calendar.badge.plus', android: 'event_available', web: 'event_available' }}
           size={18}
           tone="action"
         />
         <View className="min-w-0 flex-1 items-end">
-          <AppText align="right" className="font-ui-semibold text-content-primary" variant="caption">
+          <AppText
+            align="right"
+            className="font-ui-semibold text-content-primary"
+            variant="caption"
+          >
             إذا بقي المكان غير واضح
           </AppText>
           <AppText align="right" className="text-content-secondary" variant="caption">

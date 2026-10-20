@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
+import { Radio } from 'heroui-native';
 
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
@@ -98,19 +99,18 @@ export function BookingPatientSelectionScreen() {
             const allowed = canBookForPatient(person.id, scenario);
             const active = selectedId === person.id;
             return (
-              <Pressable
+              <Radio
+                isSelected={active}
+                isDisabled={!allowed}
+                onSelectedChange={() => setSelectedId(person.id)}
                 accessibilityLabel={person.name + (allowed ? '' : '، غير مسموح بالحجز')}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: active, disabled: !allowed }}
                 className={cn(
                   'min-h-[56px] items-center gap-2 rounded-[13px] border bg-surface-default px-3 py-2',
                   rowClassName,
                   active ? 'border-action-primary' : 'border-border-subtle',
                   !allowed && 'opacity-70',
                 )}
-                disabled={!allowed}
                 key={person.id}
-                onPress={() => setSelectedId(person.id)}
               >
                 <View className="h-8 w-8 items-center justify-center rounded-full bg-action-subtle">
                   <AppIcon
@@ -135,21 +135,8 @@ export function BookingPatientSelectionScreen() {
                         : person.relation + ' · لا يوجد تفويض حجز صالح'}
                   </AppText>
                 </View>
-                <View
-                  className={cn(
-                    'h-[23px] w-[23px] items-center justify-center rounded-full border',
-                    active ? 'border-action-primary bg-action-primary' : 'border-border-default',
-                  )}
-                >
-                  {active ? (
-                    <AppIcon
-                      name={{ ios: 'checkmark', android: 'check', web: 'check' }}
-                      size={14}
-                      tone="onAction"
-                    />
-                  ) : null}
-                </View>
-              </Pressable>
+                <Radio.Indicator />
+              </Radio>
             );
           })}
         </View>

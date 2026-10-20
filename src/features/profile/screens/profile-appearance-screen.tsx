@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Radio } from 'heroui-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { AppIcon, AppText, Button, type AppIconName } from '@/shared/components/ui';
@@ -47,11 +48,10 @@ function AppearanceChoice({
   onPress: () => void;
 }) {
   return (
-    <Pressable
-      accessibilityRole="radio"
+    <Radio
+      isSelected={selected}
+      onSelectedChange={onPress}
       accessibilityLabel={'اختيار المظهر ' + item.name}
-      accessibilityState={{ checked: selected }}
-      onPress={onPress}
       className={
         'min-h-[222px] min-w-0 flex-1 items-center gap-3 rounded-[17px] border p-3 ' +
         (selected
@@ -79,6 +79,7 @@ function AppearanceChoice({
         <View className="h-4 w-16 self-end rounded-[6px]" style={{ backgroundColor: item.label }} />
       </View>
       <View className="min-h-[23px] flex-row-reverse items-center justify-center gap-1">
+        <Radio.Indicator />
         {selected ? (
           <AppIcon
             name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
@@ -100,7 +101,7 @@ function AppearanceChoice({
           </AppText>
         )}
       </View>
-    </Pressable>
+    </Radio>
   );
 }
 

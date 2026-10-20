@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Checkbox } from 'heroui-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { AppIcon } from '@/shared/components/ui';
@@ -52,7 +53,14 @@ function MixedSilhouette({
   return (
     <View
       pointerEvents="none"
-      style={{ position: 'absolute', left: '50%', marginLeft: -width / 2 + offsetX, top, width, height }}
+      style={{
+        position: 'absolute',
+        left: '50%',
+        marginLeft: -width / 2 + offsetX,
+        top,
+        width,
+        height,
+      }}
     >
       <Svg
         accessible={false}
@@ -89,13 +97,12 @@ export function MixedToothTarget({ index, lower, selected, onPress }: MixedTooth
     index === 0 || index === 9 ? 'molar' : index === 3 || index === 6 ? 'canine' : 'incisor';
 
   return (
-    <Pressable
+    <Checkbox
+      isSelected={selected}
+      onSelectedChange={onPress}
       accessibilityLabel={`الموضع ${index + 1} ${lower ? 'السفلي' : 'العلوي'}`}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: selected }}
       className="h-full min-w-0 flex-1 items-center rounded-[9px]"
       hitSlop={{ left: 5, right: 5, top: 3, bottom: 3 }}
-      onPress={onPress}
       style={{
         overflow: 'visible',
         backgroundColor: selected ? colors.action.subtle : 'transparent',
@@ -134,6 +141,6 @@ export function MixedToothTarget({ index, lower, selected, onPress }: MixedTooth
           />
         </View>
       ) : null}
-    </Pressable>
+    </Checkbox>
   );
 }

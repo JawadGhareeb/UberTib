@@ -1,9 +1,13 @@
+import { Radio } from 'heroui-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, Image, Pressable, ScrollView, View } from 'react-native';
+import { FlatList, Image, ScrollView, View } from 'react-native';
 
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
-import { DEMO_CLINIC_PHOTOS, ProviderPortrait } from '@/features/discovery/components/provider-photo-gallery';
+import {
+  DEMO_CLINIC_PHOTOS,
+  ProviderPortrait,
+} from '@/features/discovery/components/provider-photo-gallery';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { useAppDirection } from '@/providers/app-direction-provider';
@@ -44,18 +48,20 @@ export function SlotSelectionScreen() {
     [dateKey, provider],
   );
   const serviceName =
-    penServiceGroups.flatMap((group) => group.families)
-      .find((family) => family.id === serviceCode)?.title ?? 'الخدمة المختارة';
+    penServiceGroups.flatMap((group) => group.families).find((family) => family.id === serviceCode)
+      ?.title ?? 'الخدمة المختارة';
 
   if (!provider || !provider.serviceCodes.includes(serviceCode ?? '')) {
     return (
       <Screen>
         <StateView
           actionLabel="العودة للأطباء"
-          onAction={() => router.replace({
-            pathname: '/discover/providers/results',
-            params: { serviceCode: serviceCode ?? 'dental-checkup' },
-          })}
+          onAction={() =>
+            router.replace({
+              pathname: '/discover/providers/results',
+              params: { serviceCode: serviceCode ?? 'dental-checkup' },
+            })
+          }
           title="بيانات اختيار الموعد غير مكتملة"
           description="اختَر طبيباً وخدمة متاحة للبدء باختيار الموعد."
         />
@@ -71,7 +77,12 @@ export function SlotSelectionScreen() {
         contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-[106px] pt-2"
         showsVerticalScrollIndicator={false}
       >
-        <View className={cn('mt-3 min-h-[61px] items-center gap-2 rounded-[14px] border border-action-primary/25 bg-action-subtle p-3', rowClassName)}>
+        <View
+          className={cn(
+            'mt-3 min-h-[61px] items-center gap-2 rounded-[14px] border border-action-primary/25 bg-action-subtle p-3',
+            rowClassName,
+          )}
+        >
           <View className="h-9 w-9 items-center justify-center rounded-full bg-surface-default">
             <AppIcon
               name={{ ios: 'checkmark.shield', android: 'verified_user', web: 'verified_user' }}
@@ -83,16 +94,28 @@ export function SlotSelectionScreen() {
             <AppText align="right" className="font-ui-bold text-content-primary" variant="label">
               اختر الوقت المناسب
             </AppText>
-            <AppText align="right" className="mt-0.5 text-content-secondary" numberOfLines={2} variant="caption">
+            <AppText
+              align="right"
+              className="mt-0.5 text-content-secondary"
+              numberOfLines={2}
+              variant="caption"
+            >
               {serviceName} · {provider.name} · {provider.branch}
             </AppText>
           </View>
           <View className="rounded-full bg-surface-default px-2 py-1">
-            <AppText className="text-content-link" variant="badge">الخطوة 1 من 3</AppText>
+            <AppText className="text-content-link" variant="badge">
+              الخطوة 1 من 3
+            </AppText>
           </View>
         </View>
 
-        <View className={cn('mt-2 min-h-[66px] items-center gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-2', rowClassName)}>
+        <View
+          className={cn(
+            'mt-2 min-h-[66px] items-center gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-2',
+            rowClassName,
+          )}
+        >
           <Image
             accessibilityLabel="صورة توضيحية لغرفة عيادة أسنان"
             className="h-[47px] w-[53px] rounded-[10px] bg-surface-subtle"
@@ -101,23 +124,43 @@ export function SlotSelectionScreen() {
           />
           <ProviderPortrait size={48} uri={provider.imageUrl} />
           <View className="min-w-0 flex-1 items-end">
-            <AppText align="right" className="font-ui-bold text-content-primary" numberOfLines={1} variant="label">
+            <AppText
+              align="right"
+              className="font-ui-bold text-content-primary"
+              numberOfLines={1}
+              variant="label"
+            >
               {provider.name} · {provider.area}
             </AppText>
-            <AppText align="right" className="text-content-secondary" numberOfLines={2} variant="caption">
+            <AppText
+              align="right"
+              className="text-content-secondary"
+              numberOfLines={2}
+              variant="caption"
+            >
               {provider.branch} · {provider.specialty}
             </AppText>
             <AppText align="right" className="text-content-placeholder" variant="badge">
               صور توضيحية
             </AppText>
           </View>
-          <AppIcon name={{ ios: 'person', android: 'person_outline', web: 'person_outline' }} size={17} tone="action" />
+          <AppIcon
+            name={{ ios: 'person', android: 'person_outline', web: 'person_outline' }}
+            size={17}
+            tone="action"
+          />
         </View>
 
         <View className={cn('mt-3 items-center justify-between', rowClassName)}>
           <View className={cn('items-center gap-2', rowClassName)}>
-            <AppIcon name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }} size={17} tone="action" />
-            <AppText className="font-ui-bold text-content-primary" variant="label">اختر اليوم</AppText>
+            <AppIcon
+              name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }}
+              size={17}
+              tone="action"
+            />
+            <AppText className="font-ui-bold text-content-primary" variant="label">
+              اختر اليوم
+            </AppText>
           </View>
           <View className="rounded-full bg-tone-warning-fill px-2.5 py-1">
             <AppText className="text-tone-warning-text" variant="badge">
@@ -138,33 +181,36 @@ export function SlotSelectionScreen() {
             renderItem={({ item: day }) => {
               const selected = day.dateKey === dateKey;
               return (
-                <Pressable
+                <Radio
+                  isSelected={selected}
+                  onSelectedChange={() => {
+                    setDateKey(day.dateKey);
+                    setSlot('');
+                  }}
                   accessibilityLabel={day.dateLabel}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: selected }}
                   className={cn(
-                    'h-[79px] min-w-[79px] items-center justify-center rounded-[12px] border px-3',
+                    'h-[79px] min-w-[79px] items-center justify-center gap-0.5 rounded-[12px] border px-3',
                     selected
                       ? 'border-action-primary bg-action-subtle'
                       : 'border-border-subtle bg-surface-default',
                   )}
-                  onPress={() => {
-                    setDateKey(day.dateKey);
-                    setSlot('');
-                  }}
                 >
+                  <Radio.Indicator />
                   <AppText align="center" className="text-content-secondary" variant="caption">
                     {getDayName(day.dateKey)}
                   </AppText>
                   <AppText
                     align="center"
                     direction="ltr"
-                    className={cn('mt-1 font-ui-bold', selected ? 'text-content-link' : 'text-content-primary')}
+                    className={cn(
+                      'font-ui-bold',
+                      selected ? 'text-content-link' : 'text-content-primary',
+                    )}
                     variant="heading-4"
                   >
                     {getDayNumber(day.dateKey)}
                   </AppText>
-                </Pressable>
+                </Radio>
               );
             }}
           />
@@ -184,28 +230,32 @@ export function SlotSelectionScreen() {
           {selectedDay?.slots.map((time) => {
             const selected = slot === time;
             return (
-              <Pressable
+              <Radio
+                key={time}
+                isSelected={selected}
+                onSelectedChange={() => setSlot(time)}
                 accessibilityLabel={'الساعة ' + time}
-                accessibilityRole="radio"
-                accessibilityState={{ checked: selected }}
                 className={cn(
-                  'min-h-[45px] w-[48.7%] items-center justify-center rounded-[11px] border',
+                  'min-h-[45px] w-[48.7%] flex-row-reverse items-center justify-center gap-2 rounded-[11px] border',
                   selected
                     ? 'border-action-primary bg-action-subtle'
                     : 'border-border-subtle bg-surface-default',
                 )}
-                key={time}
-                onPress={() => setSlot(time)}
               >
+                <Radio.Indicator />
                 <AppText
                   direction="ltr"
                   align="center"
-                  className={selected ? 'font-ui-bold text-content-link' : 'font-ui-semibold text-content-primary'}
+                  className={
+                    selected
+                      ? 'font-ui-bold text-content-link'
+                      : 'font-ui-semibold text-content-primary'
+                  }
                   variant="label"
                 >
                   {time}
                 </AppText>
-              </Pressable>
+              </Radio>
             );
           })}
         </View>
@@ -215,10 +265,20 @@ export function SlotSelectionScreen() {
           </AppText>
         ) : null}
 
-        <View className={cn('mt-3 items-center gap-2 rounded-[11px] bg-tone-info-fill px-3 py-2', rowClassName)}>
-          <AppIcon name={{ ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' }} size={16} tone="info" />
+        <View
+          className={cn(
+            'mt-3 items-center gap-2 rounded-[11px] bg-tone-info-fill px-3 py-2',
+            rowClassName,
+          )}
+        >
+          <AppIcon
+            name={{ ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' }}
+            size={16}
+            tone="info"
+          />
           <AppText align="right" className="min-w-0 flex-1 text-tone-info-text" variant="caption">
-            المواعيد المعروضة بيانات تجريبية وليست توفراً مباشراً. إذا تغيّر الموعد عند الإرسال، سنوضح السبب ونطلب اختياراً جديداً.
+            المواعيد المعروضة بيانات تجريبية وليست توفراً مباشراً. إذا تغيّر الموعد عند الإرسال،
+            سنوضح السبب ونطلب اختياراً جديداً.
           </AppText>
         </View>
       </ScrollView>

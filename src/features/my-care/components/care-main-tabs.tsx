@@ -1,6 +1,7 @@
 import { Pressable, View } from 'react-native';
 
-import { AppIcon, AppText } from '@/shared/components/ui';
+import { AppIcon } from '@/shared/components/ui';
+import { SectionTabs } from '@/shared/components/ui/section-tabs';
 import type { CareMainTab } from '../model/care-tab-filters';
 
 const items = [
@@ -30,36 +31,12 @@ export function CareMainTabs({
 }) {
   return (
     <View className="mx-4 flex-row-reverse items-center gap-2">
-      <View
-        className="min-w-0 flex-1 flex-row-reverse gap-1 rounded-[15px] bg-surface-subtle p-1"
-        accessibilityRole="tablist"
-      >
-        {items.map((item) => {
-          const active = selected === item.key;
-          return (
-            <Pressable
-              key={item.key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={item.label}
-              onPress={() => onChange(item.key)}
-              className={
-                'min-h-[48px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[11px] px-1.5 ' +
-                (active ? 'border border-border-subtle bg-surface-default' : '')
-              }
-            >
-              <AppIcon name={item.icon} size={17} tone={active ? 'action' : 'secondary'} />
-              <AppText
-                variant="label"
-                align="center"
-                className={active ? 'font-ui-semibold text-content-link' : 'text-content-secondary'}
-                numberOfLines={1}
-              >
-                {item.label}
-              </AppText>
-            </Pressable>
-          );
-        })}
+      <View className="min-w-0 flex-1">
+        <SectionTabs
+          items={items.map((item) => ({ value: item.key, label: item.label, icon: item.icon }))}
+          value={selected}
+          onValueChange={onChange}
+        />
       </View>
       <Pressable
         accessibilityRole="button"

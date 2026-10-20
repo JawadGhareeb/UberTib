@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
-import { ProviderPhotoGallery, ProviderPortrait } from '@/features/discovery/components/provider-photo-gallery';
+import { ProviderPhotoGallery } from '@/features/discovery/components/provider-photo-gallery';
+import { ProviderAvatar } from '@/features/discovery/components/provider-avatar';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { cn } from '@/shared/utils/cn';
 
@@ -9,27 +10,24 @@ import { getPenDoctorsForService } from '@/features/discovery/presentation/pen-d
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 
-
 /** Compact, equal-height facts are deliberate: do not reuse full-size summary cards here. */
 function CaseFact({ label, value }: { label: string; value: string }) {
   return (
     <View className="min-w-0 flex-1 items-center justify-center rounded-[8px] bg-surface-default px-1 py-[5px]">
-      <AppText align="center" className="text-content-primary" numberOfLines={2} style={{ fontSize: 10, lineHeight: 15 }} variant="caption">
+      <AppText
+        align="center"
+        className="text-content-primary"
+        numberOfLines={2}
+        style={{ fontSize: 10, lineHeight: 15 }}
+        variant="caption"
+      >
         {label} {value}
       </AppText>
     </View>
   );
 }
 
-function DoctorStat({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon: AppIconName;
-}) {
+function DoctorStat({ label, value, icon }: { label: string; value: string; icon: AppIconName }) {
   return (
     <View className="min-w-0 flex-1 items-center justify-center rounded-[12px] border border-border-subtle bg-surface-default px-1 py-2">
       <AppIcon name={icon} size={15} tone="action" />
@@ -42,7 +40,13 @@ function DoctorStat({
       >
         {value}
       </AppText>
-      <AppText align="center" className="text-content-secondary" numberOfLines={1} style={{ fontSize: 9, lineHeight: 14 }} variant="caption">
+      <AppText
+        align="center"
+        className="text-content-secondary"
+        numberOfLines={1}
+        style={{ fontSize: 9, lineHeight: 14 }}
+        variant="caption"
+      >
         {label}
       </AppText>
     </View>
@@ -70,7 +74,6 @@ export function ProviderDecisionScreen() {
     );
   }
 
-
   return (
     <Screen contentClassName="px-0 py-0">
       <DiscoveryHeader
@@ -85,7 +88,7 @@ export function ProviderDecisionScreen() {
       >
         <ScreenCard className="mt-2 rounded-[14px] p-3">
           <View className={cn('items-center gap-3', rowClassName)}>
-            <ProviderPortrait size={72} uri={doctor.imageUrl} />
+            <ProviderAvatar providerId={doctor.id} size={72} />
             <View className="min-w-0 flex-1 items-end">
               <AppText
                 align="right"
@@ -118,7 +121,11 @@ export function ProviderDecisionScreen() {
               معلومات مهنية موثقة
             </AppText>
             <AppIcon
-              name={{ ios: 'checkmark.shield.fill', android: 'verified_user', web: 'verified_user' }}
+              name={{
+                ios: 'checkmark.shield.fill',
+                android: 'verified_user',
+                web: 'verified_user',
+              }}
               size={12}
               tone="success"
             />

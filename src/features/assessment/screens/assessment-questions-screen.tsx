@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
+import { Checkbox } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
@@ -94,9 +95,9 @@ export function AssessmentQuestionsScreen() {
             const selected = selectedAnswers.includes(answer);
 
             return (
-              <Pressable
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: selected }}
+              <Checkbox
+                isSelected={selected}
+                onSelectedChange={() => toggleAnswer(answer)}
                 className={cn(
                   'h-10 flex-row items-center justify-between rounded-[11px] border px-3',
                   selected
@@ -104,31 +105,15 @@ export function AssessmentQuestionsScreen() {
                     : 'border-border-subtle bg-surface-canvas',
                 )}
                 key={answer}
-                onPress={() => toggleAnswer(answer)}
               >
-                <View
-                  className={cn(
-                    'h-5 w-5 items-center justify-center rounded-[6px] border',
-                    selected
-                      ? 'border-action-primary bg-action-primary'
-                      : 'border-border-strong bg-surface-default',
-                  )}
-                >
-                  {selected ? (
-                    <AppIcon
-                      name={{ ios: 'checkmark', android: 'check', web: 'check' }}
-                      size={12}
-                      tone="onAction"
-                    />
-                  ) : null}
-                </View>
+                <Checkbox.Indicator />
                 <AppText
                   className={cn('text-type-label', selected && 'font-ui-bold text-content-link')}
                   variant="label"
                 >
                   {answer}
                 </AppText>
-              </Pressable>
+              </Checkbox>
             );
           })}
         </View>

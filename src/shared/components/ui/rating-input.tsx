@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { Radio } from 'heroui-native';
 
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { cn } from '@/shared/utils/cn';
@@ -24,17 +25,16 @@ export function RatingInput({ value, onChange, disabled = false }: RatingInputPr
       className={cn('items-center justify-center', isRTL ? 'flex-row-reverse' : 'flex-row')}
     >
       {[1, 2, 3, 4, 5].map((star) => (
-        <Pressable
+        <Radio
+          isSelected={selected === star}
+          isDisabled={disabled}
+          onSelectedChange={() => onChange(star)}
           accessibilityLabel={`${star} من 5 نجوم`}
-          accessibilityRole="radio"
-          accessibilityState={{ checked: selected === star, disabled }}
           className="h-11 w-11 items-center justify-center"
-          disabled={disabled}
           key={star}
-          onPress={() => onChange(star)}
         >
           <RatingStarIcon filled={star <= selected} outlineSelected size={30} />
-        </Pressable>
+        </Radio>
       ))}
     </View>
   );

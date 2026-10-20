@@ -9,6 +9,7 @@ import { useAppDirection } from '@/providers/app-direction-provider';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
+import { SectionTabs } from '@/shared/components/ui/section-tabs';
 
 type Tone = 'primary' | 'success' | 'warning' | 'info' | 'danger' | 'neutral';
 
@@ -240,62 +241,18 @@ export function CareFilterTabs({
   icons?: Record<string, AppIconName>;
   iconPlacement?: 'inline' | 'top';
 }) {
-  const { rowClassName } = useAppDirection();
-  const stacked = iconPlacement === 'top';
-
   return (
-    <View
-      accessibilityRole="tablist"
-      className={cn(
-        'flex-row gap-1 rounded-[11px] bg-surface-subtle p-1',
-        stacked ? 'mt-[8px] min-h-[56px]' : 'mt-[10px] min-h-[44px]',
-      )}
-    >
-      {items.map((item) => {
-        const active = item === selected;
-        const tabIcon = icons?.[item] ?? defaultCareFilterIcons[item];
-        return (
-          <Pressable
-            accessibilityLabel={item}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: active }}
-            className={cn(
-              'min-h-[36px] min-w-0 flex-1 items-center justify-center rounded-[8px] px-1',
-              active
-                ? 'border border-border-subtle bg-surface-default'
-                : 'border border-transparent',
-            )}
-            hitSlop={2}
-            key={item}
-            onPress={() => onChange(item)}
-          >
-            <View
-              className={cn(
-                'items-center justify-center',
-                stacked ? 'flex-col gap-0.5' : rowClassName,
-                !stacked && 'gap-1',
-              )}
-            >
-              {tabIcon ? (
-                <AppIcon
-                  name={tabIcon}
-                  size={stacked ? 17 : 15}
-                  tone={active ? 'action' : 'secondary'}
-                />
-              ) : null}
-              <AppText
-                align="center"
-                className={active ? 'font-ui-semibold text-content-link' : 'text-content-secondary'}
-                numberOfLines={1}
-                style={{ fontSize: stacked ? 10 : 10, lineHeight: 16 }}
-                variant="caption"
-              >
-                {item}
-              </AppText>
-            </View>
-          </Pressable>
-        );
-      })}
+    <View className={iconPlacement === 'top' ? 'mt-2' : 'mt-2.5'}>
+      <SectionTabs
+        value={selected}
+        onValueChange={onChange}
+        stacked={iconPlacement === 'top'}
+        items={items.map((item) => ({
+          value: item,
+          label: item,
+          icon: icons?.[item] ?? defaultCareFilterIcons[item],
+        }))}
+      />
     </View>
   );
 }

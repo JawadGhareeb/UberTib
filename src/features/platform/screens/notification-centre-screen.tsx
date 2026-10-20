@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { AppHeader } from '@/shared/components/navigation';
+import { SectionTabs } from '@/shared/components/ui/section-tabs';
 import {
   getMockNeedsAttentionForScenario,
   getMockNotificationsForScenario,
@@ -48,56 +49,14 @@ export function NotificationCentreScreen() {
         contentContainerClassName="mx-auto w-full max-w-[430px] gap-4 px-4 pb-20 pt-4"
         showsVerticalScrollIndicator={false}
       >
-        <View
-          className="flex-row-reverse gap-1 rounded-[15px] bg-surface-subtle p-1"
-          accessibilityRole="tablist"
-        >
-          {[
-            { key: 'attention' as const, title: 'مطلوب منك', count: actions.length },
-            { key: 'history' as const, title: 'كل الإشعارات', count: unread },
-          ].map((item) => (
-            <Pressable
-              key={item.key}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: tab === item.key }}
-              onPress={() => setTab(item.key)}
-              className={
-                'min-h-[48px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-2 rounded-[12px] ' +
-                (tab === item.key ? 'bg-action-primary' : 'bg-surface-default')
-              }
-            >
-              <AppText
-                variant="label"
-                className={
-                  tab === item.key
-                    ? 'font-ui-semibold text-content-on-action'
-                    : 'text-content-secondary'
-                }
-              >
-                {item.title}
-              </AppText>
-              {item.count ? (
-                <View
-                  className={
-                    'min-w-[23px] items-center justify-center rounded-full px-1.5 ' +
-                    (tab === item.key ? 'bg-white/20' : 'bg-action-subtle')
-                  }
-                >
-                  <AppText
-                    variant="caption"
-                    className={
-                      tab === item.key
-                        ? 'font-ui-semibold text-content-on-action'
-                        : 'font-ui-semibold text-content-link'
-                    }
-                  >
-                    {item.count}
-                  </AppText>
-                </View>
-              ) : null}
-            </Pressable>
-          ))}
-        </View>
+        <SectionTabs
+          value={tab}
+          onValueChange={setTab}
+          items={[
+            { value: 'attention', label: 'مطلوب منك', count: actions.length },
+            { value: 'history', label: 'كل الإشعارات', count: unread },
+          ]}
+        />
         {tab === 'attention' ? (
           <ReadStateBoundary
             state={getSurfaceState('attention')}

@@ -1,10 +1,8 @@
-import { Pressable, View } from 'react-native';
-import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
+import { View } from 'react-native';
+import { RadioGroup, Radio } from 'heroui-native';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppText } from '@/shared/components/ui/app-text';
 import { cn } from '@/shared/utils/cn';
-import { theme } from '@/shared/theme';
 
 interface SegmentedOption<T extends string> {
   value: T;
@@ -28,55 +26,47 @@ export function SegmentedField<T extends string>({
   error,
   disabled = false,
 }: SegmentedFieldProps<T>) {
-  const { rowClassName } = useAppDirection();
-
   return (
     <View className="w-full gap-1.5">
       <AppText className="font-ui-medium text-content-secondary" variant="label">
         {label}
       </AppText>
-      <View accessibilityRole="radiogroup" className={cn(rowClassName, 'gap-2')}>
+      <RadioGroup
+        value={value}
+        onValueChange={(next) => onChange(next as T)}
+        isDisabled={disabled}
+        className="flex-row-reverse gap-2"
+        style={{ direction: 'rtl' }}
+      >
         {options.map((option) => {
           const selected = value === option.value;
-
           return (
-            <Pressable
-              accessibilityLabel={option.label}
-              accessibilityRole="radio"
-              accessibilityState={{ checked: selected, disabled }}
+            <RadioGroup.Item
+              key={option.value}
+              value={option.value}
               className={cn(
-                'min-h-form-field min-w-0 flex-1 items-center justify-center rounded-[14px] border px-2',
+                'min-h-form-field min-w-0 flex-1 flex-row-reverse items-center justify-center gap-2 rounded-[14px] border px-2',
                 selected
                   ? 'border-state-selected-border bg-action-subtle'
-                  : 'border-action-primary bg-surface-default',
+                  : 'border-border-subtle bg-surface-default',
                 error && 'border-tone-danger-border',
                 disabled && 'bg-state-readonly',
               )}
-              disabled={disabled}
-              key={option.value}
-              onPress={() => onChange(option.value)}
             >
-              {selected ? (
-                <Animated.View
-                  entering={FadeIn.duration(theme.motion.duration.stateChange).reduceMotion(
-                    ReduceMotion.System,
-                  )}
-                  className="absolute top-0 h-[2px] w-8 rounded-full bg-action-primary"
-                />
-              ) : null}
+              <Radio />
               <AppText
                 align="center"
-                className={cn(
-                  selected ? 'font-ui-semibold text-content-link' : 'text-content-secondary',
-                )}
+                className={
+                  selected ? 'font-ui-semibold text-content-link' : 'text-content-secondary'
+                }
                 variant="label"
               >
                 {option.label}
               </AppText>
-            </Pressable>
+            </RadioGroup.Item>
           );
         })}
-      </View>
+      </RadioGroup>
       {error ? (
         <AppText
           accessibilityLiveRegion="polite"

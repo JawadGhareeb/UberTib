@@ -1,3 +1,4 @@
+import { Radio } from 'heroui-native';
 import type { PropsWithChildren } from 'react';
 import { Pressable, View } from 'react-native';
 
@@ -133,18 +134,18 @@ export function ProfileSelectionCard({
   const { rowClassName } = useAppDirection();
 
   return (
-    <Pressable
-      accessibilityRole="radio"
-      accessibilityState={{ selected }}
+    <Radio
+      isSelected={selected}
+      onSelectedChange={onPress}
       className={cn(
         'min-h-[76px] rounded-surface border p-4',
         selected
           ? 'border-state-selected-border bg-state-selected'
           : 'border-border-subtle bg-surface-default active:bg-action-subtle',
       )}
-      onPress={onPress}
     >
       <View className={cn('items-center gap-3', rowClassName)}>
+        <Radio.Indicator />
         <View
           className={cn(
             'h-12 w-12 shrink-0 items-center justify-center rounded-surface',
@@ -183,6 +184,6 @@ export function ProfileSelectionCard({
           tone={selected ? 'success' : 'secondary'}
         />
       </View>
-    </Pressable>
+    </Radio>
   );
 }
