@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 import type { MockCareCase } from '@/features/my-care/mocks/care.mock';
-import { CarePreview } from './home-care-preview';
+import { CaseRow } from '@/features/my-care/components/case-overview-card';
 import { SectionTitle } from './home-section-title';
 
 export function HomeCasesSection({ activeCases }: { activeCases: MockCareCase[] }) {
@@ -13,19 +13,10 @@ export function HomeCasesSection({ activeCases }: { activeCases: MockCareCase[] 
           <SectionTitle
             title="الحالات التي تتابعها"
             action="عرض الكل"
-            onAction={() => router.push('/(tabs)/care')}
+            onAction={() => router.push({ pathname: '/(tabs)/care', params: { tab: 'cases' } })}
           />
           {activeCases.slice(0, 3).map((item) => (
-            <CarePreview
-              key={item.id}
-              item={item}
-              onPress={() =>
-                router.push({
-                  pathname: '/care/[caseId]/timeline',
-                  params: { caseId: item.id },
-                })
-              }
-            />
+            <CaseRow key={item.id} item={item} />
           ))}
         </View>
       ) : null}

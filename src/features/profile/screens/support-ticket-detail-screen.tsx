@@ -13,7 +13,7 @@ export function SupportTicketDetailScreen() {
   return (
     <ProfileScreenShell eyebrow="الدعم" title="تفاصيل طلب الدعم">
       {!ticket ? (
-        <View className="mt-5 items-center gap-3 rounded-[16px] bg-surface-subtle p-6">
+        <View className="items-center gap-3 rounded-[16px] bg-surface-subtle p-6">
           <AppText variant="heading-4" align="center">
             الطلب غير موجود
           </AppText>
@@ -26,7 +26,7 @@ export function SupportTicketDetailScreen() {
           />
         </View>
       ) : (
-        <View className="mt-3 gap-4">
+        <View className="gap-4">
           <View className="gap-2 rounded-[15px] border border-border-subtle bg-surface-default p-4">
             <AppText align="right" variant="heading-4">
               {ticket.subject}

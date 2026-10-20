@@ -60,6 +60,7 @@
     "expo-symbols": "~57.0.3",
     "expo-system-ui": "~57.0.4",
     "heroui-native": "^1.0.10",
+    "lucide-react-native": "^1.60.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",

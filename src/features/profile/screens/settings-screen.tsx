@@ -16,7 +16,7 @@ export function SettingsScreen() {
       title="التفضيلات والإشعارات"
       description="اختار التنبيهات اللي بتهمك."
     >
-      <View className="mt-5 gap-3">
+      <View className="gap-3">
         <AppText align="right" variant="heading-4">
           إشعاراتي
         </AppText>

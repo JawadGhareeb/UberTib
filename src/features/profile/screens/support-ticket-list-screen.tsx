@@ -11,7 +11,7 @@ export function SupportTicketListScreen() {
 
   return (
     <ProfileScreenShell eyebrow="الدعم" title="طلبات الدعم">
-      <View className="mt-3 gap-3">
+      <View className="gap-3">
         {tickets.length === 0 ? (
           <View className="items-center gap-3 rounded-[16px] border border-border-subtle bg-surface-default px-4 py-8">
             <View className="h-14 w-14 items-center justify-center rounded-full bg-action-subtle">

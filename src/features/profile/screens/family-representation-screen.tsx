@@ -25,7 +25,7 @@ export function FamilyRepresentationScreen() {
         emptyTitle="بيانات أفراد الأسرة غير متاحة"
         permissionTitle="ما في صلاحية لعرض أفراد الأسرة"
       >
-        <View className="mt-4 gap-3">
+        <View className="gap-3">
           <View className="flex-row-reverse items-center justify-between gap-3">
             <AppText variant="heading-4">أفراد الأسرة</AppText>
             <AppText variant="caption" className="text-content-secondary">

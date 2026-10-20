@@ -1,15 +1,13 @@
 import type { ComponentProps } from 'react';
-import { useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { FieldError, Input, Label, TextField as HeroTextField } from 'heroui-native';
+import { Pressable, View } from 'react-native';
 
 import { AppIcon, type AppIconName } from '@/shared/components/ui/app-icon';
-import { FieldSurface } from '@/shared/components/ui/field-surface';
-import { useAppTheme } from '@/shared/theme/use-app-theme';
+import { AppText } from '@/shared/components/ui/app-text';
 import { cn } from '@/shared/utils/cn';
 
-type NativeTextInputProps = ComponentProps<typeof TextInput>;
-
-interface TextFieldProps extends NativeTextInputProps {
+type InputProps = ComponentProps<typeof Input>;
+type TextFieldProps = Omit<InputProps, 'variant'> & {
   label: string;
   error?: string;
   helperText?: string;
@@ -17,8 +15,9 @@ interface TextFieldProps extends NativeTextInputProps {
   variant?: 'standard' | 'contained';
   icon?: AppIconName;
   clearable?: boolean;
-}
+};
 
+/** Same HeroUI TextField/Input/Label and focus border as Auth screens. */
 export function TextField({
   label,
   error,
@@ -28,80 +27,74 @@ export function TextField({
   icon,
   clearable = false,
   className,
-  accessibilityLabel,
-  style,
-  onFocus,
-  onBlur,
   onChangeText,
   value,
   multiline,
+  style,
   ...props
 }: TextFieldProps) {
-  const { colors } = useAppTheme();
-  const [focused, setFocused] = useState(false);
-  const disabled = props.editable === false;
-
-  const clearAction =
-    clearable && focused && Boolean(value) && !disabled && onChangeText ? (
-      <Pressable
-        accessibilityLabel={`مسح ${label}`}
-        accessibilityRole="button"
-        className="h-9 w-9 items-center justify-center rounded-full bg-surface-subtle"
-        hitSlop={4}
-        onPress={() => onChangeText('')}
-      >
-        <AppIcon
-          name={{ ios: 'xmark.circle.fill', android: 'cancel', web: 'cancel' }}
-          size={17}
-          tone="secondary"
-        />
-      </Pressable>
-    ) : undefined;
-
+  const disabled = props.editable === false || props.isDisabled === true;
   return (
-    <View className={cn('w-full', variant === 'contained' && 'self-stretch')}>
-      <FieldSurface
-        accessory={clearAction}
-        disabled={disabled}
-        error={error}
-        focused={focused}
-        helperText={helperText}
-        icon={icon}
-        label={label}
-      >
-        <TextInput
-          {...props}
-          accessibilityLabel={accessibilityLabel ?? label}
-          accessibilityState={{ disabled }}
-          className={cn(
-            'w-full bg-transparent p-0 font-ui-regular text-type-body text-content-primary',
-            multiline ? 'min-h-[76px] py-1' : 'min-h-[32px]',
-            disabled && 'text-content-disabled',
-            className,
-          )}
-          multiline={multiline}
-          onBlur={(event) => {
-            setFocused(false);
-            onBlur?.(event);
-          }}
-          onChangeText={onChangeText}
-          onFocus={(event) => {
-            setFocused(true);
-            onFocus?.(event);
-          }}
-          placeholderTextColor={colors.text.placeholder}
-          style={[
-            {
-              letterSpacing: 0,
-              textAlign: direction === 'rtl' ? 'right' : 'left',
-              textAlignVertical: multiline ? 'top' : 'center',
-              writingDirection: direction,
-            },
-            style,
-          ]}
-          value={value}
-        />
-      </FieldSurface>
-    </View>
+    <HeroTextField
+      isInvalid={Boolean(error)}
+      isDisabled={disabled}
+      className={cn('w-full gap-2', variant === 'contained' && 'self-stretch')}
+    >
+      <Label className="self-end font-ui-semibold text-text-primary">{label}</Label>
+      <View className="flex-row-reverse items-center gap-2">
+        {icon ? (
+          <View className="h-12 w-12 shrink-0 items-center justify-center rounded-[12px] bg-action-subtle">
+            <AppIcon name={icon} size={20} tone="action" />
+          </View>
+        ) : null}
+        <View className="min-w-0 flex-1">
+          <Input
+            {...props}
+            accessibilityLabel={props.accessibilityLabel ?? label}
+            value={value}
+            onChangeText={onChangeText}
+            multiline={multiline}
+            variant="secondary"
+            className={cn(
+              'min-h-14 rounded-form-field border border-border-default bg-surface-default px-4 font-ui-medium text-text-primary focus:border-action-primary',
+              multiline && 'min-h-[104px] py-3',
+              className,
+            )}
+            placeholderColorClassName="text-text-placeholder"
+            selectionColorClassName="text-action-primary"
+            style={[
+              {
+                textAlign: direction === 'rtl' ? 'right' : 'left',
+                writingDirection: direction,
+                textAlignVertical: multiline ? 'top' : 'center',
+              },
+              style,
+            ]}
+          />
+        </View>
+        {clearable && Boolean(value) && !disabled && onChangeText ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={'مسح ' + label}
+            onPress={() => onChangeText('')}
+            hitSlop={7}
+            className="h-10 w-10 items-center justify-center rounded-full bg-surface-subtle"
+          >
+            <AppIcon
+              name={{ ios: 'xmark.circle.fill', android: 'cancel', web: 'cancel' }}
+              tone="secondary"
+              size={18}
+            />
+          </Pressable>
+        ) : null}
+      </View>
+      {error ? (
+        <FieldError>{error}</FieldError>
+      ) : helperText ? (
+        <AppText variant="caption" align="right" className="text-content-secondary">
+          {helperText}
+        </AppText>
+      ) : null}
+    </HeroTextField>
   );
 }

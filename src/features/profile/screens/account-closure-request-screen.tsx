@@ -30,7 +30,7 @@ export function AccountClosureRequestScreen() {
         emptyTitle="طلب الإغلاق غير متاح"
         permissionTitle="لا توجد صلاحية لإغلاق الحساب"
       >
-        <View className="mt-4 gap-3 rounded-[16px] border border-tone-danger-border bg-tone-danger-fill p-4">
+        <View className="gap-3 rounded-[16px] border border-tone-danger-border bg-tone-danger-fill p-4">
           <View className="flex-row-reverse items-center gap-2">
             <AppIcon
               name={{ ios: 'exclamationmark.triangle', android: 'warning', web: 'warning' }}

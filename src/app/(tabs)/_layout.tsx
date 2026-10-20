@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { useResolveClassNames } from 'uniwind';
 
 import {
   PatientBottomBar,
@@ -6,10 +7,14 @@ import {
 } from '@/shared/components/navigation/patient-bottom-bar';
 
 export default function PatientTabsLayout() {
+  // React Navigation owns a separate tab scene surface. Keep its native
+  // background in sync with the same Uniwind token as the screen canvas.
+  const sceneStyle = useResolveClassNames('bg-surface-canvas');
+
   return (
     <Tabs
       initialRouteName="home"
-      screenOptions={{ headerShown: false, tabBarHideOnKeyboard: true }}
+      screenOptions={{ headerShown: false, tabBarHideOnKeyboard: true, sceneStyle }}
       tabBar={({ state, navigation, insets }) => (
         <PatientBottomBar
           active={(state.routes[state.index]?.name ?? 'home') as PatientTabName}

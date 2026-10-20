@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView } from 'react-native';
 
 import { AppHeader } from '@/shared/components/navigation';
@@ -29,12 +30,23 @@ import {
 const unique = (items: string[]) => [...new Set(items)].sort((a, b) => a.localeCompare(b, 'ar'));
 
 export function MyCasesOverviewScreen() {
+  const { tab: requestedTab } = useLocalSearchParams<{ tab?: string }>();
+  const router = useRouter();
   const { records, bookingState, careState } = useCareOverviewRecords();
   const { cases, bookings } = partitionCareRecords(records);
 
-  const [tab, setTab] = useState<CareMainTab>(() =>
+  const [manualTab, setManualTab] = useState<CareMainTab>(() =>
     cases.some((item) => item.progress < 100) ? 'cases' : 'bookings',
   );
+  // Explicit navigation params win over previous local selections. Manual
+  // switches clear that one-shot intent so both tabs remain interactive.
+  const tab: CareMainTab =
+    requestedTab === 'cases' || requestedTab === 'bookings' ? requestedTab : manualTab;
+  const changeTab = (next: CareMainTab) => {
+    setManualTab(next);
+    if (requestedTab) router.setParams({ tab: undefined });
+  };
+
   const [caseQuick, setCaseQuick] = useState<CareCaseQuickFilter>('الكل');
   const [bookingQuick, setBookingQuick] = useState<CareBookingQuickFilter>('الكل');
   const [caseAdvanced, setCaseAdvanced] = useState<CaseAdvancedFilters>(defaultCaseAdvanced);
@@ -93,7 +105,7 @@ export function MyCasesOverviewScreen() {
         <CareOverviewIntro />
         <CareMainTabs
           selected={tab}
-          onChange={setTab}
+          onChange={changeTab}
           onOpenFilters={openFilters}
           filtersActive={showCases ? casesActive : bookingsActive}
         />

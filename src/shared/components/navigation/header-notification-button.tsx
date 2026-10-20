@@ -20,7 +20,7 @@ export function HeaderNotificationButton() {
     <Pressable
       accessibilityLabel="الإشعارات"
       accessibilityRole="button"
-      className="rounded-full active:bg-state-selected"
+      className="rounded-[13px] active:bg-state-selected"
       style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}
       hitSlop={4}
       onPress={() => router.push('/notifications')}

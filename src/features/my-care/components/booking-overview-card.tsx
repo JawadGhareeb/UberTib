@@ -28,7 +28,12 @@ export function BookingRow({ item, onPress }: { item: BookingItem; onPress: () =
         <View className="flex-row-reverse items-center gap-2.5">
           <CenteredActionIcon name="calendar" frameSize={44} iconSize={20} />
           <View className="min-w-0 flex-1 items-end gap-1">
-            <CareRecordTitle title={item.serviceName} provider={item.providerName} />
+            <View className="w-full flex-row-reverse items-center justify-between gap-2">
+              <View className="min-w-0 flex-1">
+                <CareRecordTitle title={item.serviceName} provider={item.providerName} />
+              </View>
+              <StatusIndicator label={item.statusLabel} tone={tone} />
+            </View>
             <AppText
               variant="caption"
               align="right"
@@ -40,8 +45,8 @@ export function BookingRow({ item, onPress }: { item: BookingItem; onPress: () =
           </View>
           <AppIcon
             name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
-            size={17}
-            tone="secondary"
+            size={27}
+            tone="action"
           />
         </View>
         <View className="flex-row-reverse items-center justify-between gap-2">
@@ -60,7 +65,6 @@ export function BookingRow({ item, onPress }: { item: BookingItem; onPress: () =
               {item.dateLabel} · {item.timeLabel}
             </AppText>
           </View>
-          <StatusIndicator label={item.statusLabel} tone={tone} />
         </View>
       </HeroCard>
     </Pressable>

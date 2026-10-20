@@ -25,7 +25,7 @@ export function DataExportRequestScreen() {
         emptyTitle="لا توجد بيانات قابلة للطلب"
         permissionTitle="طلب البيانات غير متاح"
       >
-        <View className="mt-4 items-center gap-3 rounded-[17px] border border-border-subtle bg-surface-default px-5 py-6">
+        <View className="items-center gap-3 rounded-[17px] border border-border-subtle bg-surface-default px-5 py-6">
           <View className="h-16 w-16 items-center justify-center rounded-full bg-action-subtle">
             <AppIcon
               name={{ ios: 'square.and.arrow.down', android: 'download', web: 'download' }}

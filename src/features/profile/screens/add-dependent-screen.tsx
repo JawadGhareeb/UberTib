@@ -38,7 +38,7 @@ export function AddDependentScreen() {
       title="إضافة فرد من الأسرة"
       description="ثلاث معلومات بسيطة لحتى تضيف الشخص إلى قائمة أسرتك."
     >
-      <View className="mt-5 gap-4">
+      <View className="gap-4">
         <TextField
           label="الاسم الكامل"
           placeholder="اسم فرد الأسرة"

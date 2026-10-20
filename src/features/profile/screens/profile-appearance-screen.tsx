@@ -114,7 +114,7 @@ export function ProfileAppearanceScreen() {
       title="المظهر"
       description="اختار المظهر اللي بناسبك، وبعدها اضغط تطبيق الثيم."
     >
-      <View className="mt-3 gap-5">
+      <View className="gap-5">
         <View accessibilityRole="radiogroup" className="flex-row-reverse gap-3">
           {options.map((item) => (
             <AppearanceChoice

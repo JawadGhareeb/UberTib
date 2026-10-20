@@ -1,10 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Accordion } from 'heroui-native';
-import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { AppHeader } from '@/shared/components/navigation';
-import { AppIcon, AppText, ReadStateBoundary, Screen, SearchField } from '@/shared/components/ui';
+import { AppIcon, AppText, ReadStateBoundary, Screen } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 import { useSupportTickets } from '@/features/profile/state/support-tickets-provider';
@@ -96,8 +95,7 @@ export function HelpSupportScreen() {
   const { caseId } = useLocalSearchParams<{ caseId?: string }>();
   const { getSurfaceState } = useMockScenario();
   const { tickets } = useSupportTickets();
-  const [search, setSearch] = useState('');
-  const filtered = faq.filter((f) => (f.question + ' ' + f.answer).includes(search.trim()));
+  const filtered = faq;
 
   return (
     <Screen
@@ -107,59 +105,9 @@ export function HelpSupportScreen() {
       <ScrollView
         style={{ flex: 1 }}
         keyboardShouldPersistTaps="handled"
-        contentContainerClassName="mx-auto w-full max-w-[430px] gap-5 px-4 pb-24 pt-4"
+        contentContainerClassName="mx-auto w-full max-w-[430px] gap-5 px-4 pb-24 pt-3"
         showsVerticalScrollIndicator={false}
       >
-        <SearchField
-          value={search}
-          onChangeText={setSearch}
-          placeholder="ابحث عن سؤال أو موضوع مساعدة"
-          accessibilityLabel="البحث في المساعدة"
-        />
-
-        <View className="gap-2">
-          <AppText variant="heading-4" align="right">
-            الأسئلة الشائعة
-          </AppText>
-          {filtered.length ? (
-            <Accordion
-              selectionMode="single"
-              isCollapsible
-              variant="default"
-              className="overflow-hidden rounded-[15px] border border-border-subtle bg-surface-default"
-            >
-              {filtered.map((entry) => (
-                <Accordion.Item key={entry.id} value={entry.id}>
-                  <Accordion.Trigger className="min-h-[54px] flex-row-reverse items-center justify-between px-3 py-3">
-                    <AppText
-                      variant="label"
-                      align="right"
-                      className="min-w-0 flex-1 font-ui-semibold"
-                    >
-                      {entry.question}
-                    </AppText>
-                    <Accordion.Indicator />
-                  </Accordion.Trigger>
-                  <Accordion.Content className="px-3 pb-4">
-                    <AppText align="right" variant="label" className="text-content-secondary">
-                      {entry.answer}
-                    </AppText>
-                  </Accordion.Content>
-                </Accordion.Item>
-              ))}
-            </Accordion>
-          ) : (
-            <View className="items-center gap-2 rounded-[14px] bg-surface-subtle p-5">
-              <AppText variant="label" align="center">
-                ما لقينا سؤال بهالكلمات.
-              </AppText>
-              <AppText variant="caption" align="center" className="text-content-secondary">
-                جرّب كلمة مختلفة، أو افتح طلب دعم.
-              </AppText>
-            </View>
-          )}
-        </View>
-
         <View className="gap-2">
           <AppText variant="heading-4" align="right">
             تحتاج مساعدة إضافية؟
@@ -206,6 +154,50 @@ export function HelpSupportScreen() {
             onPress={() => router.push('/support/policies')}
           />
         </View>
+
+        <View className="gap-2">
+          <AppText variant="heading-4" align="right">
+            الأسئلة الشائعة
+          </AppText>
+          {filtered.length ? (
+            <Accordion
+              selectionMode="single"
+              isCollapsible
+              variant="default"
+              className="overflow-hidden rounded-[15px] border border-border-subtle bg-surface-default"
+            >
+              {filtered.map((entry) => (
+                <Accordion.Item key={entry.id} value={entry.id}>
+                  <Accordion.Trigger className="min-h-[54px] flex-row-reverse items-center justify-between px-3 py-3">
+                    <AppText
+                      variant="label"
+                      align="right"
+                      className="min-w-0 flex-1 font-ui-semibold"
+                    >
+                      {entry.question}
+                    </AppText>
+                    <Accordion.Indicator />
+                  </Accordion.Trigger>
+                  <Accordion.Content className="px-3 pb-4">
+                    <AppText align="right" variant="label" className="text-content-secondary">
+                      {entry.answer}
+                    </AppText>
+                  </Accordion.Content>
+                </Accordion.Item>
+              ))}
+            </Accordion>
+          ) : (
+            <View className="items-center gap-2 rounded-[14px] bg-surface-subtle p-5">
+              <AppText variant="label" align="center">
+                ما لقينا سؤال بهالكلمات.
+              </AppText>
+              <AppText variant="caption" align="center" className="text-content-secondary">
+                جرّب كلمة مختلفة، أو افتح طلب دعم.
+              </AppText>
+            </View>
+          )}
+        </View>
+
         <ReadStateBoundary
           state={getSurfaceState('profile')}
           emptyTitle="معلومات الدعم غير متاحة"

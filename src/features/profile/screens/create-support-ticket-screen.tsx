@@ -96,7 +96,7 @@ export function CreateSupportTicketScreen() {
         emptyTitle="إنشاء طلب الدعم غير متاح"
         permissionTitle="ليس لديك صلاحية لعرض الدعم"
       >
-        <View className="mt-2 gap-5">
+        <View className="gap-5">
           <View className="gap-2">
             <AppText variant="heading-4" align="right">
               نوع المشكلة

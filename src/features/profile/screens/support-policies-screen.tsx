@@ -22,7 +22,7 @@ const subjects = [
 export function SupportPoliciesScreen() {
   return (
     <ProfileScreenShell eyebrow="المساعدة" title="المساعدة والسياسات">
-      <View className="mt-3 gap-3">
+      <View className="gap-3">
         {subjects.map((item) => (
           <View
             key={item.title}

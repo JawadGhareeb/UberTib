@@ -30,7 +30,7 @@ export function AccountSecurityScreen() {
         emptyTitle="معلومات الأمان غير متاحة"
         permissionTitle="ما عندك صلاحية لعرض معلومات الأمان"
       >
-        <View className="mt-4 gap-2">
+        <View className="gap-2">
           <AppText variant="heading-4" align="right">
             معلومات الأمان
           </AppText>

@@ -50,7 +50,12 @@ export function CaseRow({ item }: { item: MockCareCase }) {
       <View className="flex-row-reverse items-center gap-3">
         <CenteredActionIcon name="care" frameSize={44} iconSize={20} />
         <View className="min-w-0 flex-1 items-end gap-1">
-          <CareRecordTitle title={item.title} provider={item.provider} />
+          <View className="w-full flex-row-reverse items-center justify-between gap-2">
+            <View className="min-w-0 flex-1">
+              <CareRecordTitle title={item.title} provider={item.provider} />
+            </View>
+            <CareCaseStatusBadge careCase={item} />
+          </View>
           <AppText
             align="right"
             variant="caption"
@@ -60,22 +65,6 @@ export function CaseRow({ item }: { item: MockCareCase }) {
             {item.branch}
           </AppText>
         </View>
-      </View>
-
-      <View className="flex-row-reverse items-center justify-between gap-2">
-        <AppText
-          align="right"
-          variant="caption"
-          className="min-w-0 flex-1 text-content-secondary"
-          numberOfLines={2}
-        >
-          {current
-            ? 'المرحلة الحالية: ' + current.title
-            : complete
-              ? 'العلاج مكتمل'
-              : 'تابع تفاصيل العلاج'}
-        </AppText>
-        <CareCaseStatusBadge careCase={item} />
       </View>
 
       {total > 0 ? (
@@ -92,28 +81,43 @@ export function CaseRow({ item }: { item: MockCareCase }) {
         </View>
       ) : null}
 
-      {nextAction ? (
-        <View className="flex-row-reverse items-start gap-2 rounded-[11px] bg-surface-subtle px-3 py-2">
-          <AppIcon
-            name={{ ios: 'info.circle', android: 'info_outline', web: 'info_outline' }}
-            size={17}
-            tone="action"
-          />
-          <View className="min-w-0 flex-1 items-end gap-0.5">
-            <AppText variant="caption" align="right" className="font-ui-medium" numberOfLines={2}>
-              {nextAction}
-            </AppText>
-            <AppText
-              variant="caption"
-              align="right"
-              className="text-content-secondary"
-              numberOfLines={1}
-            >
-              {item.nextDateLabel}
-            </AppText>
-          </View>
+      <View className="gap-2 rounded-[11px] bg-surface-subtle px-3 py-3">
+        <View className="flex-row-reverse items-center justify-between gap-2">
+          <AppText variant="caption" align="right" className="text-content-secondary">
+            المرحلة الحالية
+          </AppText>
+          <AppText
+            variant="label"
+            align="right"
+            className="min-w-0 flex-1 font-ui-semibold"
+            numberOfLines={2}
+          >
+            {current?.title ?? (complete ? 'العلاج مكتمل' : 'تابع تفاصيل العلاج')}
+          </AppText>
         </View>
-      ) : null}
+        {nextAction ? (
+          <View className="flex-row-reverse items-start gap-2">
+            <AppIcon
+              name={{ ios: 'info.circle', android: 'info_outline', web: 'info_outline' }}
+              size={17}
+              tone="action"
+            />
+            <View className="min-w-0 flex-1 items-end gap-0.5">
+              <AppText variant="caption" align="right" className="font-ui-medium" numberOfLines={2}>
+                {nextAction}
+              </AppText>
+              <AppText
+                variant="caption"
+                align="right"
+                className="text-content-secondary"
+                numberOfLines={1}
+              >
+                {item.nextDateLabel}
+              </AppText>
+            </View>
+          </View>
+        ) : null}
+      </View>
 
       <View className="flex-row-reverse gap-2">
         <HeroButton

@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import type { MockBooking } from '@/features/booking/mocks/bookings.mock';
 import { CenteredActionIcon } from '@/shared/components/ui/centered-action-icon';
 import { AppIcon, AppText } from '@/shared/components/ui';
-import { AppointmentPreview } from './home-appointment-preview';
+import { BookingRow } from '@/features/my-care/components/booking-overview-card';
 import { SectionTitle } from './home-section-title';
 
 export function HomeUpcomingBookings({ upcomingBookings }: { upcomingBookings: MockBooking[] }) {
@@ -16,10 +16,10 @@ export function HomeUpcomingBookings({ upcomingBookings }: { upcomingBookings: M
           <SectionTitle
             title="مواعيدك القادمة"
             action="عرض الكل"
-            onAction={() => router.push('/(tabs)/care')}
+            onAction={() => router.push({ pathname: '/(tabs)/care', params: { tab: 'bookings' } })}
           />
           {upcomingBookings.slice(0, 3).map((item) => (
-            <AppointmentPreview
+            <BookingRow
               key={item.id}
               item={item}
               onPress={() =>

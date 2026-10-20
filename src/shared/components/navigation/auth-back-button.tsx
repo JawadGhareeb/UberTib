@@ -15,7 +15,7 @@ export function AuthBackButton({
     <Button
       variant="ghost"
       size="sm"
-      className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle p-0"
+      className="h-11 w-11 items-center justify-center rounded-[13px] bg-action-subtle p-0"
       onPress={onPress}
       accessibilityLabel={label}
     >

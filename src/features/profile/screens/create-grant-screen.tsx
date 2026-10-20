@@ -5,7 +5,14 @@ import { Pressable, View } from 'react-native';
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { mockDependents } from '@/features/profile/mocks/representation.mock';
 import { useAppDirection } from '@/providers/app-direction-provider';
-import { AppIcon, AppText, Button, ConfirmationDialog, ReadStateBoundary, TextField } from '@/shared/components/ui';
+import {
+  AppIcon,
+  AppText,
+  Button,
+  ConfirmationDialog,
+  ReadStateBoundary,
+  TextField,
+} from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 import { cn } from '@/shared/utils/cn';
 
@@ -95,7 +102,7 @@ export function CreateGrantScreen() {
         staleAtLabel="آخر تحديث محفوظ"
       >
         {submitted ? (
-          <View className="mt-5">
+          <View className="mt-0">
             <View className="rounded-surface border border-tone-warning-border bg-tone-warning-fill p-4">
               <View className={cn('items-start gap-3', rowClassName)}>
                 <AppIcon
@@ -122,7 +129,7 @@ export function CreateGrantScreen() {
           </View>
         ) : (
           <>
-            <View className="mt-6">
+            <View>
               <AppText variant="heading-4">1. صاحب البيانات</AppText>
               <AppText className="mt-1 text-content-secondary" variant="caption">
                 اختر الحساب الذي سيكون التفويض عليه.

@@ -66,7 +66,7 @@ export function GrantDetailScreen({ grantId }: { grantId: string }) {
         state={readState}
         staleAtLabel="آخر تحديث محفوظ"
       >
-        <View className="mt-5 rounded-surface border border-border-default bg-surface-default p-4">
+        <View className="rounded-surface border border-border-default bg-surface-default p-4">
           <View className={cn('items-center gap-3', rowClassName)}>
             <View
               className={cn(
