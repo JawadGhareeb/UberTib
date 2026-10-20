@@ -1,11 +1,11 @@
 import { useState } from 'react';
+import { Radio, RadioGroup } from 'heroui-native';
 import { View } from 'react-native';
-import { Radio } from 'heroui-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { AppIcon, AppText, Button, type AppIconName } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { darkTheme, lightTheme, type ThemeScheme } from '@/shared/theme';
+import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 const options: {
   scheme: ThemeScheme;
@@ -36,72 +36,71 @@ const options: {
   },
 ];
 
+/** Keep the full theme-preview card separate from the HeroUI radio indicator. */
 function AppearanceChoice({
   selected,
   active,
   item,
-  onPress,
 }: {
   selected: boolean;
   active: boolean;
   item: (typeof options)[number];
-  onPress: () => void;
 }) {
   return (
-    <Radio
-      isSelected={selected}
-      onSelectedChange={onPress}
+    <RadioGroup.Item
+      value={item.scheme}
       accessibilityLabel={'اختيار المظهر ' + item.name}
       className={
-        'min-h-[222px] min-w-0 flex-1 items-center gap-3 rounded-[17px] border p-3 ' +
+        'min-h-[216px] min-w-0 flex-1 flex-col items-stretch gap-2 rounded-[17px] border p-3 ' +
         (selected
           ? 'border-action-primary bg-action-subtle'
           : 'border-border-subtle bg-surface-default')
       }
     >
-      <View className="h-12 w-12 items-center justify-center rounded-full bg-surface-subtle">
-        <AppIcon name={item.icon} size={26} tone={selected ? 'action' : 'secondary'} />
+      <View className="flex-row-reverse items-center gap-2">
+        <View className="h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-surface-subtle">
+          <AppIcon name={item.icon} size={22} tone={selected ? 'action' : 'secondary'} />
+        </View>
+        <AppText align="right" variant="label" className="min-w-0 flex-1 font-ui-semibold">
+          {item.name}
+        </AppText>
       </View>
-      <AppText align="center" variant="label" className="font-ui-semibold">
-        {item.name}
-      </AppText>
-      <View className="w-full gap-2 rounded-[12px] p-2" style={{ backgroundColor: item.canvas }}>
+
+      <View
+        className="h-[94px] w-full justify-between overflow-hidden rounded-[11px] border border-border-subtle p-2"
+        style={{ backgroundColor: item.canvas }}
+      >
         <View
-          className="h-4 w-11 self-end rounded"
-          style={{ backgroundColor: item.ink, opacity: 0.7 }}
+          className="h-[11px] w-14 self-end rounded-[4px]"
+          style={{ backgroundColor: item.ink, opacity: 0.65 }}
         />
-        <View className="h-8 w-full rounded-[7px] p-1.5" style={{ backgroundColor: item.panel }}>
+        <View className="gap-2 rounded-[8px] p-2" style={{ backgroundColor: item.panel }}>
           <View
-            className="h-2 w-9 self-end rounded"
+            className="h-[7px] w-14 self-end rounded"
             style={{ backgroundColor: item.ink, opacity: 0.55 }}
           />
-        </View>
-        <View className="h-4 w-16 self-end rounded-[6px]" style={{ backgroundColor: item.label }} />
-      </View>
-      <View className="min-h-[23px] flex-row-reverse items-center justify-center gap-1">
-        <Radio.Indicator />
-        {selected ? (
-          <AppIcon
-            name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
-            size={17}
-            tone="action"
+          <View
+            className="h-[7px] w-20 self-end rounded"
+            style={{ backgroundColor: item.ink, opacity: 0.22 }}
           />
-        ) : null}
-        {active ? (
-          <AppText variant="caption" className="font-ui-semibold text-content-link">
-            المظهر الحالي
-          </AppText>
-        ) : selected ? (
-          <AppText variant="caption" className="text-content-link">
-            مختار للتطبيق
-          </AppText>
-        ) : (
-          <AppText variant="caption" className="text-content-secondary">
-            اختار المظهر
-          </AppText>
-        )}
+        </View>
+        <View
+          className="h-[12px] w-16 self-end rounded-[5px]"
+          style={{ backgroundColor: item.label }}
+        />
       </View>
-    </Radio>
+
+      <View className="min-h-[27px] flex-row-reverse items-center justify-center gap-2">
+        <Radio />
+        <AppText
+          align="right"
+          variant="caption"
+          className={selected ? 'font-ui-semibold text-content-link' : 'text-content-secondary'}
+        >
+          {active ? 'المظهر الحالي' : selected ? 'مختار للتطبيق' : 'اختار المظهر'}
+        </AppText>
+      </View>
+    </RadioGroup.Item>
   );
 }
 
@@ -109,6 +108,7 @@ export function ProfileAppearanceScreen() {
   const { scheme, setScheme } = useAppTheme();
   const [draft, setDraft] = useState<ThemeScheme | null>(null);
   const selected = draft ?? scheme;
+
   return (
     <ProfileScreenShell
       eyebrow="المظهر"
@@ -116,17 +116,22 @@ export function ProfileAppearanceScreen() {
       description="اختار المظهر اللي بناسبك، وبعدها اضغط تطبيق الثيم."
     >
       <View className="gap-5">
-        <View accessibilityRole="radiogroup" className="flex-row-reverse gap-3">
+        <RadioGroup
+          value={selected}
+          onValueChange={(next) => setDraft(next as ThemeScheme)}
+          className="flex-row-reverse items-stretch gap-3"
+          style={{ direction: 'rtl' }}
+        >
           {options.map((item) => (
             <AppearanceChoice
               key={item.scheme}
               item={item}
               selected={selected === item.scheme}
               active={scheme === item.scheme}
-              onPress={() => setDraft(item.scheme)}
             />
           ))}
-        </View>
+        </RadioGroup>
+
         <Button
           label="تطبيق الثيم"
           disabled={selected === scheme}
@@ -136,6 +141,7 @@ export function ProfileAppearanceScreen() {
             setDraft(null);
           }}
         />
+
         <AppText variant="caption" align="center" className="text-content-secondary">
           {selected === scheme
             ? 'المظهر الحالي مفعّل.'
