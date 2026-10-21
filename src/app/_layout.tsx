@@ -7,7 +7,7 @@ import {
   IBMPlexSansArabic_700Bold,
   useFonts,
 } from '@expo-google-fonts/ibm-plex-sans-arabic';
-import { Stack } from 'expo-router';
+import { Stack } from 'expo-router/js-stack';
 import * as NativeSplashScreen from 'expo-splash-screen';
 import { I18nManager, Image, StatusBar, View } from 'react-native';
 import { useEffect, useState } from 'react';
@@ -54,7 +54,7 @@ function RootNavigator() {
         <Stack
           screenOptions={{
             ...pageTransitionOptions(reduceMotion),
-            contentStyle: { backgroundColor: colors.surface.canvas },
+            cardStyle: { backgroundColor: colors.surface.canvas },
             headerShown: false,
           }}
         />

@@ -1,5 +1,7 @@
 import { Tabs } from 'expo-router';
+import { useMemo } from 'react';
 import { useReducedMotion } from 'react-native-reanimated';
+import { useWindowDimensions } from 'react-native';
 import { useResolveClassNames } from 'uniwind';
 import { tabTransitionOptions } from '@/shared/navigation/navigation-transitions';
 
@@ -13,12 +15,19 @@ export default function PatientTabsLayout() {
   // background in sync with the same Uniwind token as the screen canvas.
   const sceneStyle = useResolveClassNames('bg-surface-canvas');
   const reduceMotion = useReducedMotion();
+  const { width: screenWidth } = useWindowDimensions();
+  const slideOptions = useMemo(
+    () => tabTransitionOptions(reduceMotion, screenWidth),
+    [reduceMotion, screenWidth],
+  );
 
   return (
     <Tabs
       initialRouteName="home"
       screenOptions={{
-        ...tabTransitionOptions(reduceMotion),
+        ...slideOptions,
+        lazy: false,
+        freezeOnBlur: true,
         headerShown: false,
         tabBarHideOnKeyboard: true,
         sceneStyle,

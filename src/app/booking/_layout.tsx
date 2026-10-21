@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack } from 'expo-router/js-stack';
 import { useReducedMotion } from 'react-native-reanimated';
 
 import { BookingDraftProvider } from '@/features/booking/state/booking-draft-provider';
@@ -14,7 +14,7 @@ export default function BookingLayout() {
         screenOptions={{
           ...pageTransitionOptions(reduceMotion),
           headerShown: false,
-          contentStyle: { backgroundColor: colors.surface.canvas },
+          cardStyle: { backgroundColor: colors.surface.canvas },
         }}
       />
     </BookingDraftProvider>

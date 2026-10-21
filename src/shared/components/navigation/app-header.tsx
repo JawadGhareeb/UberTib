@@ -1,11 +1,9 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
-import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
 
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { BrandLogo } from '@/shared/components/brand';
 import { AppText, ThemeToggle } from '@/shared/components/ui';
-import { theme } from '@/shared/theme';
 import { cn } from '@/shared/utils/cn';
 
 import { BackAction } from './back-action';
@@ -67,12 +65,7 @@ export function AppHeader({
         className,
       )}
     >
-      <Animated.View
-        className={cn(rowClassName, 'h-16 w-full items-center px-4')}
-        entering={FadeIn.duration(theme.motion.duration.stateChange).reduceMotion(
-          ReduceMotion.System,
-        )}
-      >
+      <View className={cn(rowClassName, 'h-16 w-full items-center px-4')}>
         <View className="h-16 items-end justify-center" style={{ width: 112 }}>
           {rightControl}
         </View>
@@ -99,7 +92,7 @@ export function AppHeader({
             <BrandLogo size={30} />
           )}
         </View>
-      </Animated.View>
+      </View>
     </View>
   );
 }
