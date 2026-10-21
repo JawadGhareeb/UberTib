@@ -46,7 +46,11 @@ export function Screen({
           {header}
         </View>
       ) : null}
-      <KeyboardContainer style={{ flex: 1 }} behavior="padding" enabled={keyboardAvoiding}>
+      <KeyboardContainer
+        style={{ flex: 1 }}
+        behavior="padding"
+        enabled={keyboardAvoiding && Platform.OS === 'ios'}
+      >
         <Animated.View
           className={resolvedContentClassName}
           style={{ flex: 1 }}

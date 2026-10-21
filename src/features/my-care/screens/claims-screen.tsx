@@ -3,7 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { AssessmentImagePreview } from '@/features/assessment/components/assessment-image-preview';
 import { CareActionFooter } from '@/features/my-care/components/care-financial-ui';
@@ -92,7 +92,7 @@ export function ClaimsScreen({ caseId }: { caseId: string }) {
 
   if (!careCase) {
     return (
-      <Screen contentClassName="px-0 py-0">
+      <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
         <CareV5Header title="الإبلاغ عن مشكلة" leftIcon="shield" />
         <View className="px-4 pt-5">
           <StateView title="الحالة غير موجودة" />
@@ -177,8 +177,8 @@ export function ClaimsScreen({ caseId }: { caseId: string }) {
         state={readState}
         staleAtLabel="آخر تحديث محفوظ"
       >
-        <KeyboardAwareScrollView
-          bottomOffset={Platform.OS === 'android' ? 16 : 90}
+        <KeyboardResponsiveScrollView
+                    bottomOffset={16}
           contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -420,7 +420,7 @@ export function ClaimsScreen({ caseId }: { caseId: string }) {
               {attachmentError}
             </AppText>
           ) : null}
-        </KeyboardAwareScrollView>
+        </KeyboardResponsiveScrollView>
         <CareActionFooter>
           <Button
             className="min-h-[52px] rounded-[12px]"

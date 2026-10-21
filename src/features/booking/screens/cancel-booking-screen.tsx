@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Platform, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { BookingHeader, BookingStatusBanner } from '@/features/booking/components/booking-v5-ui';
 import { getMockBookingForScenario } from '@/features/booking/mocks/bookings.mock';
@@ -35,7 +35,7 @@ export function CancelBookingScreen() {
 
   if (cancellationPending) {
     return (
-      <Screen contentClassName="px-0 py-0">
+      <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
         <BookingHeader showBack={false} subtitle="قيد المعالجة" title="طلب الإلغاء" />
         <View className="mx-auto w-full max-w-[390px] flex-1 justify-center px-4">
           <BookingStatusBanner
@@ -62,8 +62,8 @@ export function CancelBookingScreen() {
     <Screen contentClassName="px-0 py-0">
       <BookingHeader subtitle="إجراء حساس" title="إلغاء الحجز" />
 
-      <KeyboardAwareScrollView
-        bottomOffset={Platform.OS === 'android' ? 16 : 90}
+      <KeyboardResponsiveScrollView
+                  bottomOffset={16}
         contentContainerClassName="mx-auto w-full max-w-[390px] px-4 pb-8"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -111,7 +111,7 @@ export function CancelBookingScreen() {
           />
           <Button label="الاحتفاظ بالموعد" onPress={() => router.back()} variant="secondary" />
         </View>
-      </KeyboardAwareScrollView>
+      </KeyboardResponsiveScrollView>
       <ConfirmationDialog
         visible={confirmingCancel && !cancellationPending}
         title="تأكيد طلب إلغاء الحجز"

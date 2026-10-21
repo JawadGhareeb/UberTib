@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Accordion, Radio, RadioGroup } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, Switch, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { AssessmentImagePreview } from '@/features/assessment/components/assessment-image-preview';
 import { buildReturnTo } from '@/features/auth/navigation/auth-intent';
@@ -225,7 +225,7 @@ export function BookingReviewScreen() {
 
   if (submitted) {
     return (
-      <Screen contentClassName="px-0 py-0">
+      <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
         <BookingHeader showBack={false} subtitle="تم الإرسال" title="طلب الحجز" />
         <View className="mx-auto w-full max-w-[430px] flex-1 justify-center px-4">
           <View className="items-center">
@@ -308,8 +308,8 @@ export function BookingReviewScreen() {
   return (
     <Screen contentClassName="px-0 py-0">
       <BookingHeader title="مراجعة الحجز" />
-      <KeyboardAwareScrollView
-        bottomOffset={Platform.OS === 'android' ? 16 : 90}
+      <KeyboardResponsiveScrollView
+                  bottomOffset={16}
         contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -579,7 +579,7 @@ export function BookingReviewScreen() {
             />
           </View>
         ) : null}
-      </KeyboardAwareScrollView>
+      </KeyboardResponsiveScrollView>
       <View className="border-t border-border-subtle bg-surface-canvas px-4 pb-3 pt-3">
         <View className="mx-auto w-full max-w-[430px]">
           <Button

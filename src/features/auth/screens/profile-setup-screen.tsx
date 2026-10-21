@@ -10,17 +10,9 @@ import {
   Typography,
 } from 'heroui-native';
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView as NativeKeyboardAvoidingView,
-  Platform,
-  Pressable,
-  View,
-} from 'react-native';
-import {
-  KeyboardAvoidingView as ControllerKeyboardAvoidingView,
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { BrandedDateField } from '@/features/auth/components/branded-date-field';
 import { formatDate, type Gender } from '@/features/auth/utils/profile-fields';
@@ -32,9 +24,6 @@ import { usePreferredLocation } from '@/features/location/state/preferred-locati
 import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
-
-const KeyboardContainer =
-  Platform.OS === 'android' ? ControllerKeyboardAvoidingView : NativeKeyboardAvoidingView;
 
 export function ProfileSetupScreen() {
   const router = useRouter();
@@ -70,15 +59,15 @@ export function ProfileSetupScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
-      <KeyboardContainer className="flex-1" style={{ flex: 1 }} behavior="padding">
-        <KeyboardAwareScrollView
-          bottomOffset={72}
+      
+        <KeyboardResponsiveScrollView
+          bottomOffset={16}
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="mx-auto w-full max-w-[430px] flex-1 px-6 pb-8 pt-6">
+          <View className="mx-auto w-full max-w-[430px] px-6 pb-8 pt-6" style={{ flexGrow: 1 }}>
             <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
               <View className="flex-row items-center gap-2">
                 <BrandMark size={42} />
@@ -286,7 +275,7 @@ export function ProfileSetupScreen() {
               </View>
             </View>
 
-            <View className="min-h-8 flex-1" />
+            <View className="mt-auto min-h-8" />
 
             <View className="mt-8 gap-3">
               <Button
@@ -309,8 +298,7 @@ export function ProfileSetupScreen() {
               </Typography.Paragraph>
             </View>
           </View>
-        </KeyboardAwareScrollView>
-      </KeyboardContainer>
+        </KeyboardResponsiveScrollView>
     </SafeAreaView>
   );
 }

@@ -1,12 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, FieldError, Input, Label, TextField, Typography } from 'heroui-native';
 import { useState } from 'react';
-import { KeyboardAvoidingView as NativeKeyboardAvoidingView, Platform, View } from 'react-native';
-import {
-  KeyboardAvoidingView as ControllerKeyboardAvoidingView,
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { AuthModeSwitch } from '@/features/auth/components/auth-mode-switch';
 import { CountryDialCodeSelect } from '@/shared/components/ui/country-dial-code-select';
@@ -19,9 +16,6 @@ import { toE164 } from '@/shared/components/ui/phone-number-field';
 import { useMockScenario } from '@/shared/mock';
 
 const DEFAULT_COUNTRY = phoneCountries[0]!;
-
-const KeyboardContainer =
-  Platform.OS === 'android' ? ControllerKeyboardAvoidingView : NativeKeyboardAvoidingView;
 
 export function PhoneEntryScreen() {
   const router = useRouter();
@@ -81,16 +75,16 @@ export function PhoneEntryScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
-      <KeyboardContainer className="flex-1" style={{ flex: 1 }} behavior="padding">
-        <KeyboardAwareScrollView
-          bottomOffset={Platform.OS === 'android' ? 16 : 72}
+      
+        <KeyboardResponsiveScrollView
+          bottomOffset={16}
           className="flex-1"
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="mx-auto w-full max-w-[430px] flex-1 px-6 pb-8 pt-6">
+          <View className="mx-auto w-full max-w-[430px] px-6 pb-8 pt-6" style={{ flexGrow: 1 }}>
             <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
               <View className="flex-row items-center gap-2">
                 <BrandMark size={42} />
@@ -177,7 +171,7 @@ export function PhoneEntryScreen() {
                 : 'اكتب الرقم المحلي بدون رمز الاتصال الدولي.'}
             </Typography.Paragraph>
 
-            <View className="min-h-10 flex-1" />
+            <View className="mt-auto min-h-10" />
 
             <View className="mt-8 gap-4">
               <Button
@@ -202,8 +196,7 @@ export function PhoneEntryScreen() {
               </Typography.Paragraph>
             </View>
           </View>
-        </KeyboardAwareScrollView>
-      </KeyboardContainer>
+        </KeyboardResponsiveScrollView>
     </SafeAreaView>
   );
 }

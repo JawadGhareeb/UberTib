@@ -1,9 +1,5 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-import { KeyboardAvoidingView as NativeKeyboardAvoidingView, Platform, View } from 'react-native';
-import {
-  KeyboardAvoidingView as ControlledKeyboardAvoidingView,
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 import { AssessmentJourneyProgress } from '@/features/assessment/components/assessment-journey-progress';
 import { AppHeader } from '@/shared/components/navigation/app-header';
@@ -37,8 +33,6 @@ export function AssessmentScaffold({
   hideBack = false,
   children,
 }: AssessmentScaffoldProps) {
-  const KeyboardContainer =
-    Platform.OS === 'android' ? ControlledKeyboardAvoidingView : NativeKeyboardAvoidingView;
   const body = (
     <View className="mx-auto w-full max-w-[430px] gap-3 px-4 pb-5 pt-3">
       <AssessmentJourneyProgress phase={phase} />
@@ -54,17 +48,20 @@ export function AssessmentScaffold({
   return (
     <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
       <AppHeader title="تحديد حالتي" showBack={!hideBack} />
-      <KeyboardContainer behavior="padding" className="min-h-0 flex-1">
+      <KeyboardAvoidingView
+        behavior="padding"
+        enabled={Platform.OS === 'ios'}
+        className="min-h-0 flex-1"
+      >
         {scroll ? (
-          <KeyboardAwareScrollView
-            bottomOffset={Platform.OS === 'android' ? 16 : 85}
+          <ScrollView
             className="min-h-0 flex-1"
             contentContainerClassName="pb-3"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
             {body}
-          </KeyboardAwareScrollView>
+          </ScrollView>
         ) : (
           <View className="min-h-0 flex-1">{body}</View>
         )}
@@ -88,7 +85,7 @@ export function AssessmentScaffold({
             </View>
           </View>
         ) : null}
-      </KeyboardContainer>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }

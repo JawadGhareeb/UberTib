@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Platform, Pressable, ScrollView, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import {
   BookingCard,
@@ -48,7 +48,7 @@ export function RescheduleBookingScreen() {
 
   if (pendingProposal) {
     return (
-      <Screen contentClassName="px-0 py-0">
+      <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
         <BookingHeader subtitle="قيد الرد" title="إعادة الجدولة" />
         <View className="mx-auto w-full max-w-[390px] flex-1 justify-center px-4">
           <BookingStatusBanner
@@ -110,8 +110,8 @@ export function RescheduleBookingScreen() {
     <Screen contentClassName="px-0 py-0">
       <BookingHeader subtitle="تعديل الموعد" title="إعادة الجدولة" />
 
-      <KeyboardAwareScrollView
-        bottomOffset={Platform.OS === 'android' ? 16 : 90}
+      <KeyboardResponsiveScrollView
+                  bottomOffset={16}
         contentContainerClassName="mx-auto w-full max-w-[390px] px-4 pb-8"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -224,7 +224,7 @@ export function RescheduleBookingScreen() {
           label="إرسال اقتراح الموعد الجديد"
           onPress={() => setConfirmingReschedule(true)}
         />
-      </KeyboardAwareScrollView>
+      </KeyboardResponsiveScrollView>
       <ConfirmationDialog
         visible={confirmingReschedule && !pendingProposal}
         title="إرسال اقتراح الموعد الجديد؟"

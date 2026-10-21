@@ -1,12 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, FieldError, InputOTP, REGEXP_ONLY_DIGITS, Typography } from 'heroui-native';
 import { useEffect, useMemo, useState } from 'react';
-import { KeyboardAvoidingView as NativeKeyboardAvoidingView, Platform, View } from 'react-native';
-import {
-  KeyboardAvoidingView as ControllerKeyboardAvoidingView,
-  KeyboardAwareScrollView,
-} from 'react-native-keyboard-controller';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { requestMockVerification, verifyMockCode } from '@/features/auth/mocks/auth.mock';
 import { resolveSafeReturnTo } from '@/features/auth/navigation/auth-intent';
@@ -20,9 +17,6 @@ import { useAuthSession } from '@/providers/auth-session-provider';
 import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { useMockScenario } from '@/shared/mock';
-
-const KeyboardContainer =
-  Platform.OS === 'android' ? ControllerKeyboardAvoidingView : NativeKeyboardAvoidingView;
 
 export function CodeVerificationScreen() {
   const router = useRouter();
@@ -113,15 +107,15 @@ export function CodeVerificationScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
-      <KeyboardContainer className="flex-1" style={{ flex: 1 }} behavior="padding">
-        <KeyboardAwareScrollView
-          bottomOffset={72}
+      
+        <KeyboardResponsiveScrollView
+          bottomOffset={16}
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="mx-auto w-full max-w-[430px] flex-1 px-6 pb-8 pt-6">
+          <View className="mx-auto w-full max-w-[430px] px-6 pb-8 pt-6" style={{ flexGrow: 1 }}>
             <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
               <View className="flex-row items-center gap-2">
                 <BrandMark size={42} />
@@ -240,7 +234,7 @@ export function CodeVerificationScreen() {
               </View>
             </View>
 
-            <View className="min-h-10 flex-1" />
+            <View className="mt-auto min-h-10" />
 
             <View className="mt-8 gap-4">
               <Button
@@ -263,8 +257,7 @@ export function CodeVerificationScreen() {
               </Typography.Paragraph>
             </View>
           </View>
-        </KeyboardAwareScrollView>
-      </KeyboardContainer>
+        </KeyboardResponsiveScrollView>
     </SafeAreaView>
   );
 }

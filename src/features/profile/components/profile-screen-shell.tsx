@@ -1,6 +1,5 @@
 import type { PropsWithChildren } from 'react';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
-import { Platform } from 'react-native';
+import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 import { AppHeader } from '@/shared/components/navigation';
 import { Screen } from '@/shared/components/ui';
 
@@ -16,18 +15,19 @@ interface ProfileScreenShellProps extends PropsWithChildren {
 export function ProfileScreenShell({ title, showBack = true, children }: ProfileScreenShellProps) {
   return (
     <Screen
+      keyboardAvoiding={false}
       contentClassName="px-0 py-0"
       header={<AppHeader title={title} showBack={showBack} variant="detail" />}
     >
-      <KeyboardAwareScrollView
-        bottomOffset={Platform.OS === 'android' ? 16 : 90}
+      <KeyboardResponsiveScrollView
+                bottomOffset={16}
         className="flex-1 bg-surface-canvas"
         contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-12 pt-4"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {children}
-      </KeyboardAwareScrollView>
+      </KeyboardResponsiveScrollView>
     </Screen>
   );
 }
