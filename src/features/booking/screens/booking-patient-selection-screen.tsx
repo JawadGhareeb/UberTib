@@ -1,39 +1,41 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Radio, RadioGroup } from 'heroui-native';
 import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
-import { Radio } from 'heroui-native';
+import { ScrollView, View } from 'react-native';
 
+import { BookingJourneyProgress } from '@/features/booking/components/booking-journey-progress';
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
-import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
+import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
-import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
-import { cn } from '@/shared/utils/cn';
 
 export function BookingPatientSelectionScreen() {
   const router = useRouter();
-  const { rowClassName } = useAppDirection();
   const { scenario } = useMockScenario();
   const { members } = useFamilyMembers();
-  const { providerId, serviceCode, dateKey, dateLabel, timeLabel } = useLocalSearchParams<{
-    providerId?: string;
-    serviceCode?: string;
-    dateKey?: string;
-    dateLabel?: string;
-    timeLabel?: string;
-  }>();
+  const { providerId, serviceCode, dateKey, dateLabel, timeLabel, patientId } =
+    useLocalSearchParams<{
+      providerId?: string;
+      serviceCode?: string;
+      dateKey?: string;
+      dateLabel?: string;
+      timeLabel?: string;
+      patientId?: string;
+    }>();
   const provider = getMockProvider(providerId);
-  const selectedDate = provider?.availability.find((day) => day.dateKey === dateKey);
+  const chosenDay = provider?.availability.find((day) => day.dateKey === dateKey);
   const validSlot = Boolean(
     provider?.serviceCodes.includes(serviceCode ?? '') &&
-    selectedDate?.dateLabel === dateLabel &&
-    selectedDate?.slots.includes(timeLabel ?? ''),
+    chosenDay?.dateLabel === dateLabel &&
+    chosenDay?.slots.includes(timeLabel ?? ''),
   );
-  const [selectedId, setSelectedId] = useState('patient-001');
-  const chosenPatient = members.find((patient) => patient.id === selectedId);
-  const canContinue = canBookForPatient(selectedId, scenario);
+  const [selectedId, setSelectedId] = useState(
+    patientId && members.some((member) => member.id === patientId) ? patientId : 'patient-001',
+  );
+  const canContinue =
+    canBookForPatient(selectedId, scenario) && members.some((p) => p.id === selectedId);
 
   if (!validSlot) {
     return (
@@ -55,148 +57,147 @@ export function BookingPatientSelectionScreen() {
 
   return (
     <Screen contentClassName="px-0 py-0">
-      <BookingHeader leadingIcon="patient" title="لمن هذا الحجز؟" />
+      <BookingHeader title="لمن هذا الحجز؟" />
       <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-[106px] pt-2"
+        contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
         showsVerticalScrollIndicator={false}
       >
-        <View
-          className={cn(
-            'mt-3 min-h-[86px] items-center gap-3 rounded-[15px] border border-action-primary/20 bg-action-subtle p-3',
-            rowClassName,
-          )}
-        >
-          <View className="h-[48px] w-[48px] items-center justify-center rounded-full bg-surface-default">
-            <AppIcon
-              name={{ ios: 'person', android: 'person_outline', web: 'person_outline' }}
-              size={25}
-              tone="action"
-            />
-          </View>
-          <View className="min-w-0 flex-1 items-end">
-            <AppText align="right" className="text-content-link" variant="caption">
-              مرتبط بالحجز
+        <BookingJourneyProgress step={2} />
+        <View className="flex-row-reverse items-center gap-2 rounded-[12px] bg-surface-subtle p-3">
+          <AppIcon
+            name={{ ios: 'calendar', android: 'event', web: 'event' }}
+            size={18}
+            tone="action"
+          />
+          <View className="min-w-0 flex-1 items-end gap-0.5">
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              موعدك المختار
             </AppText>
-            <AppText align="right" className="font-ui-bold text-content-primary" variant="label">
-              {chosenPatient ? 'الحجز باسم ' + chosenPatient.name : 'اختر المريض'}
-            </AppText>
-            <AppText align="right" className="mt-0.5 text-content-secondary" variant="caption">
-              {dateLabel} · {timeLabel} · معلومات التفويض تُراجع قبل إرسال الطلب
+            <AppText align="right" variant="label" className="font-ui-semibold">
+              {dateLabel} · {timeLabel}
             </AppText>
           </View>
         </View>
+        <View className="gap-1">
+          <AppText align="right" variant="heading-4" className="font-ui-bold">
+            اختر المريض
+          </AppText>
+          <AppText align="right" variant="caption" className="text-content-secondary">
+            نفس اختيار المريض بالتقييم، لكن بصلاحية حجز مستقلة لكل فرد.
+          </AppText>
+        </View>
 
-        <AppText
-          align="right"
-          className="mb-2 mt-3 font-ui-bold text-content-primary"
-          variant="label"
+        <RadioGroup
+          value={selectedId}
+          onValueChange={(id) => {
+            if (canBookForPatient(id, scenario) && members.some((person) => person.id === id)) {
+              setSelectedId(id);
+            }
+          }}
+          className="gap-2"
         >
-          اختيار المريض
-        </AppText>
-
-        <View accessibilityRole="radiogroup" className="gap-2">
           {members.map((person) => {
             const allowed = canBookForPatient(person.id, scenario);
-            const active = selectedId === person.id;
+            const selected = person.id === selectedId;
+            const subtitle = person.active
+              ? 'أنا · الملف الشخصي الأساسي'
+              : person.relation + (person.age === null ? '' : ' · ' + person.age + ' سنة');
             return (
-              <Radio
-                isSelected={active}
-                isDisabled={!allowed}
-                onSelectedChange={() => setSelectedId(person.id)}
-                accessibilityLabel={person.name + (allowed ? '' : '، غير مسموح بالحجز')}
-                className={cn(
-                  'min-h-[56px] items-center gap-2 rounded-[13px] border bg-surface-default px-3 py-2',
-                  rowClassName,
-                  active ? 'border-action-primary' : 'border-border-subtle',
-                  !allowed && 'opacity-70',
-                )}
+              <RadioGroup.Item
                 key={person.id}
+                value={person.id}
+                isDisabled={!allowed}
+                accessibilityLabel={
+                  person.name + (allowed ? '، مسموح بالحجز' : '، الحجز يحتاج تفويضاً')
+                }
+                className={
+                  'min-h-[72px] flex-row-reverse items-center gap-3 rounded-[13px] border px-3 py-2.5 ' +
+                  (selected
+                    ? 'border-action-primary bg-action-subtle'
+                    : !allowed
+                      ? 'border-border-subtle bg-surface-subtle'
+                      : 'border-border-subtle bg-surface-default')
+                }
               >
-                <View className="h-8 w-8 items-center justify-center rounded-full bg-action-subtle">
+                <View className="h-9 w-9 items-center justify-center rounded-full bg-surface-subtle">
                   <AppIcon
-                    name={{ ios: 'person', android: 'person_outline', web: 'person_outline' }}
-                    size={16}
-                    tone="action"
+                    name={
+                      !allowed
+                        ? { ios: 'lock.fill', android: 'lock', web: 'lock' }
+                        : { ios: 'person', android: 'person_outline', web: 'person_outline' }
+                    }
+                    tone={!allowed ? 'secondary' : 'action'}
+                    size={19}
                   />
                 </View>
-                <View className="min-w-0 flex-1 items-end">
+                <View className="min-w-0 flex-1 items-end gap-0.5">
                   <AppText
                     align="right"
-                    className="font-ui-semibold text-content-primary"
                     variant="label"
+                    numberOfLines={1}
+                    className="w-full font-ui-bold"
                   >
                     {person.name}
                   </AppText>
-                  <AppText align="right" className="text-content-secondary" variant="caption">
+                  <AppText
+                    align="right"
+                    variant="caption"
+                    numberOfLines={1}
+                    className="w-full text-content-secondary"
+                  >
+                    {subtitle}
+                  </AppText>
+                  <AppText
+                    align="right"
+                    variant="caption"
+                    numberOfLines={2}
+                    className={
+                      allowed ? 'w-full text-content-link' : 'w-full text-tone-danger-text'
+                    }
+                  >
                     {person.active
-                      ? 'أنا · الملف الشخصي الأساسي'
+                      ? 'ملفي الشخصي'
                       : allowed
-                        ? person.relation + ' · تفويض صالح لإدارة الحجوزات'
-                        : person.relation + ' · لا يوجد تفويض حجز صالح'}
+                        ? 'يمكنك الحجز نيابةً عنه'
+                        : 'يلزم تفويض صالح لإدارة الحجوزات'}
                   </AppText>
                 </View>
-                <Radio.Indicator />
-              </Radio>
+                <Radio />
+              </RadioGroup.Item>
             );
           })}
-        </View>
+        </RadioGroup>
 
-        <View
-          className={cn(
-            'mt-2 items-start gap-2 rounded-[12px] border border-tone-warning-border bg-tone-warning-fill p-3',
-            rowClassName,
-          )}
-        >
-          <AppIcon
-            name={{
-              ios: 'exclamationmark.triangle',
-              android: 'warning_amber',
-              web: 'warning_amber',
-            }}
-            size={18}
-            tone="warning"
-          />
-          <View className="min-w-0 flex-1 items-end">
-            <AppText align="right" className="font-ui-bold text-content-primary" variant="label">
-              تغيير المريض يبدأ حجزاً باسمه
-            </AppText>
-            <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
-              اختر الشخص الصحيح. معلوماته الطبية لا تُشارك تلقائياً، ويجب أن يكون التفويض صالحاً
-              للحجز نيابةً عنه.
-            </AppText>
-          </View>
-        </View>
-
-        <Pressable
-          accessibilityRole="button"
-          className={cn(
-            'mt-2 min-h-[42px] items-center justify-center gap-2 rounded-[11px] border border-border-subtle bg-surface-default px-3',
-            rowClassName,
-          )}
+        <Button
+          label="إضافة فرد من الأسرة"
+          endIcon={{ ios: 'person.badge.plus', android: 'person_add', web: 'person_add' }}
           onPress={() => router.push('/profile/dependents/new')}
-        >
+          size="sm"
+          variant="outline"
+        />
+        <View className="flex-row-reverse items-start gap-2 rounded-[11px] bg-tone-info-fill p-3">
           <AppIcon
-            name={{ ios: 'person.badge.plus', android: 'person_add', web: 'person_add' }}
-            size={17}
-            tone="action"
+            name={{ ios: 'lock.shield', android: 'lock', web: 'lock' }}
+            size={18}
+            tone="info"
           />
-          <AppText className="font-ui-semibold text-content-link" variant="caption">
-            إضافة فرد من الأسرة
+          <AppText align="right" variant="caption" className="min-w-0 flex-1 text-tone-info-text">
+            إضافة فرد جديد لا تمنح صلاحية الحجز تلقائياً. ولا تُشارك معلوماته الطبية مع العيادة بدون
+            صلاحية مناسبة.
           </AppText>
-        </Pressable>
+        </View>
       </ScrollView>
-
-      <View className="absolute bottom-0 left-0 right-0 border-t border-border-subtle bg-surface-canvas px-4 pb-3 pt-2">
+      <View className="border-t border-border-subtle bg-surface-canvas px-4 pb-3 pt-3">
         <View className="mx-auto w-full max-w-[430px]">
           <Button
-            className="h-[52px] rounded-[12px]"
+            className="min-h-[52px] rounded-[12px]"
             disabled={!canContinue}
             endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
-            label="متابعة لملخص الحالة والمرفقات"
+            label="متابعة لمراجعة الحجز"
             onPress={() => {
-              if (!canBookForPatient(selectedId, scenario)) return;
+              if (!canContinue) return;
               router.push({
-                pathname: '/booking/reason',
+                pathname: '/booking/review',
                 params: {
                   providerId: providerId ?? '',
                   serviceCode: serviceCode ?? '',

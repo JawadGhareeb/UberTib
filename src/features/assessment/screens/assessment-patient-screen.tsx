@@ -12,7 +12,7 @@ import { AppIcon, AppText, Button } from '@/shared/components/ui';
 
 const patients: { value: AssessmentPatient; status: string; disabled: boolean }[] = [
   { value: 'self', status: 'ملفي الصحي', disabled: false },
-  { value: 'adam', status: 'يمكنك التقييم نيابة عنه', disabled: false },
+  { value: 'adam', status: 'يمكنك التقييم نيابةً عنها', disabled: false },
   { value: 'nour', status: 'لا تسمح صلاحية التفويض بالتقييم', disabled: true },
 ];
 

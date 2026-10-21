@@ -20,7 +20,7 @@ function isLocationChoice(value: string): value is (typeof locations)[number] {
 export function AssessmentNeedsMoreInfoScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
-  const { location, setRegionLocation, setLocation } = useAssessmentSession();
+  const { patient, location, setRegionLocation, setLocation } = useAssessmentSession();
   const [selected, setSelected] = useState<LocationChoice | undefined>(
     isLocationChoice(location) ? location : undefined,
   );
@@ -40,7 +40,10 @@ export function AssessmentNeedsMoreInfoScreen() {
   const bookDentalCheckup = () =>
     router.push({
       pathname: '/discover/providers/results',
-      params: { serviceCode: 'dental-checkup' },
+      params: {
+        serviceCode: 'dental-checkup',
+        patientId: patient === 'adam' ? 'patient-002' : 'patient-001',
+      },
     });
 
   return (

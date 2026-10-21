@@ -2,7 +2,8 @@ import { Radio } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { AssessmentImagePreview } from '@/features/assessment/components/assessment-image-preview';
 import { CareActionFooter } from '@/features/my-care/components/care-financial-ui';
@@ -176,7 +177,8 @@ export function ClaimsScreen({ caseId }: { caseId: string }) {
         state={readState}
         staleAtLabel="آخر تحديث محفوظ"
       >
-        <ScrollView
+        <KeyboardAwareScrollView
+          bottomOffset={Platform.OS === 'android' ? 16 : 90}
           contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -418,7 +420,7 @@ export function ClaimsScreen({ caseId }: { caseId: string }) {
               {attachmentError}
             </AppText>
           ) : null}
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <CareActionFooter>
           <Button
             className="min-h-[52px] rounded-[12px]"

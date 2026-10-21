@@ -1,10 +1,18 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Platform, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { BookingHeader, BookingStatusBanner } from '@/features/booking/components/booking-v5-ui';
 import { getMockBookingForScenario } from '@/features/booking/mocks/bookings.mock';
-import { AppText, Button, ConfirmationDialog, Screen, StateView, TextField } from '@/shared/components/ui';
+import {
+  AppText,
+  Button,
+  ConfirmationDialog,
+  Screen,
+  StateView,
+  TextField,
+} from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
 export function CancelBookingScreen() {
@@ -54,7 +62,8 @@ export function CancelBookingScreen() {
     <Screen contentClassName="px-0 py-0">
       <BookingHeader subtitle="إجراء حساس" title="إلغاء الحجز" />
 
-      <ScrollView
+      <KeyboardAwareScrollView
+        bottomOffset={Platform.OS === 'android' ? 16 : 90}
         contentContainerClassName="mx-auto w-full max-w-[390px] px-4 pb-8"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -102,7 +111,7 @@ export function CancelBookingScreen() {
           />
           <Button label="الاحتفاظ بالموعد" onPress={() => router.back()} variant="secondary" />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <ConfirmationDialog
         visible={confirmingCancel && !cancellationPending}
         title="تأكيد طلب إلغاء الحجز"
@@ -111,7 +120,8 @@ export function CancelBookingScreen() {
         destructive
         onCancel={() => setConfirmingCancel(false)}
         onConfirm={() => {
-          if (!booking.cancellationConsequence || reason.trim().length < 3 || cancellationPending) return;
+          if (!booking.cancellationConsequence || reason.trim().length < 3 || cancellationPending)
+            return;
           submitBookingCancellation(bookingId);
           setConfirmingCancel(false);
         }}

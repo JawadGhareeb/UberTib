@@ -13,9 +13,14 @@ import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components
 
 export function ProviderComparisonScreen() {
   const router = useRouter();
-  const { providerIds, serviceCode = 'root-canal' } = useLocalSearchParams<{
+  const {
+    providerIds,
+    serviceCode = 'root-canal',
+    patientId,
+  } = useLocalSearchParams<{
     providerIds?: string;
     serviceCode?: string;
+    patientId?: string;
   }>();
   const { getServiceState, setComparisonProviders } = useDiscoverySession();
   const routeIds = providerIds?.split(',').filter(Boolean) ?? [];
@@ -32,7 +37,10 @@ export function ProviderComparisonScreen() {
       serviceCode,
       doctors.map((doctor) => doctor.id),
     );
-    router.replace({ pathname: '/discover/providers/results', params: { serviceCode } });
+    router.replace({
+      pathname: '/discover/providers/results',
+      params: { serviceCode, ...(patientId ? { patientId } : {}) },
+    });
   };
   const removeDoctor = (providerId: string) => {
     const remaining = doctors
@@ -45,7 +53,11 @@ export function ProviderComparisonScreen() {
     }
     router.replace({
       pathname: '/discover/providers/compare',
-      params: { serviceCode, providerIds: remaining.join(',') },
+      params: {
+        serviceCode,
+        providerIds: remaining.join(','),
+        ...(patientId ? { patientId } : {}),
+      },
     });
   };
 
@@ -85,7 +97,7 @@ export function ProviderComparisonScreen() {
           onViewProfile={(providerId) =>
             router.push({
               pathname: '/discover/provider/[providerId]',
-              params: { providerId, serviceCode },
+              params: { providerId, serviceCode, ...(patientId ? { patientId } : {}) },
             })
           }
           onChoose={(providerId) =>

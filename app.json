@@ -35,6 +35,14 @@
         {
           "locationWhenInUsePermission": "يسمح UperTib باستخدام موقع جهازك لتحديد منطقتك الحالية عندما تطلب ذلك."
         }
+      ],
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "يسمح أوبرطب بفتح تقويم الجهاز لإضافة مواعيدك بعد موافقتك.",
+          "writeOnlyCalendarPermission": "يسمح أوبرطب بإضافة موعد إلى التقويم بعد مراجعتك وحفظك للحدث.",
+          "writeOnlyAccess": true
+        }
       ]
     ],
     "experiments": {

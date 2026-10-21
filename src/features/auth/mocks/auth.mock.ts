@@ -1,7 +1,7 @@
 import { mockDelay } from '@/shared/mock/delay';
 import type { MockScenarioDefinition } from '@/shared/mock';
 
-export const MOCK_VERIFICATION_CODE = '123456';
+export const MOCK_VERIFICATION_CODE = '000000';
 
 export interface MockVerificationRequest {
   requestId: string;
@@ -40,6 +40,10 @@ export async function verifyMockCode(
 
   if (!/^\d{6}$/.test(code)) {
     throw new Error('أدخل رمز التحقق المكوّن من ستة أرقام.');
+  }
+
+  if (code !== MOCK_VERIFICATION_CODE) {
+    throw new Error('رمز التحقق غير صحيح.');
   }
 
   if (scenario?.flags?.authChallengeExpired) {

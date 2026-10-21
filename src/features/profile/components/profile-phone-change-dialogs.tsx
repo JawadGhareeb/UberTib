@@ -1,6 +1,13 @@
 import { InputOTP, REGEXP_ONLY_DIGITS } from 'heroui-native';
-import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  KeyboardAvoidingView as NativeKeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  View,
+} from 'react-native';
+import { KeyboardAvoidingView as ControllerKeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 import {
   MOCK_VERIFICATION_CODE,
@@ -25,24 +32,33 @@ import { useAppTheme } from '@/shared/theme/use-app-theme';
 type Stage = 'number' | 'otp' | null;
 
 /** Two sequential dialogs; only completing the OTP step may update the local verified number. */
+const KeyboardContainer =
+  Platform.OS === 'android' ? ControllerKeyboardAvoidingView : NativeKeyboardAvoidingView;
+
 export function ProfilePhoneChangeDialogs({
   visible,
   onClose,
+  initialPhone,
+  onVerified,
 }: {
   visible: boolean;
   onClose: () => void;
+  /** When a new number was entered in account edit, open directly at OTP. */
+  initialPhone?: string;
+  onVerified?: () => void;
 }) {
   const { colors } = useAppTheme();
   const { phone, setVerifiedPhone } = useAccountDetails();
   const { scenario } = useMockScenario();
-  const [stage, setStage] = useState<Stage>('number');
+  const [stage, setStage] = useState<Stage>(initialPhone ? 'otp' : 'number');
+  const autoRequestStarted = useRef(false);
   const [country, setCountry] = useState<CountryOption>(defaultPhoneCountry);
   const [national, setNational] = useState('');
-  const [pendingPhone, setPendingPhone] = useState('');
+  const [pendingPhone, setPendingPhone] = useState(initialPhone ?? '');
   const [otp, setOtp] = useState('');
   const [remaining, setRemaining] = useState(0);
   const [expiry, setExpiry] = useState(0);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(Boolean(initialPhone));
   const [error, setError] = useState('');
   const nextPhone = toE164(country, national);
   const valid =
@@ -81,6 +97,34 @@ export function ProfilePhoneChangeDialogs({
       setBusy(false);
     }
   };
+  useEffect(() => {
+    if (!visible || !initialPhone || autoRequestStarted.current) return;
+    autoRequestStarted.current = true;
+    let active = true;
+    void (async () => {
+      setBusy(true);
+      setError('');
+      try {
+        const result = await requestMockVerification(initialPhone, scenario);
+        if (!active) return;
+        setPendingPhone(initialPhone);
+        setOtp('');
+        setRemaining(result.resendAfterSeconds);
+        setExpiry(result.expiresInSeconds);
+        setStage('otp');
+      } catch (cause) {
+        if (!active) return;
+        setError(cause instanceof Error ? cause.message : 'تعذّر طلب رمز التحقق.');
+        setStage('number');
+      } finally {
+        if (active) setBusy(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [visible, initialPhone, scenario]);
+
   const verify = async () => {
     if (busy || otp.length !== CODE_LENGTH || expiry <= 0) return;
     setBusy(true);
@@ -90,6 +134,7 @@ export function ProfilePhoneChangeDialogs({
       await verifyMockCode(otp, scenario);
       if (otp !== MOCK_VERIFICATION_CODE) throw new Error('رمز التحقق غير صحيح.');
       setVerifiedPhone(pendingPhone);
+      onVerified?.();
       onClose();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'تعذّر التحقق من الرمز.');
@@ -106,10 +151,7 @@ export function ProfilePhoneChangeDialogs({
       statusBarTranslucent
       onRequestClose={close}
     >
-      <KeyboardAvoidingView
-        className="flex-1 items-center justify-center px-5"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardContainer className="flex-1 items-center justify-center px-5" behavior="padding">
         <Pressable
           accessibilityLabel="إغلاق النافذة"
           className="absolute inset-0"
@@ -169,7 +211,7 @@ export function ProfilePhoneChangeDialogs({
             <>
               <AppText align="right" variant="caption" className="text-content-secondary">
                 أدخل رمز التحقق المكوّن من 6 أرقام. بالنسخة التجريبية ما في إرسال SMS حقيقي. رمز
-                التجربة: 123456.
+                التجربة: {MOCK_VERIFICATION_CODE}.
               </AppText>
               <InputOTP
                 maxLength={CODE_LENGTH}
@@ -227,7 +269,7 @@ export function ProfilePhoneChangeDialogs({
           ) : null}
           <Button variant="outline" label="إلغاء" disabled={busy} onPress={close} />
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardContainer>
     </Modal>
   );
 }

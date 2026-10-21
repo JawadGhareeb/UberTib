@@ -1,7 +1,11 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, FieldError, InputOTP, REGEXP_ONLY_DIGITS, Typography } from 'heroui-native';
 import { useEffect, useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView as NativeKeyboardAvoidingView, Platform, View } from 'react-native';
+import {
+  KeyboardAvoidingView as ControllerKeyboardAvoidingView,
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { requestMockVerification, verifyMockCode } from '@/features/auth/mocks/auth.mock';
@@ -16,6 +20,9 @@ import { useAuthSession } from '@/providers/auth-session-provider';
 import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { useMockScenario } from '@/shared/mock';
+
+const KeyboardContainer =
+  Platform.OS === 'android' ? ControllerKeyboardAvoidingView : NativeKeyboardAvoidingView;
 
 export function CodeVerificationScreen() {
   const router = useRouter();
@@ -106,12 +113,9 @@ export function CodeVerificationScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        className="flex-1"
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
+      <KeyboardContainer className="flex-1" style={{ flex: 1 }} behavior="padding">
+        <KeyboardAwareScrollView
+          bottomOffset={72}
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
@@ -259,8 +263,8 @@ export function CodeVerificationScreen() {
               </Typography.Paragraph>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </KeyboardContainer>
     </SafeAreaView>
   );
 }

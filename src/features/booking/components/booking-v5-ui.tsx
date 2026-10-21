@@ -29,7 +29,7 @@ export function BookingHeader({
   const goBack = () => {
     if (onBackPress) return onBackPress();
     if (router.canGoBack()) router.back();
-    else router.replace('/booking');
+    else router.replace({ pathname: '/(tabs)/care', params: { tab: 'bookings' } });
   };
   return (
     <View className="w-full">

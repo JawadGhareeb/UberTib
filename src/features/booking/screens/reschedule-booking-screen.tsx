@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Platform, Pressable, ScrollView, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import {
   BookingCard,
@@ -9,7 +10,14 @@ import {
 } from '@/features/booking/components/booking-v5-ui';
 import { getMockBookingForScenario } from '@/features/booking/mocks/bookings.mock';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
-import { AppText, Button, ConfirmationDialog, Screen, StateView, TextField } from '@/shared/components/ui';
+import {
+  AppText,
+  Button,
+  ConfirmationDialog,
+  Screen,
+  StateView,
+  TextField,
+} from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 import { cn } from '@/shared/utils/cn';
 
@@ -102,7 +110,8 @@ export function RescheduleBookingScreen() {
     <Screen contentClassName="px-0 py-0">
       <BookingHeader subtitle="تعديل الموعد" title="إعادة الجدولة" />
 
-      <ScrollView
+      <KeyboardAwareScrollView
+        bottomOffset={Platform.OS === 'android' ? 16 : 90}
         contentContainerClassName="mx-auto w-full max-w-[390px] px-4 pb-8"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -215,7 +224,7 @@ export function RescheduleBookingScreen() {
           label="إرسال اقتراح الموعد الجديد"
           onPress={() => setConfirmingReschedule(true)}
         />
-      </ScrollView>
+      </KeyboardAwareScrollView>
       <ConfirmationDialog
         visible={confirmingReschedule && !pendingProposal}
         title="إرسال اقتراح الموعد الجديد؟"

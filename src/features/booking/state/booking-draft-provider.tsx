@@ -15,8 +15,6 @@ interface BookingDraftContextValue {
   setNote: (value: string) => void;
   attachment: BookingLocalAttachment | null;
   setAttachment: (value: BookingLocalAttachment | null) => void;
-  shareAttachment: boolean;
-  setShareAttachment: (value: boolean) => void;
   prepareForService: (scope: string) => void;
   clearDraft: () => void;
 }
@@ -27,7 +25,6 @@ export function BookingDraftProvider({ children }: PropsWithChildren) {
   const [reason, setReason] = useState<BookingVisitReason>('new');
   const [note, setNote] = useState('');
   const [attachment, setAttachmentState] = useState<BookingLocalAttachment | null>(null);
-  const [shareAttachment, setShareAttachment] = useState(false);
   const scopeRef = useRef('');
 
   const clearDraft = useCallback(() => {
@@ -35,7 +32,6 @@ export function BookingDraftProvider({ children }: PropsWithChildren) {
     setReason('new');
     setNote('');
     setAttachmentState(null);
-    setShareAttachment(false);
   }, []);
 
   const prepareForService = useCallback((scope: string) => {
@@ -44,24 +40,21 @@ export function BookingDraftProvider({ children }: PropsWithChildren) {
     setReason('new');
     setNote('');
     setAttachmentState(null);
-    setShareAttachment(false);
   }, []);
 
-  const value = useMemo<BookingDraftContextValue>(() => ({
-    reason,
-    setReason,
-    note,
-    setNote,
-    attachment,
-    setAttachment: (next) => {
-      setAttachmentState(next);
-      if (!next) setShareAttachment(false);
-    },
-    shareAttachment,
-    setShareAttachment,
-    prepareForService,
-    clearDraft,
-  }), [reason, note, attachment, shareAttachment, prepareForService, clearDraft]);
+  const value = useMemo<BookingDraftContextValue>(
+    () => ({
+      reason,
+      setReason,
+      note,
+      setNote,
+      attachment,
+      setAttachment: setAttachmentState,
+      prepareForService,
+      clearDraft,
+    }),
+    [reason, note, attachment, prepareForService, clearDraft],
+  );
 
   return <BookingDraftContext.Provider value={value}>{children}</BookingDraftContext.Provider>;
 }

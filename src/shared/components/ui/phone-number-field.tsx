@@ -1,10 +1,7 @@
 import { Input, FieldError, Label, TextField as HeroTextField } from 'heroui-native';
 import { View } from 'react-native';
-import {
-  CountrySelect,
-  phoneCountries,
-  type CountryOption,
-} from '@/shared/components/ui/country-select';
+import { phoneCountries, type CountryOption } from '@/shared/components/ui/country-select';
+import { CountryDialCodeSelect } from '@/shared/components/ui/country-dial-code-select';
 import { AppText } from '@/shared/components/ui/app-text';
 
 interface PhoneNumberFieldProps {
@@ -35,14 +32,11 @@ export function PhoneNumberField({
     <HeroTextField isInvalid={Boolean(error)} isDisabled={disabled} className="w-full gap-2">
       <Label className="self-end font-ui-semibold text-text-primary">رقم الهاتف</Label>
       <View className="flex-row items-center gap-2" style={{ direction: 'ltr' }}>
-        <View className="h-14 justify-center rounded-form-field border border-border-default bg-surface-default px-1">
-          <CountrySelect
-            value={country}
-            onChange={onCountryChange}
-            variant="inline"
-            disabled={disabled}
-          />
-        </View>
+        <CountryDialCodeSelect
+          country={country}
+          onCountryChange={onCountryChange}
+          disabled={disabled}
+        />
         <Input
           accessibilityLabel="رقم الهاتف"
           accessibilityHint="أدخل رقم الهاتف بدون رمز الدولة"

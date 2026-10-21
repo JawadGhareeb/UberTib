@@ -11,10 +11,16 @@ import { cn } from '@/shared/utils/cn';
 export function AssessmentManualReviewScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
-  const { manualReviewDrafted, setManualReviewDrafted } = useAssessmentSession();
+  const { patient, manualReviewDrafted, setManualReviewDrafted } = useAssessmentSession();
   const [confirming, setConfirming] = useState(false);
   const bookDentalCheckup = () =>
-    router.push({ pathname: '/discover/providers/results', params: { serviceCode: 'dental-checkup' } });
+    router.push({
+      pathname: '/discover/providers/results',
+      params: {
+        serviceCode: 'dental-checkup',
+        patientId: patient === 'adam' ? 'patient-002' : 'patient-001',
+      },
+    });
 
   return (
     <AssessmentScaffold
@@ -23,13 +29,22 @@ export function AssessmentManualReviewScreen() {
       title="تحتاج حالتك إلى تقييم أسرع"
       topContent={
         <View className="pt-1">
-          <View className={cn('min-h-[35px] items-center gap-2 rounded-[10px] bg-surface-subtle px-3 py-2', rowClassName)}>
+          <View
+            className={cn(
+              'min-h-[35px] items-center gap-2 rounded-[10px] bg-surface-subtle px-3 py-2',
+              rowClassName,
+            )}
+          >
             <AppIcon
               name={{ ios: 'flask', android: 'science', web: 'science' }}
               size={15}
               tone="secondary"
             />
-            <AppText align="right" className="min-w-0 flex-1 text-content-secondary" variant="caption">
+            <AppText
+              align="right"
+              className="min-w-0 flex-1 text-content-secondary"
+              variant="caption"
+            >
               توجيه أولي للمساعدة في اختيار الخدمة، وليس تشخيصاً طبياً نهائياً
             </AppText>
           </View>
@@ -37,7 +52,12 @@ export function AssessmentManualReviewScreen() {
       }
     >
       <View className="mt-2 min-h-[190px] items-center justify-center rounded-[21px] bg-tone-warning-fill px-3 pb-3 pt-2">
-        <View className={cn('h-[112px] w-[160px] items-center justify-center gap-3 rounded-[30px] bg-surface-default', rowClassName)}>
+        <View
+          className={cn(
+            'h-[112px] w-[160px] items-center justify-center gap-3 rounded-[30px] bg-surface-default',
+            rowClassName,
+          )}
+        >
           <View className="h-[55px] w-[55px] items-center justify-center rounded-[17px] bg-action-subtle">
             <AppIcon
               name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
@@ -47,13 +67,21 @@ export function AssessmentManualReviewScreen() {
           </View>
           <View className="h-[64px] w-[55px] items-center justify-center">
             <AppIcon
-              name={{ ios: 'person.crop.circle.badge.checkmark', android: 'how_to_reg', web: 'how_to_reg' }}
+              name={{
+                ios: 'person.crop.circle.badge.checkmark',
+                android: 'how_to_reg',
+                web: 'how_to_reg',
+              }}
               size={43}
               tone="action"
             />
           </View>
         </View>
-        <AppText align="center" className="mt-3 font-ui-bold text-content-primary" variant="heading-4">
+        <AppText
+          align="center"
+          className="mt-3 font-ui-bold text-content-primary"
+          variant="heading-4"
+        >
           مراجعة بشرية بخطوة واضحة
         </AppText>
         <AppText align="center" className="mt-1 text-content-secondary" variant="caption">
@@ -66,14 +94,24 @@ export function AssessmentManualReviewScreen() {
           ليش توقّف المسار العادي؟
         </AppText>
         <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
-          ظهرت معلومة تحتاج مراجعة بشرية وفق السياسة المعتمدة، قبل إظهار الأطباء. هذا لا يعني تشخيصاً نهائياً.
+          ظهرت معلومة تحتاج مراجعة بشرية وفق السياسة المعتمدة، قبل إظهار الأطباء. هذا لا يعني
+          تشخيصاً نهائياً.
         </AppText>
       </View>
 
-      <View className={cn('mt-2 min-h-[84px] items-center gap-3 rounded-[15px] bg-tone-warning-fill px-3 py-2', rowClassName)}>
+      <View
+        className={cn(
+          'mt-2 min-h-[84px] items-center gap-3 rounded-[15px] bg-tone-warning-fill px-3 py-2',
+          rowClassName,
+        )}
+      >
         <View className="h-[44px] w-[44px] items-center justify-center rounded-[13px] bg-surface-default">
           <AppIcon
-            name={{ ios: 'person.crop.circle.badge.checkmark', android: 'how_to_reg', web: 'how_to_reg' }}
+            name={{
+              ios: 'person.crop.circle.badge.checkmark',
+              android: 'how_to_reg',
+              web: 'how_to_reg',
+            }}
             size={23}
             tone="action"
           />
@@ -82,7 +120,11 @@ export function AssessmentManualReviewScreen() {
           <AppText align="right" className="text-tone-warning-text" variant="caption">
             الإجراء المعتمد الآن
           </AppText>
-          <AppText align="right" className="mt-0.5 font-ui-bold text-content-primary" variant="label">
+          <AppText
+            align="right"
+            className="mt-0.5 font-ui-bold text-content-primary"
+            variant="label"
+          >
             طلب مراجعة سريرية يدوية
           </AppText>
           <AppText align="right" className="mt-0.5 text-content-secondary" variant="caption">
@@ -117,7 +159,11 @@ export function AssessmentManualReviewScreen() {
       />
 
       <View className={cn('mt-2 items-center gap-1.5 px-2', rowClassName)}>
-        <AppIcon name={{ ios: 'shield', android: 'shield', web: 'shield' }} size={14} tone="secondary" />
+        <AppIcon
+          name={{ ios: 'shield', android: 'shield', web: 'shield' }}
+          size={14}
+          tone="secondary"
+        />
         <AppText align="right" className="min-w-0 flex-1 text-content-secondary" variant="caption">
           لا ترتيب أطباء ولا تشخيص نهائي في هذه الحالة
         </AppText>

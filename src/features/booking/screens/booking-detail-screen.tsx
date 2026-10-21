@@ -22,7 +22,7 @@ export function BookingDetailScreen() {
       <Screen>
         <StateView
           actionLabel="العودة للمواعيد"
-          onAction={() => router.replace('/booking')}
+          onAction={() => router.replace({ pathname: '/(tabs)/care', params: { tab: 'bookings' } })}
           title="الحجز غير موجود"
         />
       </Screen>
@@ -34,7 +34,8 @@ export function BookingDetailScreen() {
       ? booking.actionDeadlineLabel
       : undefined;
   const isConfirmed = booking.status === 'confirmed';
-  const isClosed = booking.status === 'completed' || booking.status === 'cancelled';
+  const isCancelled = booking.status === 'cancelled';
+  const isClosed = booking.status === 'completed' || isCancelled;
   const isSessionRequest = bookingRequests.some((request) => request.id === booking.id);
   const hasAlternative =
     booking.id === 'booking-001' &&
@@ -219,15 +220,17 @@ export function BookingDetailScreen() {
       <View className="absolute bottom-0 left-0 right-0 bg-surface-canvas px-4 pb-2 pt-2">
         <View className="mx-auto w-full max-w-[430px] gap-2">
           <Button
-            label={
-              isConfirmed ? 'عرض تأكيد الحجز' : isClosed ? 'عرض حالة الحجز' : 'متابعة حالة الطلب'
-            }
-            onPress={() =>
-              router.push({
-                pathname: '/booking/[bookingId]/status',
-                params: { bookingId: booking.id },
-              })
-            }
+            label={isConfirmed || isClosed ? 'العودة إلى حجوزاتي' : 'متابعة حالة الطلب'}
+            onPress={() => {
+              if (isConfirmed || isClosed) {
+                router.replace({ pathname: '/(tabs)/care', params: { tab: 'bookings' } });
+              } else {
+                router.push({
+                  pathname: '/booking/[bookingId]/status',
+                  params: { bookingId: booking.id },
+                });
+              }
+            }}
           />
         </View>
       </View>

@@ -54,6 +54,7 @@ const emptySelection: DiscoveryFilterSelection = {
 
 type ProviderResultParams = {
   serviceCode?: string;
+  patientId?: string;
   area?: string;
   areas?: string;
   minPrice?: string;
@@ -196,10 +197,7 @@ function ProviderResultsContent({
 
         <View className="flex-row-reverse items-center justify-between gap-2">
           <AppText align="right" variant="heading-4" className="font-ui-bold">
-            نتائج الأطباء
-          </AppText>
-          <AppText variant="caption" className="text-content-secondary">
-            {doctors.length} {doctors.length === 1 ? 'طبيب' : 'أطباء'}
+            النتائج ({doctors.length})
           </AppText>
         </View>
 
@@ -210,6 +208,7 @@ function ProviderResultsContent({
                 key={doctor.id}
                 doctor={doctor}
                 serviceCode={serviceCode}
+                patientId={params.patientId}
                 selected={selection.includes(doctor.id)}
                 disabled={maxReached && !selection.includes(doctor.id)}
                 onToggle={() => toggleComparisonProvider(serviceCode, doctor.id)}
@@ -240,7 +239,11 @@ function ProviderResultsContent({
           onCompare={() =>
             router.push({
               pathname: '/discover/providers/compare',
-              params: { providerIds: selection.join(','), serviceCode },
+              params: {
+                providerIds: selection.join(','),
+                serviceCode,
+                ...(params.patientId ? { patientId: params.patientId } : {}),
+              },
             })
           }
         />

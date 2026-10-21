@@ -64,8 +64,17 @@ export function SectionTabs<T extends string>({
                 {item.label}
               </Tabs.Label>
               {item.count ? (
-                <View className="min-w-[20px] items-center justify-center rounded-full bg-action-subtle px-1">
-                  <AppText variant="caption" className="text-content-link">
+                <View
+                  className={`min-w-[20px] items-center justify-center rounded-full px-1 ${solidActive && value === item.value ? 'bg-action-primary' : 'bg-action-subtle'}`}
+                >
+                  <AppText
+                    variant="caption"
+                    className={
+                      solidActive && value === item.value
+                        ? 'text-content-on-action'
+                        : 'text-content-link'
+                    }
+                  >
                     {item.count}
                   </AppText>
                 </View>

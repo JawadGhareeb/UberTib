@@ -151,7 +151,7 @@ const journeyTransitions = {
   ],
   '04 الحجز': [
     ['src/features/booking/screens/slot-selection-screen.tsx', '/booking/patient'],
-    ['src/features/booking/screens/booking-patient-selection-screen.tsx', '/booking/reason'],
+    ['src/features/booking/screens/booking-patient-selection-screen.tsx', '/booking/review'],
     ['src/features/booking/screens/booking-visit-reason-screen.tsx', '/booking/review'],
     ['src/features/booking/screens/booking-review-screen.tsx', '/booking'],
     ['src/features/booking/screens/my-bookings-screen.tsx', '/booking/[bookingId]'],

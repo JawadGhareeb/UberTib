@@ -12,12 +12,14 @@ type Doctor = ReturnType<typeof getPenDoctorsForService>[number];
 export function DiscoverDoctorResultCard({
   doctor,
   serviceCode,
+  patientId,
   selected,
   disabled,
   onToggle,
 }: {
   doctor: Doctor;
   serviceCode: string;
+  patientId?: string;
   selected: boolean;
   disabled: boolean;
   onToggle: () => void;
@@ -117,7 +119,7 @@ export function DiscoverDoctorResultCard({
           onPress={() =>
             router.push({
               pathname: '/discover/provider/[providerId]',
-              params: { providerId: doctor.id, serviceCode },
+              params: { providerId: doctor.id, serviceCode, ...(patientId ? { patientId } : {}) },
             })
           }
         >

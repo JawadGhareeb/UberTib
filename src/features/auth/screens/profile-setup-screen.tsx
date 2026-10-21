@@ -10,7 +10,16 @@ import {
   Typography,
 } from 'heroui-native';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import {
+  KeyboardAvoidingView as NativeKeyboardAvoidingView,
+  Platform,
+  Pressable,
+  View,
+} from 'react-native';
+import {
+  KeyboardAvoidingView as ControllerKeyboardAvoidingView,
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandedDateField } from '@/features/auth/components/branded-date-field';
@@ -23,6 +32,9 @@ import { usePreferredLocation } from '@/features/location/state/preferred-locati
 import { BrandMark } from '@/shared/components/brand/brand-mark';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
+
+const KeyboardContainer =
+  Platform.OS === 'android' ? ControllerKeyboardAvoidingView : NativeKeyboardAvoidingView;
 
 export function ProfileSetupScreen() {
   const router = useRouter();
@@ -58,12 +70,9 @@ export function ProfileSetupScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        className="flex-1"
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
+      <KeyboardContainer className="flex-1" style={{ flex: 1 }} behavior="padding">
+        <KeyboardAwareScrollView
+          bottomOffset={72}
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
@@ -300,8 +309,8 @@ export function ProfileSetupScreen() {
               </Typography.Paragraph>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </KeyboardContainer>
     </SafeAreaView>
   );
 }

@@ -73,9 +73,14 @@ function ProfileSectionTitle({
 
 export function ProviderDecisionScreen() {
   const router = useRouter();
-  const { providerId = 'provider-layan', serviceCode = 'root-canal' } = useLocalSearchParams<{
+  const {
+    providerId = 'provider-layan',
+    serviceCode = 'root-canal',
+    patientId,
+  } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
+    patientId?: string;
   }>();
   const doctor = getPenDoctorsForService(serviceCode).find((item) => item.id === providerId);
   const provider = getMockProvider(providerId);
@@ -108,12 +113,17 @@ export function ProviderDecisionScreen() {
   const openBranch = () =>
     router.push({
       pathname: '/discover/provider/[providerId]/branch',
-      params: { providerId: doctor.id, serviceCode, fromProfile: '1' },
+      params: {
+        providerId: doctor.id,
+        serviceCode,
+        fromProfile: '1',
+        ...(patientId ? { patientId } : {}),
+      },
     });
   const book = () =>
     router.push({
       pathname: '/booking/slots',
-      params: { providerId: doctor.id, serviceCode },
+      params: { providerId: doctor.id, serviceCode, ...(patientId ? { patientId } : {}) },
     });
 
   return (

@@ -1,55 +1,97 @@
+import * as DocumentPicker from 'expo-document-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, Switch, View } from 'react-native';
+import { Accordion, Radio, RadioGroup } from 'heroui-native';
+import { useEffect, useState } from 'react';
+import { Platform, Pressable, Switch, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
-import { useBookingDraft } from '@/features/booking/state/booking-draft-provider';
+import { AssessmentImagePreview } from '@/features/assessment/components/assessment-image-preview';
+import { buildReturnTo } from '@/features/auth/navigation/auth-intent';
+import { BookingJourneyProgress } from '@/features/booking/components/booking-journey-progress';
 import {
   BookingCard,
   BookingHeader,
   BookingProviderMiniCard,
   BookingStatusBanner,
 } from '@/features/booking/components/booking-v5-ui';
-import { buildReturnTo } from '@/features/auth/navigation/auth-intent';
+import {
+  useBookingDraft,
+  type BookingVisitReason,
+} from '@/features/booking/state/booking-draft-provider';
+import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
 import {
   getMockProvider,
   getMockProviderPriceLabel,
 } from '@/features/discovery/mocks/providers.mock';
-import { useAuthSession } from '@/providers/auth-session-provider';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
-import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
+import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
+import { useAuthSession } from '@/providers/auth-session-provider';
+import { AppIcon, AppText, Button, Screen, StateView, TextField } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
-import { useAppDirection } from '@/providers/app-direction-provider';
-import { cn } from '@/shared/utils/cn';
-import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
+
+const visitReasons: { value: BookingVisitReason; label: string }[] = [
+  { value: 'new', label: 'زيارة أولى' },
+  { value: 'followup', label: 'متابعة علاج' },
+  { value: 'other', label: 'استشارة أخرى' },
+];
+
+function canPreviewImage(file: { mimeType?: string; fileName: string }) {
+  return (
+    file.mimeType?.startsWith('image/') === true ||
+    /\.(jpe?g|png|webp|heic|heif)$/i.test(file.fileName)
+  );
+}
 
 export function BookingReviewScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthSession();
   const { scenario, submitBookingRequest } = useMockScenario();
   const { members } = useFamilyMembers();
-  const { note, attachment, shareAttachment, clearDraft } = useBookingDraft();
-  const { providerId, serviceCode, dateKey, dateLabel, timeLabel, patientId, reason } =
-    useLocalSearchParams<{
-      providerId?: string;
-      serviceCode?: string;
-      dateKey?: string;
-      dateLabel?: string;
-      timeLabel?: string;
-      patientId?: string;
-      reason?: string;
-    }>();
+  const {
+    reason,
+    setReason,
+    note,
+    setNote,
+    attachment,
+    setAttachment,
+    prepareForService,
+    clearDraft,
+  } = useBookingDraft();
+  const {
+    providerId,
+    serviceCode,
+    dateKey,
+    dateLabel,
+    timeLabel,
+    patientId,
+    reason: legacyReason,
+  } = useLocalSearchParams<{
+    providerId?: string;
+    serviceCode?: string;
+    dateKey?: string;
+    dateLabel?: string;
+    timeLabel?: string;
+    patientId?: string;
+    reason?: string;
+  }>();
   const [submitted, setSubmitted] = useState(false);
   const [shareVisitSummary, setShareVisitSummary] = useState(true);
+  const [reasonSelection, setReasonSelection] = useState<BookingVisitReason | null>(null);
+  const [selectingFile, setSelectingFile] = useState(false);
+  const [attachmentError, setAttachmentError] = useState('');
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
   const { colors } = useAppTheme();
-  const { rowClassName } = useAppDirection();
   const [revalidationFailure, setRevalidationFailure] = useState<
     'slot' | 'eligibility' | 'branch' | 'service'
   >();
 
+  useEffect(() => {
+    if (providerId && serviceCode) prepareForService(providerId + ':' + serviceCode);
+  }, [providerId, serviceCode, prepareForService]);
+
   const provider = getMockProvider(providerId);
-  const chosenPatient = members.find((p) => p.id === patientId);
+  const chosenPatient = members.find((person) => person.id === patientId);
   const patientCanBook = canBookForPatient(patientId, scenario);
   const slotStillInSnapshot = Boolean(
     provider?.availability.some(
@@ -59,11 +101,45 @@ export function BookingReviewScreen() {
         day.slots.includes(timeLabel ?? ''),
     ),
   );
-  const visitReason =
-    reason === 'followup' ? 'متابعة علاج' : reason === 'other' ? 'سبب آخر' : 'زيارة أولى';
+  const activeReason: BookingVisitReason =
+    reasonSelection ??
+    (legacyReason === 'followup' || legacyReason === 'other' || legacyReason === 'new'
+      ? legacyReason
+      : reason);
+  const visitReasonLabel =
+    visitReasons.find((item) => item.value === activeReason)?.label ?? 'زيارة أولى';
   const serviceName =
     penServiceGroups.flatMap((group) => group.families).find((family) => family.id === serviceCode)
       ?.title ?? 'الخدمة المختارة';
+
+  const pickAttachment = async () => {
+    if (selectingFile) return;
+    setSelectingFile(true);
+    setAttachmentError('');
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['image/*', 'application/pdf'],
+        multiple: false,
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled || !result.assets[0]) return;
+      const file = result.assets[0];
+      if (!file.uri) return;
+      if (file.size && file.size > 25 * 1024 * 1024) {
+        setAttachmentError('حجم الملف أكبر من 25 ميغابايت.');
+        return;
+      }
+      setAttachment({
+        uri: file.uri,
+        fileName: file.name || 'مرفق محلي',
+        mimeType: file.mimeType,
+      });
+    } catch {
+      setAttachmentError('تعذّر اختيار الملف من الجهاز. حاول مرة ثانية.');
+    } finally {
+      setSelectingFile(false);
+    }
+  };
 
   if (
     !provider ||
@@ -86,8 +162,7 @@ export function BookingReviewScreen() {
   }
 
   const submitBooking = () => {
-    // Client-side demo guard; server authority must revalidate the grant at submission.
-    if (!patientCanBook || !slotStillInSnapshot) return;
+    if (!patientCanBook || !slotStillInSnapshot || submitted) return;
     if (!isAuthenticated) {
       const returnTo = buildReturnTo('/booking/review', {
         providerId,
@@ -96,7 +171,7 @@ export function BookingReviewScreen() {
         dateLabel,
         timeLabel,
         patientId,
-        reason,
+        reason: activeReason,
       });
       router.push({ pathname: '/auth/phone', params: { returnTo } });
       return;
@@ -114,16 +189,19 @@ export function BookingReviewScreen() {
       setRevalidationFailure('branch');
       return;
     }
-    if (scenario.flags?.bookingRevalidationServiceUnpublished) {
+    if (
+      scenario.flags?.bookingRevalidationServiceUnpublished ||
+      !provider.serviceCodes.includes(serviceCode ?? '')
+    ) {
       setRevalidationFailure('service');
       return;
     }
 
-    if (!provider.serviceCodes.includes(serviceCode ?? '')) {
-      setRevalidationFailure('service');
-      return;
-    }
-
+    // Only text selected for visit-summary sharing is sent by the mock.
+    // Local files are NEVER uploaded; the request must explicitly say photos: false.
+    const summaryText = shareVisitSummary
+      ? [visitReasonLabel, note.trim()].filter(Boolean).join(' · ')
+      : undefined;
     submitBookingRequest({
       providerId: provider.id,
       providerName: provider.name,
@@ -131,14 +209,14 @@ export function BookingReviewScreen() {
       serviceName,
       branch: provider.branch,
       patientName: chosenPatient.name,
-      patientNote: note.trim() || undefined,
+      patientNote: summaryText || undefined,
       dateLabel,
       timeLabel,
       priceLabel: getMockProviderPriceLabel(provider, serviceCode),
       sharingConsent: {
         visitSummary: shareVisitSummary,
-        photos: false, // No uploaded photos attached to this flow.
-        medicalHistory: false, // No medical history is present in this flow.
+        photos: false,
+        medicalHistory: false,
       },
     });
     clearDraft();
@@ -158,52 +236,40 @@ export function BookingReviewScreen() {
                 tone="warning"
               />
             </View>
-            <AppText className="mt-4 font-ui-bold text-type-heading-2">طلبك قيد التأكيد</AppText>
+            <AppText align="center" variant="heading-3" className="mt-4 font-ui-bold">
+              طلبك قيد التأكيد
+            </AppText>
             <AppText
               align="center"
-              className="mt-2 max-w-[300px] text-type-label  text-content-secondary"
               variant="caption"
+              className="mt-2 max-w-[300px] text-content-secondary"
             >
-              حفظنا طلبك التجريبي ضمن حجوزاتي بحالة «قيد التأكيد». ما بصير الموعد مؤكداً قبل رد
-              العيادة.
+              حفظنا طلبك التجريبي ضمن حجوزاتي. الموعد ما بيصير مؤكداً قبل رد العيادة.
             </AppText>
           </View>
-
-          <BookingCard className="mt-5 p-3">
-            <View className="flex-row items-center gap-3">
-              <View className="min-w-0 flex-1 items-end">
-                <AppText className="font-ui-bold text-type-label">{provider.name}</AppText>
-                <AppText
-                  className="mt-0.5 text-type-caption text-content-secondary"
-                  variant="caption"
-                >
-                  {provider.branch}
-                </AppText>
-                <AppText
-                  direction="ltr"
-                  className="mt-1 text-type-label text-content-link"
-                  variant="label"
-                >
-                  {dateLabel} · {timeLabel}
-                </AppText>
-              </View>
-              <View className="h-12 w-12 items-center justify-center rounded-full bg-action-subtle">
-                <AppIcon
-                  name={{ ios: 'person.fill', android: 'person', web: 'person' }}
-                  size={22}
-                  tone="action"
-                />
-              </View>
-            </View>
+          <BookingCard className="mt-5 gap-1 p-3">
+            <AppText align="right" variant="label" className="font-ui-bold">
+              {provider.name}
+            </AppText>
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              {provider.branch} · {serviceName}
+            </AppText>
+            <AppText align="right" variant="label" className="text-content-link">
+              {dateLabel} · {timeLabel}
+            </AppText>
           </BookingCard>
-
           <BookingStatusBanner
-            body="لا تعيد إرسال نفس الطلب. رح تتحدث الحالة تلقائياً أول ما توصل نتيجة مؤكدة."
+            body="لا تعيد إرسال نفس الطلب. حالة الطلب رح تتحدث بعد وصول قرار العيادة."
             title="شو بصير هلق؟"
             tone="warning"
           />
-
-          <Button className="mt-5" label="عرض مواعيدي" onPress={() => router.replace('/booking')} />
+          <Button
+            className="mt-5"
+            label="عرض مواعيدي"
+            onPress={() =>
+              router.replace({ pathname: '/(tabs)/care', params: { tab: 'bookings' } })
+            }
+          />
         </View>
       </Screen>
     );
@@ -234,179 +300,267 @@ export function BookingReviewScreen() {
       }[revalidationFailure]
     : undefined;
 
+  const imagePreview =
+    attachment && canPreviewImage(attachment)
+      ? [{ uri: attachment.uri, fileName: attachment.fileName }]
+      : [];
+
   return (
     <Screen contentClassName="px-0 py-0">
-      <BookingHeader leadingIcon="review" title="مراجعة الطلب" />
-      <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-[104px] pt-1"
+      <BookingHeader title="مراجعة الحجز" />
+      <KeyboardAwareScrollView
+        bottomOffset={Platform.OS === 'android' ? 16 : 90}
+        contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <AppText align="right" className="font-ui-bold text-content-primary" variant="heading-4">
-          راجع ما سيصل إلى الطبيب
-        </AppText>
-
-        <View className="mt-2 rounded-[14px] border border-tone-info-border/40 bg-tone-info-fill p-3">
-          <View className={cn('items-center gap-2', rowClassName)}>
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-surface-default">
-              <AppIcon
-                name={{ ios: 'paperplane', android: 'send', web: 'send' }}
-                size={20}
-                tone="action"
-              />
-            </View>
-            <View className="min-w-0 flex-1 items-end">
-              <AppText align="right" className="font-ui-bold text-content-link" variant="label">
-                الملخص الذي يمكن مشاركته مع الطبيب
-              </AppText>
-              <AppText align="right" className="mt-0.5 text-content-secondary" variant="caption">
-                {serviceName} · {visitReason} · {provider.name}
-              </AppText>
-            </View>
-            <View className="rounded-full bg-surface-default px-2 py-1">
-              <AppText className="text-content-link" variant="badge">
-                قابل للمشاركة
-              </AppText>
-            </View>
-          </View>
-          <AppText align="right" className="mt-1.5 text-content-secondary" variant="caption">
-            هاي معلومات الزيارة اللي اخترتها؛ ما منضيف تشخيص أو معلومات طبية مو موجودة عندك.
+        <BookingJourneyProgress step={3} />
+        <View className="gap-1">
+          <AppText align="right" variant="heading-4" className="font-ui-bold">
+            راجع تفاصيل حجزك
+          </AppText>
+          <AppText align="right" variant="caption" className="text-content-secondary">
+            شيّك الموعد والمريض، وأضف معلومات للطبيب فقط إذا بتحب.
           </AppText>
         </View>
-
-        {note.trim() ? (
-          <View className="mt-2 rounded-[12px] border border-border-subtle bg-surface-default p-3">
-            <AppText
-              align="right"
-              className="font-ui-semibold text-content-primary"
-              variant="label"
-            >
-              ملاحظتك للطبيب
-            </AppText>
-            <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
-              {note.trim()}
-            </AppText>
-          </View>
-        ) : null}
-        {attachment ? (
-          <View className="mt-2 rounded-[12px] bg-tone-info-fill p-3">
-            <AppText align="right" className="font-ui-semibold text-tone-info-text" variant="label">
-              الصورة المحددة محلياً
-            </AppText>
-            <AppText align="right" className="mt-1 text-tone-info-text" variant="caption">
-              {attachment.fileName} ·{' '}
-              {shareAttachment ? 'محددة للمشاركة عند إتاحة رفع الملفات' : 'غير محددة للمشاركة'}
-            </AppText>
-            <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
-              لن تُرسل الصورة ضمن الطلب التجريبي الحالي.
-            </AppText>
-          </View>
-        ) : null}
-
-        <AppText
-          align="right"
-          className="mt-3 font-ui-semibold text-content-primary"
-          variant="label"
-        >
-          تحكّم واضح بالمشاركة
-        </AppText>
-        <View className="mt-2 gap-[7px]">
-          {[
-            {
-              id: 'summary',
-              label: 'ملخص سبب الزيارة',
-              description: 'الخدمة والسبب اللي اخترتهن للحجز',
-              checked: shareVisitSummary,
-              disabled: false,
-            },
-            {
-              id: 'photos',
-              label: 'الصور المحددة',
-              description: 'ما في صور مرفقة بهالطلب حالياً',
-              checked: false,
-              disabled: true,
-            },
-            {
-              id: 'history',
-              label: 'سياق صحي ذو صلة',
-              description: 'ما في معلومات صحية محفوظة قابلة للمشاركة حالياً',
-              checked: false,
-              disabled: true,
-            },
-          ].map((item) => (
-            <View
-              className={cn(
-                'min-h-[63px] items-center gap-2 rounded-[12px] border border-border-subtle bg-surface-default px-3 py-2',
-                rowClassName,
-              )}
-              key={item.id}
-            >
-              <View className="min-w-0 flex-1 items-end">
-                <AppText
-                  align="right"
-                  className="font-ui-semibold text-content-primary"
-                  variant="label"
-                >
-                  {item.label}
-                </AppText>
-                <AppText
-                  align="right"
-                  className="mt-0.5 text-content-secondary"
-                  numberOfLines={2}
-                  variant="caption"
-                >
-                  {item.description}
-                </AppText>
-              </View>
-              <Switch
-                accessibilityLabel={item.label}
-                accessibilityRole="switch"
-                disabled={item.disabled}
-                onValueChange={item.id === 'summary' ? setShareVisitSummary : undefined}
-                thumbColor={colors.surface.default}
-                trackColor={{ false: colors.border.strong, true: colors.action.primary }}
-                value={item.checked}
-              />
-            </View>
-          ))}
-        </View>
-
-        <View className="mt-2">
+        <BookingCard className="gap-3 rounded-[14px] p-3">
           <BookingProviderMiniCard
             branch={provider.branch + ' · ' + provider.area}
             portraitUri={provider.imageUrl}
             providerName={provider.name}
             serviceName={serviceName}
           />
-          <View className="rounded-b-[11px] bg-surface-subtle px-3 py-2">
-            <AppText align="right" className="text-content-secondary" variant="caption">
-              {dateLabel} · {timeLabel} · {chosenPatient.name} ·{' '}
-              {getMockProviderPriceLabel(provider, serviceCode)}
+          <View className="gap-2 border-t border-border-subtle pt-3">
+            <View className="flex-row-reverse items-center justify-between gap-2">
+              <AppText align="right" variant="caption" className="text-content-secondary">
+                المريض
+              </AppText>
+              <AppText align="left" variant="label" className="min-w-0 flex-1 font-ui-semibold">
+                {chosenPatient.name}
+              </AppText>
+            </View>
+            <View className="flex-row-reverse items-center justify-between gap-2">
+              <AppText align="right" variant="caption" className="text-content-secondary">
+                الموعد المطلوب
+              </AppText>
+              <AppText align="left" variant="label" className="min-w-0 flex-1 font-ui-semibold">
+                {dateLabel} · {timeLabel}
+              </AppText>
+            </View>
+            <View className="flex-row-reverse items-center justify-between gap-2">
+              <AppText align="right" variant="caption" className="text-content-secondary">
+                السعر المعروض
+              </AppText>
+              <AppText direction="ltr" variant="label" className="font-ui-bold text-content-link">
+                {getMockProviderPriceLabel(provider, serviceCode)}
+              </AppText>
+            </View>
+          </View>
+        </BookingCard>
+
+        <Accordion
+          selectionMode="single"
+          isCollapsible
+          variant="surface"
+          defaultValue={legacyReason || note.trim() || attachment ? 'visit-info' : undefined}
+          className="rounded-[14px] border border-border-subtle bg-surface-default"
+        >
+          <Accordion.Item value="visit-info">
+            <Accordion.Trigger>
+              <View className="flex-row-reverse flex-1 items-center gap-3 py-1">
+                <View className="h-10 w-10 items-center justify-center rounded-[11px] bg-action-subtle">
+                  <AppIcon
+                    name={{ ios: 'text.bubble', android: 'edit_note', web: 'edit_note' }}
+                    tone="action"
+                    size={21}
+                  />
+                </View>
+                <View className="min-w-0 flex-1 items-end gap-1">
+                  <AppText align="right" variant="label" className="font-ui-bold">
+                    معلومات أولية للطبيب (اختياري)
+                  </AppText>
+                  <AppText align="right" variant="caption" className="text-content-secondary">
+                    سبب الزيارة، ملاحظة أو مرفق محفوظ على جهازك
+                  </AppText>
+                </View>
+                <Accordion.Indicator />
+              </View>
+            </Accordion.Trigger>
+            <Accordion.Content>
+              <View className="gap-4 border-t border-border-subtle px-3 pb-3 pt-3">
+                <View className="gap-2">
+                  <AppText align="right" variant="label" className="font-ui-semibold">
+                    سبب الزيارة
+                  </AppText>
+                  <RadioGroup
+                    value={activeReason}
+                    onValueChange={(next) => {
+                      setReason(next as BookingVisitReason);
+                      setReasonSelection(next as BookingVisitReason);
+                    }}
+                    className="gap-2"
+                  >
+                    {visitReasons.map((item) => (
+                      <RadioGroup.Item
+                        key={item.value}
+                        value={item.value}
+                        className={
+                          'min-h-[44px] flex-row-reverse items-center justify-between rounded-[11px] border px-3 py-2 ' +
+                          (activeReason === item.value
+                            ? 'border-action-primary bg-action-subtle'
+                            : 'border-border-subtle bg-surface-default')
+                        }
+                      >
+                        <AppText
+                          align="right"
+                          variant="label"
+                          className="min-w-0 flex-1 font-ui-semibold"
+                        >
+                          {item.label}
+                        </AppText>
+                        <Radio />
+                      </RadioGroup.Item>
+                    ))}
+                  </RadioGroup>
+                </View>
+
+                <TextField
+                  label="ملاحظة للطبيب (اختيارية)"
+                  value={note}
+                  onChangeText={setNote}
+                  placeholder="مثلاً: سبب الموعد أو سؤال بدك تسأله للطبيب"
+                  multiline
+                  maxLength={500}
+                  helperText={`${note.length}/500`}
+                />
+
+                <View className="gap-2">
+                  <AppText align="right" variant="label" className="font-ui-semibold">
+                    مرفق محلي (اختياري)
+                  </AppText>
+                  <Button
+                    label={attachment ? 'تغيير الملف' : 'اختيار صورة أو PDF'}
+                    size="sm"
+                    variant="outline"
+                    loading={selectingFile}
+                    onPress={() => void pickAttachment()}
+                  />
+                  {attachment ? (
+                    <View className="flex-row-reverse items-center gap-2 rounded-[11px] bg-surface-subtle p-2.5">
+                      <AppIcon
+                        name={{
+                          ios: 'doc.text',
+                          android: 'insert_drive_file',
+                          web: 'insert_drive_file',
+                        }}
+                        tone="action"
+                        size={19}
+                      />
+                      <View className="min-w-0 flex-1 items-end gap-0.5">
+                        <AppText
+                          align="right"
+                          variant="label"
+                          numberOfLines={1}
+                          className="w-full font-ui-semibold"
+                        >
+                          {attachment.fileName}
+                        </AppText>
+                        <AppText align="right" variant="caption" className="text-content-secondary">
+                          على جهازك فقط
+                        </AppText>
+                      </View>
+                      {canPreviewImage(attachment) ? (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={'عرض ' + attachment.fileName}
+                          className="h-10 w-10 items-center justify-center rounded-[10px] bg-action-subtle"
+                          onPress={() => setPreviewUri(attachment.uri)}
+                        >
+                          <AppIcon
+                            name={{ ios: 'eye', android: 'visibility', web: 'visibility' }}
+                            size={19}
+                            tone="action"
+                          />
+                        </Pressable>
+                      ) : null}
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={'حذف ' + attachment.fileName}
+                        className="h-10 w-10 items-center justify-center rounded-[10px] bg-surface-default"
+                        onPress={() => {
+                          setPreviewUri(null);
+                          setAttachment(null);
+                        }}
+                      >
+                        <AppIcon
+                          name={{ ios: 'trash', android: 'delete_outline', web: 'delete_outline' }}
+                          size={19}
+                          tone="danger"
+                        />
+                      </Pressable>
+                    </View>
+                  ) : null}
+                  {attachmentError ? (
+                    <AppText align="right" variant="caption" className="text-tone-danger-text">
+                      {attachmentError}
+                    </AppText>
+                  ) : null}
+                  <View className="flex-row-reverse items-start gap-2 rounded-[10px] bg-tone-info-fill p-2.5">
+                    <AppIcon
+                      name={{ ios: 'info.circle', android: 'info_outline', web: 'info_outline' }}
+                      tone="info"
+                      size={17}
+                    />
+                    <AppText
+                      align="right"
+                      variant="caption"
+                      className="min-w-0 flex-1 text-tone-info-text"
+                    >
+                      الصورة أو PDF للمعاينة المحلية فقط، ولا تُرفع أو تُرسل للطبيب ضمن نسخة Mock.
+                    </AppText>
+                  </View>
+                </View>
+              </View>
+            </Accordion.Content>
+          </Accordion.Item>
+        </Accordion>
+
+        <View className="flex-row-reverse items-center gap-3 rounded-[12px] bg-surface-subtle p-3">
+          <View className="min-w-0 flex-1 items-end gap-1">
+            <AppText align="right" variant="label" className="font-ui-semibold">
+              مشاركة سبب الزيارة والملاحظة
+            </AppText>
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              عند التفعيل، تُدرج المعلومات النصية ضمن طلب الحجز. لا يشمل الصور أو السجل الصحي.
             </AppText>
           </View>
+          <Switch
+            accessibilityLabel="مشاركة سبب الزيارة والملاحظة"
+            accessibilityRole="switch"
+            value={shareVisitSummary}
+            onValueChange={setShareVisitSummary}
+            thumbColor={colors.surface.default}
+            trackColor={{ false: colors.border.strong, true: colors.action.primary }}
+          />
         </View>
-
-        <View
-          className={cn(
-            'mt-2 items-center gap-2 rounded-[10px] bg-tone-info-fill px-3 py-2',
-            rowClassName,
-          )}
-        >
+        <View className="flex-row-reverse items-start gap-2 rounded-[11px] bg-tone-info-fill p-3">
           <AppIcon
             name={{ ios: 'shield.lefthalf.filled', android: 'verified_user', web: 'verified_user' }}
+            size={18}
             tone="info"
-            size={16}
           />
-          <AppText align="right" className="min-w-0 flex-1 text-tone-info-text" variant="caption">
-            بتقدر تختار شو ينشارك قبل إرسال الطلب. الصور والسجل الصحي غير مرفقين حالياً.
+          <AppText align="right" variant="caption" className="min-w-0 flex-1 text-tone-info-text">
+            إرسال الطلب لا يؤكد الموعد. اسم المريض والخدمة والوقت يذهبون ضمن طلب الحجز، وما في رفع
+            للملفات الطبية بهالنسخة.
           </AppText>
         </View>
 
         {failureCopy ? (
-          <View className="mt-3">
+          <View className="gap-2">
             <BookingStatusBanner body={failureCopy.body} title={failureCopy.title} tone="warning" />
-            <Pressable
-              accessibilityRole="button"
-              className="mt-2 min-h-[44px] items-center justify-center rounded-[11px] border border-action-primary bg-surface-default"
+            <Button
+              label={failureCopy.action}
+              variant="outline"
               onPress={() => {
                 if (revalidationFailure === 'slot') {
                   router.replace({
@@ -422,19 +576,14 @@ export function BookingReviewScreen() {
                   });
                 }
               }}
-            >
-              <AppText className="text-content-link" variant="label">
-                {failureCopy.action}
-              </AppText>
-            </Pressable>
+            />
           </View>
         ) : null}
-      </ScrollView>
-
-      <View className="absolute bottom-0 left-0 right-0 bg-surface-canvas px-4 pb-4 pt-2">
-        <View className="mx-auto w-full max-w-[398px]">
+      </KeyboardAwareScrollView>
+      <View className="border-t border-border-subtle bg-surface-canvas px-4 pb-3 pt-3">
+        <View className="mx-auto w-full max-w-[430px]">
           <Button
-            className="h-[50px] rounded-[12px]"
+            className="min-h-[52px] rounded-[12px]"
             disabled={Boolean(revalidationFailure)}
             endIcon={{ ios: 'paperplane.fill', android: 'send', web: 'send' }}
             label="إرسال طلب الحجز"
@@ -442,6 +591,12 @@ export function BookingReviewScreen() {
           />
         </View>
       </View>
+      <AssessmentImagePreview
+        images={imagePreview}
+        activeUri={previewUri}
+        onChange={setPreviewUri}
+        onClose={() => setPreviewUri(null)}
+      />
     </Screen>
   );
 }

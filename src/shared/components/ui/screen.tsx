@@ -1,5 +1,6 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import { KeyboardAvoidingView as NativeKeyboardAvoidingView, Platform, View } from 'react-native';
+import { KeyboardAvoidingView as ControlledKeyboardAvoidingView } from 'react-native-keyboard-controller';
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useResolveClassNames } from 'uniwind';
@@ -25,6 +26,8 @@ export function Screen({
   keyboardAvoiding = true,
 }: ScreenProps) {
   const insets = useSafeAreaInsets();
+  const KeyboardContainer =
+    Platform.OS === 'android' ? ControlledKeyboardAvoidingView : NativeKeyboardAvoidingView;
   // SafeAreaView is from a third-party library: resolve the semantic Tailwind
   // background into a native style as well, so it updates reliably in Dark.
   const canvasStyle = useResolveClassNames('bg-surface-canvas');
@@ -43,11 +46,7 @@ export function Screen({
           {header}
         </View>
       ) : null}
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        enabled={keyboardAvoiding && Platform.OS === 'ios'}
-      >
+      <KeyboardContainer style={{ flex: 1 }} behavior="padding" enabled={keyboardAvoiding}>
         <Animated.View
           className={resolvedContentClassName}
           style={{ flex: 1 }}
@@ -62,7 +61,7 @@ export function Screen({
           ) : null}
           {children}
         </Animated.View>
-      </KeyboardAvoidingView>
+      </KeyboardContainer>
     </SafeAreaView>
   );
 }

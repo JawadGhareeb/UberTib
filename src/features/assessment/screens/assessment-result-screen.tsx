@@ -7,7 +7,7 @@ import { AppIcon, AppText } from '@/shared/components/ui';
 
 export function AssessmentResultScreen() {
   const router = useRouter();
-  const { complaint, answers, location, mediaAttachments } = useAssessmentSession();
+  const { patient, complaint, answers, location, mediaAttachments } = useAssessmentSession();
 
   return (
     <AssessmentScaffold
@@ -17,7 +17,10 @@ export function AssessmentResultScreen() {
       onPrimary={() =>
         router.push({
           pathname: '/discover/providers/results',
-          params: { serviceCode: 'dental-checkup' },
+          params: {
+            serviceCode: 'dental-checkup',
+            patientId: patient === 'adam' ? 'patient-002' : 'patient-001',
+          },
         })
       }
       topContent={

@@ -3,6 +3,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 
+import { BookingJourneyProgress } from '@/features/booking/components/booking-journey-progress';
+import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
+import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
+import { useMockScenario } from '@/shared/mock';
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
 import { ProviderPortrait } from '@/features/discovery/components/provider-photo-gallery';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
@@ -26,9 +30,12 @@ function monthName(key: string) {
 export function SlotSelectionScreen() {
   const router = useRouter();
   const { isRTL } = useAppDirection();
-  const { providerId, serviceCode } = useLocalSearchParams<{
+  const { scenario } = useMockScenario();
+  const { members } = useFamilyMembers();
+  const { providerId, serviceCode, patientId } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
+    patientId?: string;
   }>();
   const provider = getMockProvider(providerId);
   const [dateKey, setDateKey] = useState(provider?.availability[0]?.dateKey ?? '');
@@ -70,13 +77,14 @@ export function SlotSelectionScreen() {
         contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
         showsVerticalScrollIndicator={false}
       >
+        <BookingJourneyProgress step={1} />
         <View className="flex-row-reverse items-center justify-between gap-3">
           <View className="min-w-0 flex-1 items-end gap-1">
             <AppText align="right" variant="heading-3" className="font-ui-bold">
               اختَر اليوم والوقت
             </AppText>
             <AppText align="right" variant="caption" className="text-content-secondary">
-              الخطوة 1/3 · بعدها بتختار المريض وتراجع الحجز
+              حدد الوقت الأنسب إلك. العيادة بتؤكد الموعد بعد إرسال الطلب.
             </AppText>
           </View>
           <View className="h-11 w-11 items-center justify-center rounded-[12px] bg-action-subtle">
@@ -239,17 +247,29 @@ export function SlotSelectionScreen() {
             className="min-h-[52px] rounded-[12px]"
             disabled={!slot || !selectedDay}
             endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
-            label="متابعة لتحديد المريض"
+            label={
+              patientId &&
+              canBookForPatient(patientId, scenario) &&
+              members.some((member) => member.id === patientId)
+                ? 'متابعة لمراجعة الحجز'
+                : 'متابعة لتحديد المريض'
+            }
             onPress={() => {
               if (!selectedDay || !slot) return;
               router.push({
-                pathname: '/booking/patient',
+                pathname:
+                  patientId &&
+                  canBookForPatient(patientId, scenario) &&
+                  members.some((member) => member.id === patientId)
+                    ? '/booking/review'
+                    : '/booking/patient',
                 params: {
                   dateKey: selectedDay.dateKey,
                   dateLabel: selectedDay.dateLabel,
                   providerId: provider.id,
                   serviceCode: serviceCode ?? '',
                   timeLabel: slot,
+                  ...(patientId ? { patientId } : {}),
                 },
               });
             }}

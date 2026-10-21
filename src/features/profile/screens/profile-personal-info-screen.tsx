@@ -8,8 +8,18 @@ import { useAccountDetails } from '@/features/profile/state/account-details-prov
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { useProfilePhoto } from '@/features/profile/state/profile-photo-provider';
 import { EditableProfileAvatar } from '@/shared/components/media/editable-profile-avatar';
+import { ProfilePhoneChangeDialogs } from '@/features/profile/components/profile-phone-change-dialogs';
+import { phoneCountries } from '@/shared/components/ui/country-select';
+import { normalizeDigits } from '@/features/auth/utils/phone-input';
 import type { SelectedMediaFile } from '@/shared/components/media/media-picker';
-import { AppIcon, AppText, Button, TextField } from '@/shared/components/ui';
+import {
+  AppIcon,
+  AppText,
+  Button,
+  PhoneNumberField,
+  TextField,
+  toE164,
+} from '@/shared/components/ui';
 
 function DetailRow({
   title,
@@ -45,15 +55,48 @@ export function ProfilePersonalInfoScreen() {
   const [editing, setEditing] = useState(false);
   const [draftName, setDraftName] = useState(name);
   const [draftPhoto, setDraftPhoto] = useState<SelectedMediaFile | null>(photo);
+  const currentCountry =
+    phoneCountries.find((item) => phone.startsWith(item.dialCode)) ?? phoneCountries[0]!;
+  const [draftCountry, setDraftCountry] = useState(currentCountry);
+  const [draftNational, setDraftNational] = useState(
+    normalizeDigits(phone.slice(currentCountry.dialCode.length)),
+  );
+  const [pendingVerificationPhone, setPendingVerificationPhone] = useState<string | null>(null);
+  const newPhone = toE164(draftCountry, draftNational);
+  const phoneChanged = newPhone !== phone.replace(/\s/g, '');
+  const validPhone =
+    /^\+[1-9]\d{7,14}$/.test(newPhone) &&
+    (draftCountry.iso !== 'SY' || /^9\d{8}$/.test(normalizeDigits(draftNational)));
+  const nameValid = draftName.trim().length >= 2 && draftName.trim().length <= 100;
   const canSave =
-    draftName.trim().length >= 2 &&
-    draftName.trim().length <= 100 &&
-    (draftName.trim() !== name || draftPhoto?.uri !== photo?.uri);
+    nameValid &&
+    (!phoneChanged || validPhone) &&
+    (draftName.trim() !== name || draftPhoto?.uri !== photo?.uri || phoneChanged);
 
   const startEdit = () => {
     setDraftName(name);
     setDraftPhoto(photo);
+    const country =
+      phoneCountries.find((item) => phone.startsWith(item.dialCode)) ?? phoneCountries[0]!;
+    setDraftCountry(country);
+    setDraftNational(normalizeDigits(phone.slice(country.dialCode.length)));
     setEditing(true);
+  };
+
+  const finishSave = () => {
+    setName(draftName.trim());
+    setPhoto(draftPhoto);
+    setEditing(false);
+  };
+
+  const save = () => {
+    if (!canSave) return;
+    if (phoneChanged) {
+      // Do not persist any profile changes until phone verification succeeds.
+      setPendingVerificationPhone(newPhone);
+      return;
+    }
+    finishSave();
   };
 
   return (
@@ -91,21 +134,17 @@ export function ProfilePersonalInfoScreen() {
             maxLength={100}
             clearable
           />
-          <AppText align="right" variant="caption" className="text-content-secondary">
-            تغيير رقم الموبايل يحتاج تحقق منفصل، لذلك ما بيتغير من هالصفحة.
-          </AppText>
+          <PhoneNumberField
+            country={draftCountry}
+            number={draftNational}
+            onCountryChange={setDraftCountry}
+            onNumberChange={(number) => setDraftNational(normalizeDigits(number))}
+            error={phoneChanged && !validPhone ? 'أدخل رقم هاتف صالحاً قبل الحفظ.' : undefined}
+            helperText="إذا غيّرت الرقم، رح يفتح تأكيد الرقم الجديد قبل حفظ التعديلات."
+          />
           <View className="flex-row-reverse gap-2">
             <View className="min-w-0 flex-1">
-              <Button
-                label="حفظ المعلومات"
-                disabled={!canSave}
-                onPress={() => {
-                  if (!canSave) return;
-                  setName(draftName.trim());
-                  setPhoto(draftPhoto);
-                  setEditing(false);
-                }}
-              />
+              <Button label="حفظ المعلومات" disabled={!canSave} onPress={save} />
             </View>
             <View className="min-w-0 flex-1">
               <Button label="إلغاء" variant="outline" onPress={() => setEditing(false)} />
@@ -161,6 +200,14 @@ export function ProfilePersonalInfoScreen() {
       <AppText align="right" variant="caption" className="mt-2 text-content-secondary">
         تعديل البيانات ضمن العرض التجريبي الحالي. موقعك بيتم اختياره من الخريطة بشكل مستقل.
       </AppText>
+      {pendingVerificationPhone ? (
+        <ProfilePhoneChangeDialogs
+          visible
+          initialPhone={pendingVerificationPhone}
+          onClose={() => setPendingVerificationPhone(null)}
+          onVerified={finishSave}
+        />
+      ) : null}
     </ProfileScreenShell>
   );
 }

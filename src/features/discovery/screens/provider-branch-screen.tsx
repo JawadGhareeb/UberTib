@@ -16,10 +16,15 @@ import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components
 export function ProviderBranchScreen() {
   const router = useRouter();
   const [mapError, setMapError] = useState(false);
-  const { providerId = 'provider-layan', serviceCode = 'root-canal' } = useLocalSearchParams<{
+  const {
+    providerId = 'provider-layan',
+    serviceCode = 'root-canal',
+    patientId,
+  } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
     fromProfile?: string;
+    patientId?: string;
   }>();
 
   const branch = getBranchView(providerId);
@@ -56,7 +61,7 @@ export function ProviderBranchScreen() {
   const openDoctor = (id: string, fallbackService: string) => {
     router.push({
       pathname: '/discover/provider/[providerId]',
-      params: { providerId: id, serviceCode: fallbackService },
+      params: { providerId: id, serviceCode: fallbackService, ...(patientId ? { patientId } : {}) },
     });
   };
   const selectedDoctorName = doctor.name;
@@ -262,7 +267,11 @@ export function ProviderBranchScreen() {
               onPress={() =>
                 router.push({
                   pathname: '/booking/slots',
-                  params: { providerId: doctor.id, serviceCode },
+                  params: {
+                    providerId: doctor.id,
+                    serviceCode,
+                    ...(patientId ? { patientId } : {}),
+                  },
                 })
               }
               variant="primary"

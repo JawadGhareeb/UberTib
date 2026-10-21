@@ -1,18 +1,18 @@
-import { Checkbox } from 'heroui-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Linking, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 
+import { BookingCard, BookingHeader } from '@/features/booking/components/booking-v5-ui';
+import { ConfirmedBookingSummary } from '@/features/booking/components/confirmed-booking-summary';
 import {
-  BookingCard,
-  BookingHeader,
-  BookingProviderMiniCard,
-} from '@/features/booking/components/booking-v5-ui';
+  getBookingCalendarStart,
+  openBookingCalendarEditor,
+} from '@/features/booking/utils/booking-calendar';
 import {
   getMockBookingForScenario,
   mockAlternativeAppointment,
 } from '@/features/booking/mocks/bookings.mock';
-import { getMockProvider, type MockProvider } from '@/features/discovery/mocks/providers.mock';
+import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import {
   AppIcon,
@@ -25,131 +25,14 @@ import {
 import { useMockScenario } from '@/shared/mock';
 import { cn } from '@/shared/utils/cn';
 
-function BookingChecklistItem({
-  title,
-  complete,
-  onPress,
-}: {
-  title: string;
-  complete: boolean;
-  onPress?: () => void;
-}) {
-  const { rowClassName } = useAppDirection();
-  const body = (
-    <View className={cn('min-h-[29px] items-center gap-2 px-2 py-1', rowClassName)}>
-      <AppText
-        align="right"
-        className={cn(
-          'min-w-0 flex-1',
-          complete ? 'text-content-primary' : 'text-content-secondary',
-        )}
-        variant="caption"
-      >
-        {title}
-      </AppText>
-      <View
-        className={cn(
-          'h-[23px] w-[23px] items-center justify-center rounded-full border',
-          complete
-            ? 'border-tone-success-border bg-tone-success-fill'
-            : 'border-border-default bg-surface-default',
-        )}
-      >
-        {complete ? (
-          <AppIcon
-            name={{ ios: 'checkmark', android: 'check', web: 'check' }}
-            size={13}
-            tone="success"
-          />
-        ) : null}
-      </View>
-    </View>
-  );
-  return onPress ? (
-    <Checkbox
-      isSelected={complete}
-      onSelectedChange={onPress}
-      accessibilityLabel={title}
-      className="flex-row-reverse items-center gap-2"
-    >
-      <Checkbox.Indicator />
-      <AppText align="right" variant="caption" className="min-w-0 flex-1">
-        {title}
-      </AppText>
-    </Checkbox>
-  ) : (
-    body
-  );
-}
-
-/**
- * Offer an event only for a matching, future calendar day from the selected
- * provider's sample slots. Do not export a hard-coded event for an old date.
- * The user must still save the event in Google Calendar.
- */
-function calendarDraftUrl(
-  {
-    dateLabel,
-    timeLabel,
-    providerName,
-    serviceName,
-    branch,
-    patientName,
-  }: {
-    dateLabel: string;
-    timeLabel: string;
-    providerName: string;
-    serviceName: string;
-    branch: string;
-    patientName: string;
-  },
-  provider: MockProvider | undefined,
-): string | undefined {
-  const day = provider?.availability.find(
-    (entry) => entry.dateLabel === dateLabel && entry.slots.includes(timeLabel),
-  );
-  if (!day) return undefined;
-
-  const timeMatch = /^(\d{1,2}):(\d{2})\s*([صم])$/.exec(timeLabel);
-  if (!timeMatch) return undefined;
-  let hour = Number(timeMatch[1]) % 12;
-  if (timeMatch[3] === 'م') hour += 12;
-
-  const parts = day.dateKey.split('-').map(Number);
-  if (parts.length !== 3 || parts.some((part) => !Number.isFinite(part))) return undefined;
-  const start = new Date(parts[0]!, parts[1]! - 1, parts[2]!, hour, Number(timeMatch[2]));
-  if (!Number.isFinite(start.getTime()) || start.getTime() <= Date.now()) return undefined;
-  const end = new Date(start.getTime() + 45 * 60 * 1000);
-  const format = (value: Date) =>
-    [
-      value.getFullYear(),
-      String(value.getMonth() + 1).padStart(2, '0'),
-      String(value.getDate()).padStart(2, '0'),
-    ].join('') +
-    'T' +
-    String(value.getHours()).padStart(2, '0') +
-    String(value.getMinutes()).padStart(2, '0') +
-    '00';
-
-  return (
-    'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' +
-    encodeURIComponent('زيارة أسنان · ' + providerName) +
-    '&dates=' +
-    format(start) +
-    '/' +
-    format(end) +
-    '&ctz=Asia%2FDamascus&details=' +
-    encodeURIComponent(serviceName + ' · ' + branch + ' · ' + patientName)
-  );
-}
-
 export function BookingStatusScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
   const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
   const { scenario, bookingRequests, getBookingMutation, submitBookingAlternativeDecision } =
     useMockScenario();
-  const [instructionsRead, setInstructionsRead] = useState(false);
+  const [calendarBusy, setCalendarBusy] = useState(false);
+  const [calendarError, setCalendarError] = useState('');
   const [alternativeDecision, setAlternativeDecision] = useState<'accept' | 'decline' | null>(null);
   const booking =
     bookingRequests.find((request) => request.id === bookingId) ??
@@ -161,7 +44,7 @@ export function BookingStatusScreen() {
         <StateView
           title="الحجز غير موجود"
           actionLabel="العودة للحجوزات"
-          onAction={() => router.replace('/booking')}
+          onAction={() => router.replace({ pathname: '/(tabs)/care', params: { tab: 'bookings' } })}
         />
       </Screen>
     );
@@ -178,15 +61,44 @@ export function BookingStatusScreen() {
     booking.id === mockAlternativeAppointment.bookingId &&
     Boolean(scenario.flags?.bookingAlternative) &&
     !scenario.flags?.bookingAlternativeExpired;
-  const calendarUrl = confirmed ? calendarDraftUrl(booking, provider) : undefined;
+  const calendarBooking = {
+    status: booking.status,
+    dateKey:
+      'dateKey' in booking && typeof booking.dateKey === 'string' ? booking.dateKey : undefined,
+    timeLabel: booking.timeLabel,
+    serviceName: booking.serviceName,
+    providerName: booking.providerName,
+    branch: booking.branch,
+  };
+  const calendarAvailable = confirmed && Boolean(getBookingCalendarStart(calendarBooking));
+  const addToCalendar = async () => {
+    if (!calendarAvailable || calendarBusy) return;
+    setCalendarBusy(true);
+    setCalendarError('');
+    try {
+      await openBookingCalendarEditor(calendarBooking);
+    } catch (error) {
+      const cause = error instanceof Error ? error.message : '';
+      const message =
+        cause === 'calendar_permission_denied'
+          ? 'الوصول إلى التقويم غير مسموح. اسمح بإضافة الأحداث من إعدادات الجهاز.'
+          : cause === 'calendar_date_unverified'
+            ? 'تعذّر التحقق من تاريخ الموعد. راجع تفاصيل الحجز.'
+            : 'تعذّر فتح تقويم الجهاز. يتطلب التقويم نسخة تطبيق مثبتة تدعم هذه الميزة.';
+      setCalendarError(message);
+      Alert.alert('تعذّر فتح التقويم', message);
+    } finally {
+      setCalendarBusy(false);
+    }
+  };
   const navigateToBooking = () =>
-    router.push({
+    router.replace({
       pathname: '/booking/[bookingId]',
       params: { bookingId: booking.id },
     });
   const startNewRequest = () =>
     router.push({
-      pathname: '/booking/reason',
+      pathname: '/booking/slots',
       params: { providerId: booking.providerId, serviceCode: booking.serviceCode },
     });
 
@@ -194,11 +106,7 @@ export function BookingStatusScreen() {
     <Screen contentClassName="px-0 py-0">
       <BookingHeader
         onBackPress={() => {
-          if (router.canGoBack()) return router.back();
-          return router.replace({
-            pathname: '/booking/[bookingId]',
-            params: { bookingId: booking.id },
-          });
+          router.replace({ pathname: '/(tabs)/care', params: { tab: 'bookings' } });
         }}
         leadingIcon={confirmed || completed ? 'confirmed' : 'pending'}
         leadingTone={confirmed || completed ? 'success' : 'warning'}
@@ -209,100 +117,11 @@ export function BookingStatusScreen() {
         showsVerticalScrollIndicator={false}
       >
         {confirmed || completed ? (
-          <>
-            <View className="rounded-[15px] border border-tone-success-border bg-tone-success-fill p-3">
-              <View className={cn('items-center gap-2', rowClassName)}>
-                <View className="h-2 w-2 rounded-full bg-tone-success-text" />
-                <View className="min-w-0 flex-1 items-end">
-                  <AppText
-                    align="right"
-                    className="font-ui-bold text-tone-success-text"
-                    variant="heading-4"
-                  >
-                    {completed ? 'تمت الزيارة' : 'تم تأكيد الحجز'}
-                  </AppText>
-                  <AppText align="right" className="mt-0.5 text-content-primary" variant="caption">
-                    {booking.dateLabel} · {booking.timeLabel}
-                  </AppText>
-                </View>
-                <View className="h-[49px] w-[49px] items-center justify-center rounded-full border border-tone-success-border bg-surface-default">
-                  <AppIcon
-                    name={{ ios: 'checkmark', android: 'check', web: 'check' }}
-                    size={27}
-                    tone="success"
-                  />
-                </View>
-              </View>
-            </View>
-
-            <View className="mt-2">
-              <BookingProviderMiniCard
-                branch={booking.branch}
-                portraitUri={provider?.imageUrl}
-                providerName={booking.providerName}
-                serviceName={booking.serviceName}
-              />
-            </View>
-
-            <AppText
-              align="right"
-              className="mt-3 font-ui-bold text-content-primary"
-              variant="label"
-            >
-              {completed ? 'سجل الزيارة' : 'قبل الزيارة'}
-            </AppText>
-            <BookingCard className="mt-2 py-2">
-              <BookingChecklistItem complete title="تفاصيل الزيارة محفوظة ضمن الحجز" />
-              <BookingChecklistItem
-                complete={Boolean(
-                  bookingRequests.find((request) => request.id === booking.id)?.sharingConsent
-                    ?.visitSummary,
-                )}
-                title="تمت مشاركة ملخص التقييم الأولي بموافقتك"
-              />
-              <BookingChecklistItem
-                complete={Boolean(
-                  bookingRequests.find((request) => request.id === booking.id)?.sharingConsent
-                    ?.photos,
-                )}
-                title="تمت مشاركة الصور والأشعة المحددة"
-              />
-              <BookingChecklistItem
-                complete={instructionsRead}
-                onPress={confirmed ? () => setInstructionsRead((previous) => !previous) : undefined}
-                title="قرأت تعليمات العيادة قبل الموعد"
-              />
-              <BookingChecklistItem
-                complete
-                title="لا يوجد ملف إضافي مطلوب في بيانات الحجز الحالية"
-              />
-            </BookingCard>
-
-            <View
-              className={cn(
-                'mt-2 items-center gap-2 rounded-[12px] border border-border-subtle bg-surface-subtle p-3',
-                rowClassName,
-              )}
-            >
-              <View className="min-w-0 flex-1 items-end">
-                <AppText
-                  align="right"
-                  className="font-ui-semibold text-content-primary"
-                  variant="label"
-                >
-                  موقع الموعد
-                </AppText>
-                <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
-                  {booking.branch} · {provider?.area ?? 'الموقع التفصيلي غير متوفر'}
-                </AppText>
-              </View>
-              <AppIcon
-                name={{ ios: 'mappin.and.ellipse', android: 'location_on', web: 'location_on' }}
-                size={18}
-                tone="action"
-              />
-            </View>
-          </>
+          <ConfirmedBookingSummary
+            booking={booking}
+            portraitUri={provider?.imageUrl}
+            completed={completed}
+          />
         ) : (
           <>
             <View
@@ -512,10 +331,22 @@ export function BookingStatusScreen() {
           </AppText>
         </View>
 
-        {confirmed && !calendarUrl ? (
-          <AppText align="right" className="mt-2 text-content-secondary" variant="caption">
-            إضافة التقويم غير متاحة لأن موعد الحجز في البيانات الحالية قديم أو بلا تاريخ قابل
-            للتحقق.
+        {confirmed && !calendarAvailable ? (
+          <AppText align="right" variant="caption" className="mt-2 text-content-secondary">
+            إضافة التقويم غير متاحة: تاريخ الموعد ليس مستقبلياً أو لا يحتوي على ساعة وتاريخ موثوقين.
+          </AppText>
+        ) : null}
+        {calendarError ? (
+          <View className="mt-2 rounded-[11px] bg-tone-warning-fill p-3">
+            <AppText align="right" variant="caption" className="text-tone-warning-text">
+              {calendarError}
+            </AppText>
+          </View>
+        ) : null}
+        {confirmed && calendarAvailable ? (
+          <AppText align="right" variant="caption" className="mt-2 text-content-secondary">
+            سيتم فتح نموذج تقويم الجهاز. راجع مدة الموعد واضغط حفظ بنفسك؛ فتح النموذج لا يعني
+            الإضافة.
           </AppText>
         ) : null}
       </ScrollView>
@@ -544,32 +375,63 @@ export function BookingStatusScreen() {
             </>
           ) : (
             <>
-              <Button
-                className="h-[52px] rounded-[12px]"
-                endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
-                label={confirmed || completed ? 'عرض تفاصيل الحجز' : 'عرض تفاصيل الطلب'}
-                onPress={navigateToBooking}
-              />
-              {confirmed ? (
+              {confirmed || completed ? (
                 <Button
-                  className="h-[46px] rounded-[12px]"
-                  disabled={!calendarUrl}
-                  endIcon={{ ios: 'calendar.badge.plus', android: 'event', web: 'event' }}
-                  label="إضافة إلى التقويم"
-                  onPress={() => {
-                    if (calendarUrl) void Linking.openURL(calendarUrl);
-                  }}
-                  variant="outline"
+                  className="h-[52px] rounded-[12px]"
+                  endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
+                  label="عرض تفاصيل الحجز"
+                  onPress={navigateToBooking}
                 />
               ) : (
                 <Button
-                  className="h-[46px] rounded-[12px]"
-                  endIcon={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }}
-                  label={cancelled ? 'طلب حجز جديد' : 'العودة إلى حجوزاتي'}
-                  onPress={() => router.replace(cancelled ? '/discover' : '/booking')}
-                  variant="outline"
+                  className="h-[52px] rounded-[12px]"
+                  label="العودة إلى حجوزاتي"
+                  onPress={() =>
+                    router.replace({ pathname: '/(tabs)/care', params: { tab: 'bookings' } })
+                  }
                 />
               )}
+              {confirmed ? (
+                <Button
+                  className="h-[46px] rounded-[12px]"
+                  disabled={!calendarAvailable}
+                  loading={calendarBusy}
+                  endIcon={{ ios: 'calendar.badge.plus', android: 'event', web: 'event' }}
+                  label="إضافة إلى التقويم"
+                  onPress={() => void addToCalendar()}
+                  variant="outline"
+                />
+              ) : completed ? (
+                <Button
+                  className="h-[46px] rounded-[12px]"
+                  label="العودة إلى حجوزاتي"
+                  onPress={() =>
+                    router.replace({ pathname: '/(tabs)/care', params: { tab: 'bookings' } })
+                  }
+                  variant="outline"
+                />
+              ) : cancelled ? (
+                <Button
+                  className="h-[46px] rounded-[12px]"
+                  label="طلب حجز جديد"
+                  onPress={() => router.replace('/discover')}
+                  variant="outline"
+                />
+              ) : null}
+              {confirmed ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="العودة إلى حجوزاتي"
+                  className="min-h-9 items-center justify-center"
+                  onPress={() =>
+                    router.replace({ pathname: '/(tabs)/care', params: { tab: 'bookings' } })
+                  }
+                >
+                  <AppText variant="label" className="font-ui-semibold text-content-link">
+                    العودة إلى حجوزاتي
+                  </AppText>
+                </Pressable>
+              ) : null}
             </>
           )}
         </View>

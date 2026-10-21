@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { DiscoverySessionProvider } from '@/features/discovery/state/discovery-session-provider';
 import { ProfilePrivacyProvider } from '@/features/profile/state/profile-privacy-provider';
@@ -15,26 +16,28 @@ import { queryClient } from '@/shared/query/query-client';
 
 export function AppProviders({ children }: PropsWithChildren) {
   return (
-    <AppDirectionProvider>
-      <AuthSessionProvider>
-        <PreferredLocationProvider>
-          <AccountDetailsProvider>
-            <FamilyMembersProvider>
-              <DiscoverySessionProvider>
-                <MockScenarioProvider>
-                  <ProfilePrivacyProvider>
-                    <ProfilePhotoProvider>
-                      <SupportTicketsProvider>
-                        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-                      </SupportTicketsProvider>
-                    </ProfilePhotoProvider>
-                  </ProfilePrivacyProvider>
-                </MockScenarioProvider>
-              </DiscoverySessionProvider>
-            </FamilyMembersProvider>
-          </AccountDetailsProvider>
-        </PreferredLocationProvider>
-      </AuthSessionProvider>
-    </AppDirectionProvider>
+    <KeyboardProvider statusBarTranslucent>
+      <AppDirectionProvider>
+        <AuthSessionProvider>
+          <PreferredLocationProvider>
+            <AccountDetailsProvider>
+              <FamilyMembersProvider>
+                <DiscoverySessionProvider>
+                  <MockScenarioProvider>
+                    <ProfilePrivacyProvider>
+                      <ProfilePhotoProvider>
+                        <SupportTicketsProvider>
+                          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+                        </SupportTicketsProvider>
+                      </ProfilePhotoProvider>
+                    </ProfilePrivacyProvider>
+                  </MockScenarioProvider>
+                </DiscoverySessionProvider>
+              </FamilyMembersProvider>
+            </AccountDetailsProvider>
+          </PreferredLocationProvider>
+        </AuthSessionProvider>
+      </AppDirectionProvider>
+    </KeyboardProvider>
   );
 }

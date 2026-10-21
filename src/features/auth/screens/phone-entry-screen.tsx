@@ -1,11 +1,15 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Button, FieldError, Input, Label, Select, TextField, Typography } from 'heroui-native';
+import { Button, FieldError, Input, Label, TextField, Typography } from 'heroui-native';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView as NativeKeyboardAvoidingView, Platform, View } from 'react-native';
+import {
+  KeyboardAvoidingView as ControllerKeyboardAvoidingView,
+  KeyboardAwareScrollView,
+} from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AuthModeSwitch } from '@/features/auth/components/auth-mode-switch';
-import { CountryFlag } from '@/features/auth/components/country-flag';
+import { CountryDialCodeSelect } from '@/shared/components/ui/country-dial-code-select';
 import { normalizeDigits } from '@/features/auth/utils/phone-input';
 import { requestMockVerification } from '@/features/auth/mocks/auth.mock';
 import { BrandMark } from '@/shared/components/brand/brand-mark';
@@ -15,6 +19,9 @@ import { toE164 } from '@/shared/components/ui/phone-number-field';
 import { useMockScenario } from '@/shared/mock';
 
 const DEFAULT_COUNTRY = phoneCountries[0]!;
+
+const KeyboardContainer =
+  Platform.OS === 'android' ? ControllerKeyboardAvoidingView : NativeKeyboardAvoidingView;
 
 export function PhoneEntryScreen() {
   const router = useRouter();
@@ -74,12 +81,9 @@ export function PhoneEntryScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        className="flex-1"
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
+      <KeyboardContainer className="flex-1" style={{ flex: 1 }} behavior="padding">
+        <KeyboardAwareScrollView
+          bottomOffset={Platform.OS === 'android' ? 16 : 72}
           className="flex-1"
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1 }}
@@ -129,70 +133,14 @@ export function PhoneEntryScreen() {
             <TextField className="mt-9 gap-3" isInvalid={Boolean(error)} isDisabled={submitting}>
               <Label className="self-end font-ui-semibold text-text-primary">رقم الموبايل</Label>
               <View className="flex-row items-center gap-2" style={{ direction: 'ltr' }}>
-                <Select
-                  value={{ value: country.iso, label: country.dialCode }}
-                  onValueChange={(choice) => {
-                    if (!choice || Array.isArray(choice)) return;
-                    const selected = phoneCountries.find((item) => item.iso === choice.value);
-                    if (!selected) return;
-                    setCountry(selected);
+                <CountryDialCodeSelect
+                  country={country}
+                  onCountryChange={(next) => {
+                    setCountry(next);
                     setError(undefined);
                   }}
-                  isDisabled={submitting}
-                  presentation="dialog"
-                >
-                  <Select.Trigger
-                    accessibilityLabel={'تغيير الدولة، ' + country.nameAr + '، ' + country.dialCode}
-                    className="h-14 w-[132px] flex-row items-center justify-center gap-1.5 rounded-form-field border border-border-default bg-surface-default px-2"
-                  >
-                    <CountryFlag iso={country.iso} />
-                    <Select.Value
-                      placeholder={country.dialCode}
-                      className="font-ui-semibold text-text-primary"
-                      style={{ writingDirection: 'ltr' }}
-                    />
-                    <Select.TriggerIndicator iconProps={{ size: 14 }} />
-                  </Select.Trigger>
-                  <Select.Portal>
-                    <Select.Overlay />
-                    <Select.Content
-                      presentation="dialog"
-                      classNames={{ content: 'w-[90%] max-w-[420px] rounded-form-field p-5' }}
-                    >
-                      <View
-                        className="mb-4 flex-row items-center justify-between"
-                        style={{ direction: 'rtl' }}
-                      >
-                        <Select.ListLabel className="font-ui-semibold text-text-primary">
-                          اختر الدولة ورمز الاتصال
-                        </Select.ListLabel>
-                        <Select.Close accessibilityLabel="إغلاق قائمة الدول" />
-                      </View>
-                      <ScrollView
-                        className="max-h-[390px]"
-                        nestedScrollEnabled
-                        keyboardShouldPersistTaps="always"
-                      >
-                        {phoneCountries.map((item) => (
-                          <Select.Item
-                            key={item.iso}
-                            value={item.iso}
-                            label={item.nameAr + ' · ' + item.dialCode}
-                          >
-                            <View
-                              className="flex-1 flex-row items-center gap-3"
-                              style={{ direction: 'ltr' }}
-                            >
-                              <CountryFlag iso={item.iso} />
-                              <Select.ItemLabel className="flex-1 text-right font-ui-regular" />
-                            </View>
-                            <Select.ItemIndicator />
-                          </Select.Item>
-                        ))}
-                      </ScrollView>
-                    </Select.Content>
-                  </Select.Portal>
-                </Select>
+                  disabled={submitting}
+                />
 
                 <Input
                   accessibilityLabel="رقم الموبايل بدون رمز الدولة"
@@ -254,8 +202,8 @@ export function PhoneEntryScreen() {
               </Typography.Paragraph>
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </KeyboardAwareScrollView>
+      </KeyboardContainer>
     </SafeAreaView>
   );
 }

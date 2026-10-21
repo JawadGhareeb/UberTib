@@ -50,6 +50,7 @@ export function NotificationCentreScreen() {
         showsVerticalScrollIndicator={false}
       >
         <SectionTabs
+          solidActive
           value={tab}
           onValueChange={setTab}
           items={[
