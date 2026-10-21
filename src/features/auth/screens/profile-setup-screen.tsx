@@ -10,7 +10,7 @@ import {
   Typography,
 } from 'heroui-native';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
@@ -59,6 +59,11 @@ export function ProfileSetupScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        enabled={Platform.OS === 'ios'}
+      >
       
         <KeyboardResponsiveScrollView
           bottomOffset={16}
@@ -299,6 +304,7 @@ export function ProfileSetupScreen() {
             </View>
           </View>
         </KeyboardResponsiveScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, FieldError, Input, Label, TextField, Typography } from 'heroui-native';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { KeyboardAvoidingView, Platform, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
@@ -75,6 +75,11 @@ export function PhoneEntryScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior="padding"
+        enabled={Platform.OS === 'ios'}
+      >
       
         <KeyboardResponsiveScrollView
           bottomOffset={16}
@@ -197,6 +202,7 @@ export function PhoneEntryScreen() {
             </View>
           </View>
         </KeyboardResponsiveScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

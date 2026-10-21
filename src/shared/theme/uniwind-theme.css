@@ -117,7 +117,7 @@
 @layer theme {
   :root {
     @variant light {
-      --brand-mark: #00E0B8;
+      --brand-mark: #00977E;
       --surface-canvas: #F9F9F9;
       --surface-default: #FFFFFF;
       --surface-subtle: #F6F6F6;
@@ -127,7 +127,7 @@
       --text-secondary: #5B5B5B;
       --text-placeholder: #777777;
       --text-disabled: #A0AAA6;
-      --text-link: #00E0B8;
+      --text-link: #00977E;
       --text-on-action: #FFFFFF;
       --text-on-inverse: #FFFFFF;
       --text-on-destructive: #FFFFFF;
@@ -135,12 +135,12 @@
       --border-default: #CECECE;
       --border-strong: #888888;
       --border-emphasis: #2A2A2A;
-      --action-primary: #00E0B8;
-      --action-primary-active: #00E0B8;
+      --action-primary: #00977E;
+      --action-primary-active: #00977E;
       --action-subtle: #E4FCF8;
       --action-secondary-surface: #FFFFFF;
-      --action-secondary-border: #00E0B8;
-      --action-secondary-text: #00E0B8;
+      --action-secondary-border: #00977E;
+      --action-secondary-text: #00977E;
       --action-destructive: #C2413A;
       --action-destructive-active: #A73530;
       --tone-neutral-fill: #F2F4F4;
@@ -161,21 +161,21 @@
       --tone-restricted-fill: #F2F4F4;
       --tone-restricted-border: #A7B1AE;
       --tone-restricted-text: #596361;
-      --focus-ring: #00E0B8;
+      --focus-ring: #00977E;
       --focus-ring-contrast: #FFFFFF;
       --state-selected: #E4FCF8;
-      --state-selected-border: #00E0B8;
+      --state-selected-border: #00977E;
       --state-readonly: #F4F4F4;
       --state-readonly-border: #CECECE;
       --background: #F9F9F9;
       --foreground: #111111;
       --surface: #FFFFFF;
       --surface-foreground: #111111;
-      --accent: #00E0B8;
+      --accent: #00977E;
       --accent-foreground: #FFFFFF;
     }
     @variant dark {
-      --brand-mark: #00E0B8;
+      --brand-mark: #00977E;
       --surface-canvas: #0A0A0A;
       --surface-default: #111111;
       --surface-subtle: #2A2A2A;
@@ -185,20 +185,20 @@
       --text-secondary: #CCCCCC;
       --text-placeholder: #A6A6A6;
       --text-disabled: #6F7975;
-      --text-link: #00E0B8;
+      --text-link: #00977E;
       --text-on-action: #FFFFFF;
       --text-on-inverse: #111111;
       --text-on-destructive: #FFFFFF;
       --border-subtle: #222222;
       --border-default: #444444;
       --border-strong: #6C6C6C;
-      --border-emphasis: #00E0B8;
-      --action-primary: #00E0B8;
-      --action-primary-active: #00E0B8;
+      --border-emphasis: #00977E;
+      --action-primary: #00977E;
+      --action-primary-active: #00977E;
       --action-subtle: #25403B;
       --action-secondary-surface: #1A1A1A;
-      --action-secondary-border: #00E0B8;
-      --action-secondary-text: #00E0B8;
+      --action-secondary-border: #00977E;
+      --action-secondary-text: #00977E;
       --action-destructive: #D96A63;
       --action-destructive-active: #B84F49;
       --tone-neutral-fill: #2A2A2A;
@@ -219,17 +219,17 @@
       --tone-restricted-fill: #2A2A2A;
       --tone-restricted-border: #64716D;
       --tone-restricted-text: #CBD4D0;
-      --focus-ring: #00E0B8;
+      --focus-ring: #00977E;
       --focus-ring-contrast: #111111;
       --state-selected: #25403B;
-      --state-selected-border: #00E0B8;
+      --state-selected-border: #00977E;
       --state-readonly: #2A2A2A;
       --state-readonly-border: #444444;
       --background: #0A0A0A;
       --foreground: #FFFFFF;
       --surface: #111111;
       --surface-foreground: #FFFFFF;
-      --accent: #00E0B8;
+      --accent: #00977E;
       --accent-foreground: #FFFFFF;
     }
   }

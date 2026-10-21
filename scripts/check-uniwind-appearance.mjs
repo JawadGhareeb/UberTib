@@ -24,7 +24,7 @@ function allSource(dir) {
 }
 const kebab = (s) => s.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());
 
-assert.equal(palette.brand.mark, '#00E0B8');
+assert.equal(palette.brand.mark, '#00977E');
 for (const [mode, tokens] of [
   ['light', palette.color],
   ['dark', palette.darkColor],

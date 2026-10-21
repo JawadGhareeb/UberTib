@@ -488,6 +488,6 @@ if(status.includes('setSubmitted(true)') || !status.includes('getMockBookingForS
   failures.push('Status screen must derive confirmation from booking state rather than a submit tap');
 }
 const theme=JSON.parse(readFileSync('src/shared/theme/tokens.json','utf8'));
-if(theme.brand.mark!=='#00E0B8') failures.push('Do not change brand Primary from #00E0B8');
+if(theme.brand.mark!=='#00977E') failures.push('Do not change brand Primary from #00977E');
 if(failures.length){process.stderr.write(failures.join('\n')+'\n');process.exitCode=1;}
 else process.stdout.write('Booking and discovery static UI contracts found.\n');

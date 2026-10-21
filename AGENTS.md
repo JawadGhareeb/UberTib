@@ -54,10 +54,10 @@ When code and canonical documentation disagree, reconcile the mismatch instead o
 - Arabic-first, RTL-first, WCAG 2.2 AA.
 - Use semantic theme roles; do not hardcode design colors in components.
 - The Patient app now supports light and dark themes by explicit product direction.
-- Light and dark use the exact October 2026 UberTeb identity swatches: primary #00E0B8, neutral ink #111111, charcoal #2A2A2A and white. The primary swatch must never shift by appearance. See docs/BRAND_THEME_2026.md.
-- Neutrals carry surfaces; canonical action primary and logo mark are both `#00E0B8` in both themes. Never silently substitute a darker action teal.
-- Filled primary and destructive actions display white labels and white icons; primary uses solid #00E0B8 and destructive uses red. Note: white normal text on #00E0B8 is below WCAG AA; do not claim that pairing passes contrast or change the brand swatch without explicit approval.
-- On neutral surfaces, use semantic text.link for small teal text/icons when contrast is required; that does not change the primary fill. Keep brand artwork and primary fills exactly #00E0B8.
+- Light and dark use the exact October 2026 UberTeb identity swatches: primary #00977E, neutral ink #111111, charcoal #2A2A2A and white. The primary swatch must never shift by appearance. See docs/BRAND_THEME_2026.md.
+- Neutrals carry surfaces; canonical action primary and logo mark are both `#00977E` in both themes. Never silently substitute a darker action teal.
+- Filled primary and destructive actions display white labels and white icons; primary uses solid #00977E and destructive uses red. Note: white normal text on #00977E is below WCAG AA; do not claim that pairing passes contrast or change the brand swatch without explicit approval.
+- On neutral surfaces, use semantic text.link for small teal text/icons when contrast is required; that does not change the primary fill. Keep brand artwork and primary fills exactly #00977E.
 - No gradients, glassmorphism, decorative dashboards, pill status chips, emoji or shadow on resting cards.
 - Status is never color alone; render the complete governed state treatment.
 - Use logical start/end semantics rather than physical left/right assumptions.
