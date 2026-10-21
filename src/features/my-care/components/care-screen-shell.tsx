@@ -1,10 +1,8 @@
 import type { PropsWithChildren } from 'react';
-import { ScrollView } from 'react-native';
-import Animated, { FadeInDown, ReduceMotion } from 'react-native-reanimated';
+import { ScrollView, View } from 'react-native';
 
 import { AppHeader } from '@/shared/components/navigation';
 import { AppText, Screen } from '@/shared/components/ui';
-import { theme } from '@/shared/theme';
 
 interface CareScreenShellProps extends PropsWithChildren {
   eyebrow: string;
@@ -32,12 +30,7 @@ export function CareScreenShell({
         contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-32 pt-5"
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View
-          className="gap-1.5"
-          entering={FadeInDown.delay(30)
-            .duration(theme.motion.duration.overlay)
-            .reduceMotion(ReduceMotion.System)}
-        >
+        <View className="gap-1.5">
           <AppText align="right" variant="heading-3" className="font-ui-bold">
             {title}
           </AppText>
@@ -46,7 +39,7 @@ export function CareScreenShell({
               {description}
             </AppText>
           ) : null}
-        </Animated.View>
+        </View>
 
         {children}
       </ScrollView>
