@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { BookingHeader, BookingStatusBanner } from '@/features/booking/components/booking-v5-ui';
@@ -35,7 +35,7 @@ export function CancelBookingScreen() {
 
   if (cancellationPending) {
     return (
-      <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
+      <Screen contentClassName="px-0 py-0">
         <BookingHeader showBack={false} subtitle="قيد المعالجة" title="طلب الإلغاء" />
         <View className="mx-auto w-full max-w-[390px] flex-1 justify-center px-4">
           <BookingStatusBanner
@@ -63,7 +63,6 @@ export function CancelBookingScreen() {
       <BookingHeader subtitle="إجراء حساس" title="إلغاء الحجز" />
 
       <KeyboardResponsiveScrollView
-                  bottomOffset={16}
         contentContainerClassName="mx-auto w-full max-w-[390px] px-4 pb-8"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

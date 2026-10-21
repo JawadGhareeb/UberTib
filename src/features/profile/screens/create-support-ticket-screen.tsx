@@ -1,10 +1,15 @@
 import { Radio } from 'heroui-native';
-import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Image, Keyboard, Pressable, View } from 'react-native';
 
 import { getMockCareCaseForScenario, mockCareCases } from '@/features/my-care/mocks/care.mock';
+import { AssessmentImagePreview } from '@/features/assessment/components/assessment-image-preview';
+import { MediaSourceDialog, type MediaSource } from '@/shared/components/media/media-source-dialog';
+import {
+  pickMediaFromDevice,
+  type SelectedMediaFile,
+} from '@/shared/components/media/media-picker';
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import {
   type SupportTicketTopic,
@@ -13,6 +18,9 @@ import {
 } from '@/features/profile/state/support-tickets-provider';
 import { AppIcon, AppText, Button, ReadStateBoundary, TextField } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
+
+const MAX_SUPPORT_IMAGES = 3;
+const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
 
 type CaseIssueType = 'care' | 'payment' | 'refund';
 type IssueType = SupportTicketTopic | CaseIssueType;
@@ -38,7 +46,10 @@ export function CreateSupportTicketScreen() {
   const [chosenCaseId, setChosenCaseId] = useState<string | null>(null);
   const [subject, setSubject] = useState('');
   const [details, setDetails] = useState('');
-  const [evidence, setEvidence] = useState<string[]>([]);
+  const [evidence, setEvidence] = useState<SelectedMediaFile[]>([]);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
+  const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
+  const launchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState('');
 
@@ -49,28 +60,59 @@ export function CreateSupportTicketScreen() {
   const caseId = chosenCaseId ?? (cases.some((c) => c.id === params.caseId) ? params.caseId : null);
   const canSave = subject.trim().length >= 5 && details.trim().length >= 10 && !picking;
 
-  const attach = async () => {
-    if (picking || evidence.length >= 3) return;
+  useEffect(
+    () => () => {
+      if (launchTimer.current) clearTimeout(launchTimer.current);
+    },
+    [],
+  );
+
+  const openMediaSource = () => {
+    if (picking) return;
+    if (evidence.length >= MAX_SUPPORT_IMAGES) {
+      setError('يمكنك إرفاق 3 صور فقط في طلب الدعم.');
+      return;
+    }
+    Keyboard.dismiss();
+    setError('');
+    setSourceDialogOpen(true);
+  };
+
+  const selectMediaSource = (source: MediaSource) => {
+    if (picking) return;
+    setSourceDialogOpen(false);
     setPicking(true);
     setError('');
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsMultipleSelection: false,
-        quality: 0.8,
-      });
-      if (result.canceled || !result.assets[0]) return;
-      const file = result.assets[0];
-      if (file.fileSize && file.fileSize > 25 * 1024 * 1024) {
-        setError('الصورة أكبر من الحد المسموح 25 ميغابايت.');
-        return;
-      }
-      setEvidence((current) => [...current, file.fileName || 'صورة مرفقة']);
-    } catch {
-      setError('تعذّر اختيار الصورة. حاول مرة ثانية.');
-    } finally {
-      setPicking(false);
-    }
+    // The HeroUI portal must close before the native image/camera picker opens.
+    launchTimer.current = setTimeout(() => {
+      launchTimer.current = null;
+      void (async () => {
+        try {
+          const selected = await pickMediaFromDevice(source, { quality: 0.8 });
+          if (!selected?.length) return;
+          const accepted = selected.filter((file) => {
+            if (file.size && file.size > MAX_IMAGE_BYTES) {
+              setError('الصورة أكبر من الحد المسموح 25 ميغابايت.');
+              return false;
+            }
+            return true;
+          });
+          setEvidence((current) => {
+            const remaining = MAX_SUPPORT_IMAGES - current.length;
+            return [
+              ...current,
+              ...accepted
+                .filter((file) => !current.some((item) => item.uri === file.uri))
+                .slice(0, remaining),
+            ];
+          });
+        } catch (cause) {
+          setError(cause instanceof Error ? cause.message : 'تعذّر اختيار الصورة. حاول مرة ثانية.');
+        } finally {
+          setPicking(false);
+        }
+      })();
+    }, 400);
   };
   const goToIssue = () => {
     if (!isCaseIssue(type) || !caseId) return;
@@ -86,7 +128,7 @@ export function CreateSupportTicketScreen() {
       topic: type,
       subject: subject.trim(),
       description: details.trim(),
-      evidenceNames: evidence,
+      evidenceNames: evidence.map((file) => file.fileName),
     });
     router.replace({ pathname: '/support/tickets/[ticketId]', params: { ticketId } });
   };
@@ -196,38 +238,86 @@ export function CreateSupportTicketScreen() {
                 placeholder="اشرح المشكلة والتفاصيل المهمة"
               />
               <View className="gap-2">
-                <AppText variant="label" align="right" className="font-ui-semibold">
-                  مرفقات (اختيارية)
-                </AppText>
-                <Button
-                  variant="outline"
-                  label={picking ? 'جاري فتح الصور...' : 'إضافة صورة'}
-                  loading={picking}
-                  disabled={picking || evidence.length >= 3}
-                  onPress={() => void attach()}
-                />
-                {evidence.map((name, index) => (
+                <View className="flex-row-reverse items-center justify-between">
+                  <AppText variant="label" align="right" className="font-ui-semibold">
+                    مرفقات (اختيارية)
+                  </AppText>
+                  <AppText variant="caption" className="text-content-secondary">
+                    {evidence.length}/{MAX_SUPPORT_IMAGES}
+                  </AppText>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="إضافة صورة من الكاميرا أو المعرض"
+                  accessibilityState={{
+                    disabled: picking || evidence.length >= MAX_SUPPORT_IMAGES,
+                  }}
+                  disabled={picking || evidence.length >= MAX_SUPPORT_IMAGES}
+                  onPress={openMediaSource}
+                  className="min-h-[122px] items-center justify-center gap-2 rounded-[14px] border-2 border-dashed border-action-primary/40 bg-action-subtle px-3"
+                >
+                  <AppIcon
+                    name={{ ios: 'camera', android: 'photo_camera', web: 'photo_camera' }}
+                    size={26}
+                    tone="action"
+                  />
+                  <AppText variant="label" className="font-ui-semibold text-content-link">
+                    {picking ? 'جاري اختيار الصورة...' : 'إضافة صورة'}
+                  </AppText>
+                  <AppText variant="caption" className="text-content-secondary">
+                    التقط صورة أو اختر من المعرض
+                  </AppText>
+                </Pressable>
+                {evidence.map((file) => (
                   <View
-                    key={index}
-                    className="flex-row-reverse items-center justify-between rounded-[11px] bg-surface-subtle p-2"
+                    key={file.uri}
+                    className="min-h-[58px] flex-row-reverse items-center gap-2 rounded-[12px] border border-border-subtle bg-surface-default p-2"
                   >
-                    <AppText variant="caption" className="min-w-0 flex-1" numberOfLines={1}>
-                      {name}
+                    <Image
+                      source={{ uri: file.uri }}
+                      accessibilityLabel={'الصورة المختارة ' + file.fileName}
+                      className="h-11 w-11 rounded-[8px] bg-surface-subtle"
+                      resizeMode="cover"
+                    />
+                    <AppText
+                      align="right"
+                      variant="caption"
+                      className="min-w-0 flex-1 font-ui-semibold"
+                      numberOfLines={1}
+                    >
+                      {file.fileName}
                     </AppText>
                     <Pressable
                       accessibilityRole="button"
-                      accessibilityLabel={'حذف ' + name}
-                      className="px-2 py-1"
-                      onPress={() => setEvidence((curr) => curr.filter((_, i) => i !== index))}
+                      accessibilityLabel={'معاينة ' + file.fileName}
+                      className="h-11 w-11 items-center justify-center rounded-[10px] bg-action-subtle"
+                      onPress={() => setPreviewUri(file.uri)}
                     >
                       <AppIcon
-                        name={{ ios: 'xmark', android: 'close', web: 'close' }}
-                        size={17}
-                        tone="secondary"
+                        name={{ ios: 'eye', android: 'visibility', web: 'visibility' }}
+                        size={19}
+                        tone="action"
+                      />
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={'حذف ' + file.fileName}
+                      className="h-11 w-11 items-center justify-center rounded-[10px] bg-surface-subtle"
+                      onPress={() =>
+                        setEvidence((current) => current.filter((item) => item.uri !== file.uri))
+                      }
+                    >
+                      <AppIcon
+                        name={{ ios: 'trash', android: 'delete_outline', web: 'delete_outline' }}
+                        size={19}
+                        tone="danger"
                       />
                     </Pressable>
                   </View>
                 ))}
+                <AppText variant="caption" align="right" className="text-content-secondary">
+                  لحد 3 صور، 25 ميغابايت لكل صورة. الصور المختارة موجودة محلياً ولم تُرفع للسيرفر.
+                </AppText>
               </View>
               {error ? (
                 <AppText variant="caption" className="text-tone-danger-text" align="right">
@@ -245,6 +335,21 @@ export function CreateSupportTicketScreen() {
           )}
         </View>
       </ReadStateBoundary>
+      <MediaSourceDialog
+        visible={sourceDialogOpen}
+        onClose={() => setSourceDialogOpen(false)}
+        onSelect={selectMediaSource}
+        allowFiles={false}
+        busy={picking}
+        title="إضافة صورة لطلب الدعم"
+        description="اختر صورة من المعرض أو التقط صورة جديدة"
+      />
+      <AssessmentImagePreview
+        images={evidence}
+        activeUri={previewUri}
+        onChange={setPreviewUri}
+        onClose={() => setPreviewUri(null)}
+      />
     </ProfileScreenShell>
   );
 }

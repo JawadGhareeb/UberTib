@@ -75,14 +75,8 @@ export function PhoneEntryScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface-canvas" style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior="padding"
-        enabled={Platform.OS === 'ios'}
-      >
-      
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" enabled={Platform.OS === 'ios'}>
         <KeyboardResponsiveScrollView
-          bottomOffset={16}
           className="flex-1"
           style={{ flex: 1 }}
           contentContainerStyle={{ flexGrow: 1 }}

@@ -2,7 +2,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Accordion, Radio, RadioGroup } from 'heroui-native';
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, Switch, View } from 'react-native';
+import { Pressable, Switch, View } from 'react-native';
 import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { AssessmentImagePreview } from '@/features/assessment/components/assessment-image-preview';
@@ -225,7 +225,7 @@ export function BookingReviewScreen() {
 
   if (submitted) {
     return (
-      <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
+      <Screen contentClassName="px-0 py-0">
         <BookingHeader showBack={false} subtitle="تم الإرسال" title="طلب الحجز" />
         <View className="mx-auto w-full max-w-[430px] flex-1 justify-center px-4">
           <View className="items-center">
@@ -309,7 +309,6 @@ export function BookingReviewScreen() {
     <Screen contentClassName="px-0 py-0">
       <BookingHeader title="مراجعة الحجز" />
       <KeyboardResponsiveScrollView
-                  bottomOffset={16}
         contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

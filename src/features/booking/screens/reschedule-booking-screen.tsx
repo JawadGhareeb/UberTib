@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Platform, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import {
@@ -48,7 +48,7 @@ export function RescheduleBookingScreen() {
 
   if (pendingProposal) {
     return (
-      <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
+      <Screen contentClassName="px-0 py-0">
         <BookingHeader subtitle="قيد الرد" title="إعادة الجدولة" />
         <View className="mx-auto w-full max-w-[390px] flex-1 justify-center px-4">
           <BookingStatusBanner
@@ -111,7 +111,6 @@ export function RescheduleBookingScreen() {
       <BookingHeader subtitle="تعديل الموعد" title="إعادة الجدولة" />
 
       <KeyboardResponsiveScrollView
-                  bottomOffset={16}
         contentContainerClassName="mx-auto w-full max-w-[390px] px-4 pb-8"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

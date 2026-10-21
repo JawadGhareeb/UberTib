@@ -2,7 +2,7 @@ import { Radio } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { AssessmentImagePreview } from '@/features/assessment/components/assessment-image-preview';
@@ -92,7 +92,7 @@ export function ClaimsScreen({ caseId }: { caseId: string }) {
 
   if (!careCase) {
     return (
-      <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
+      <Screen contentClassName="px-0 py-0">
         <CareV5Header title="الإبلاغ عن مشكلة" leftIcon="shield" />
         <View className="px-4 pt-5">
           <StateView title="الحالة غير موجودة" />
@@ -178,7 +178,6 @@ export function ClaimsScreen({ caseId }: { caseId: string }) {
         staleAtLabel="آخر تحديث محفوظ"
       >
         <KeyboardResponsiveScrollView
-                    bottomOffset={16}
           contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

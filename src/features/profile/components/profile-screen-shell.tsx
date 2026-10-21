@@ -15,12 +15,10 @@ interface ProfileScreenShellProps extends PropsWithChildren {
 export function ProfileScreenShell({ title, showBack = true, children }: ProfileScreenShellProps) {
   return (
     <Screen
-      keyboardAvoiding={false}
       contentClassName="px-0 py-0"
       header={<AppHeader title={title} showBack={showBack} variant="detail" />}
     >
       <KeyboardResponsiveScrollView
-                bottomOffset={16}
         className="flex-1 bg-surface-canvas"
         contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-12 pt-4"
         keyboardShouldPersistTaps="handled"

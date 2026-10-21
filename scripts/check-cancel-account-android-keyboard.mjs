@@ -84,10 +84,10 @@ assert.ok(
   packageJson.dependencies['react-native-keyboard-controller'] &&
     appJson.expo.android.softwareKeyboardLayoutMode === 'resize' &&
     providers.includes('<KeyboardProvider statusBarTranslucent>') &&
-    screen.includes('ControlledKeyboardAvoidingView') &&
-    screen.includes('behavior="padding"') &&
-    assessment.includes("bottomOffset={Platform.OS === 'android' ? 16 : 85}"),
-  'Use one consistent keyboard height strategy without enlarged Android scroll offset',
+    screen.includes("enabled={keyboardAvoiding && Platform.OS === 'ios'}") &&
+    assessment.includes('<ScrollView') &&
+    assessment.includes("enabled={Platform.OS === 'ios'}"),
+  'Keyboard avoidance remains single-owner by platform',
 );
 for (const page of [
   'src/features/profile/components/profile-screen-shell.tsx',
@@ -97,9 +97,9 @@ for (const page of [
   'src/features/my-care/screens/claims-screen.tsx',
 ]) {
   assert.ok(
-    read(page).includes('<KeyboardAwareScrollView') &&
-      read(page).includes("bottomOffset={Platform.OS === 'android' ? 16 : 90}"),
-    page + ' must keep Android keyboard offset compact',
+    read(page).includes('<KeyboardResponsiveScrollView') &&
+      !read(page).includes('bottomOffset='),
+    page + ' keeps scroll while avoiding keyboard-sized ghost insets',
   );
 }
 console.log(
