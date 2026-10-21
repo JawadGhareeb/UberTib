@@ -42,32 +42,78 @@ export function AssessmentResultScreen() {
         </AppText>
       </View>
 
-      <View className="gap-2 rounded-[15px] border border-border-subtle bg-surface-default p-3">
-        <AppText align="right" variant="heading-4" className="font-ui-bold">
-          ملخص حالتك
-        </AppText>
-        {[
-          ['المشكلة', complaint || 'لم تُحدّد'],
-          ['المكان', location || 'لم يُحدّد'],
-          ['الأعراض', answers.length ? answers.join('، ') : 'غير محددة'],
-          ['المرفقات', mediaAttachments.length ? `${mediaAttachments.length} ملف` : 'بدون مرفقات'],
-        ].map(([label, value]) => (
-          <View
-            key={label}
-            className="min-h-[39px] flex-row-reverse items-start gap-2 border-b border-border-subtle py-2"
-          >
-            <AppText align="right" variant="label" className="w-[75px] font-ui-semibold">
-              {label}
+      <View className="gap-3 rounded-[16px] border border-border-subtle bg-surface-default p-3.5">
+        <View className="flex-row-reverse items-center gap-2.5">
+          <View className="h-10 w-10 items-center justify-center rounded-[11px] bg-action-subtle">
+            <AppIcon
+              name={{ ios: 'doc.text.magnifyingglass', android: 'summarize', web: 'summarize' }}
+              tone="action"
+              size={21}
+            />
+          </View>
+          <View className="min-w-0 flex-1 items-end gap-0.5">
+            <AppText align="right" variant="heading-4" className="font-ui-bold">
+              ملخص حالتك
             </AppText>
-            <AppText
-              align="right"
-              variant="caption"
-              className="min-w-0 flex-1 text-content-secondary"
-            >
-              {value}
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              حسب المعلومات اللي أدخلتها بالتقييم
             </AppText>
           </View>
-        ))}
+        </View>
+
+        <View className="gap-1.5 rounded-[12px] bg-action-subtle px-3 py-3">
+          <AppText align="right" variant="caption" className="text-content-secondary">
+            المشكلة الرئيسية
+          </AppText>
+          <AppText align="right" variant="label" className="font-ui-bold text-content-primary">
+            {complaint || 'لم تُحدّد'}
+          </AppText>
+        </View>
+
+        <View className="flex-row-reverse gap-2">
+          <View className="min-w-0 flex-1 gap-1 rounded-[12px] bg-surface-subtle px-3 py-3">
+            <AppIcon
+              name={{ ios: 'mappin', android: 'place', web: 'place' }}
+              tone="action"
+              size={17}
+            />
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              مكان المشكلة
+            </AppText>
+            <AppText align="right" variant="label" className="font-ui-semibold" numberOfLines={3}>
+              {location || 'لم يُحدّد'}
+            </AppText>
+          </View>
+          <View className="min-w-0 flex-1 gap-1 rounded-[12px] bg-surface-subtle px-3 py-3">
+            <AppIcon
+              name={{ ios: 'photo', android: 'image', web: 'image' }}
+              tone="action"
+              size={17}
+            />
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              المرفقات
+            </AppText>
+            <AppText align="right" variant="label" className="font-ui-semibold" numberOfLines={3}>
+              {mediaAttachments.length ? `${mediaAttachments.length} ملف` : 'بدون مرفقات'}
+            </AppText>
+          </View>
+        </View>
+
+        <View className="gap-1.5 border-t border-border-subtle pt-3">
+          <View className="flex-row-reverse items-center gap-2">
+            <AppIcon
+              name={{ ios: 'waveform.path.ecg', android: 'monitor_heart', web: 'monitor_heart' }}
+              tone="secondary"
+              size={17}
+            />
+            <AppText align="right" variant="label" className="font-ui-semibold">
+              الأعراض اللي ذكرتها
+            </AppText>
+          </View>
+          <AppText align="right" variant="label" className="text-content-secondary">
+            {answers.length ? answers.join('، ') : 'ما تم تحديد أعراض'}
+          </AppText>
+        </View>
       </View>
 
       <View className="gap-2 rounded-[14px] bg-surface-subtle p-3">

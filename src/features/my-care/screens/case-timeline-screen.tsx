@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 
 import { CareActionFooter } from '@/features/my-care/components/care-financial-ui';
+import { getCareStageSummary } from '@/features/my-care/model/care-overview-view';
 import {
   CareFilterTabs,
   CareV5Badge,
@@ -10,9 +11,19 @@ import {
   CareV5Header,
   CareV5TimelineRow,
 } from '@/features/my-care/components/care-v5-ui';
-import { getMockCareCaseForScenario, getMockCareReferenceLabel } from '@/features/my-care/mocks/care.mock';
+import {
+  getMockCareCaseForScenario,
+  getMockCareReferenceLabel,
+} from '@/features/my-care/mocks/care.mock';
 import { getMockClaimsForScenario } from '@/features/my-care/mocks/records.mock';
-import { AppIcon, AppText, Button, ReadStateBoundary, Screen, StateView } from '@/shared/components/ui';
+import {
+  AppIcon,
+  AppText,
+  Button,
+  ReadStateBoundary,
+  Screen,
+  StateView,
+} from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { cn } from '@/shared/utils/cn';
@@ -42,7 +53,8 @@ interface CaseEvent {
 export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
-  const { getSurfaceState, scenario, claimSubmissions, financialSubmissions, reviewSubmissions } = useMockScenario();
+  const { getSurfaceState, scenario, claimSubmissions, financialSubmissions, reviewSubmissions } =
+    useMockScenario();
   const [filter, setFilter] = useState<Filter>('الكل');
   const readState = getSurfaceState('care');
   const claimsReadState = getSurfaceState('claims');
@@ -64,8 +76,8 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
   // Only the first demo case has a populated finance/refund flow. Other cases
   // must never open its hard-coded financial records under a different case ID.
   const hasDemoFinancialRecord = caseId === 'case-001';
-  const submittedRefund = claimSubmissions.find((claim) =>
-    claim.caseId === caseId && claim.kind === 'refund',
+  const submittedRefund = claimSubmissions.find(
+    (claim) => claim.caseId === caseId && claim.kind === 'refund',
   );
   const openRefundFollowUp = () => {
     if (submittedRefund) {
@@ -84,16 +96,25 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
       title: event.title,
       detail: event.detail,
       date: event.dateLabel,
-      tag: event.title.includes('دفعة') ? 'مالية'
-        : event.title.includes('متابعة') ? 'متابعة'
-        : event.title.includes('الخطة') ? 'شروط مقبولة'
-        : event.title.includes('المرحلة') ? 'دليل ناقص'
-        : event.title.includes('تشخيص') ? 'سجل طبي'
-        : event.title.includes('استجابة') ? 'حجز'
-        : 'تقييم أولي',
-      tone: event.title.includes('دفعة') || event.title.includes('الخطة') ? 'success'
-        : event.title.includes('المرحلة') || event.title.includes('متابعة') ? 'warning'
-        : 'info',
+      tag: event.title.includes('دفعة')
+        ? 'مالية'
+        : event.title.includes('متابعة')
+          ? 'متابعة'
+          : event.title.includes('الخطة')
+            ? 'شروط مقبولة'
+            : event.title.includes('المرحلة')
+              ? 'دليل ناقص'
+              : event.title.includes('تشخيص')
+                ? 'سجل طبي'
+                : event.title.includes('استجابة')
+                  ? 'حجز'
+                  : 'تقييم أولي',
+      tone:
+        event.title.includes('دفعة') || event.title.includes('الخطة')
+          ? 'success'
+          : event.title.includes('المرحلة') || event.title.includes('متابعة')
+            ? 'warning'
+            : 'info',
       category: event.title.includes('دفعة') ? 'ماليات' : 'علاج',
       icon: event.title.includes('دفعة')
         ? { ios: 'banknote', android: 'payments', web: 'payments' }
@@ -108,7 +129,7 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
                 : event.title.includes('استجابة')
                   ? { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }
                   : { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' },
-    })), 
+    })),
     ...financialSubmissions
       .filter((event) => event.caseId === caseId)
       .map((event): CaseEvent => ({
@@ -119,7 +140,7 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
         tag: event.statusLabel,
         tone: 'warning',
         category: 'ماليات',
-        icon: { ios: 'banknote', android: 'payments', web: 'payments' }, 
+        icon: { ios: 'banknote', android: 'payments', web: 'payments' },
       })),
     ...[
       ...getMockClaimsForScenario(scenario).filter((claim) => claim.caseId === caseId),
@@ -133,13 +154,12 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
       tag: claim.statusLabel,
       tone: 'warning',
       category: 'مشكلات',
-      icon: { ios: 'exclamationmark.triangle', android: 'warning', web: 'warning' }, 
+      icon: { ios: 'exclamationmark.triangle', android: 'warning', web: 'warning' },
     })),
   ];
 
-  const visibleEvents = filter === 'الكل'
-    ? events
-    : events.filter((event) => event.category === filter);
+  const visibleEvents =
+    filter === 'الكل' ? events : events.filter((event) => event.category === filter);
 
   const openFinance = () =>
     router.push({ pathname: '/care/[caseId]/financial', params: { caseId } });
@@ -155,9 +175,11 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
         staleAtLabel="آخر تحديث محفوظ"
       >
         <ScrollView
-          contentContainerClassName={hasDemoFinancialRecord
-            ? 'mx-auto w-full max-w-[430px] px-4 pb-[156px] pt-2'
-            : 'mx-auto w-full max-w-[430px] px-4 pb-[98px] pt-2'}
+          contentContainerClassName={
+            hasDemoFinancialRecord
+              ? 'mx-auto w-full max-w-[430px] px-4 pb-[156px] pt-2'
+              : 'mx-auto w-full max-w-[430px] px-4 pb-[98px] pt-2'
+          }
           showsVerticalScrollIndicator={false}
         >
           <View className="rounded-[15px] border border-action-primary/30 bg-action-subtle p-3">
@@ -180,7 +202,12 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
                 tone={careCase.progress >= 100 ? 'success' : 'primary'}
               />
             </View>
-            <AppText align="right" className="mt-1 text-content-secondary" numberOfLines={2} variant="caption">
+            <AppText
+              align="right"
+              className="mt-1 text-content-secondary"
+              numberOfLines={2}
+              variant="caption"
+            >
               الحالة #{getMockCareReferenceLabel(caseId)} · {careCase.provider} · {careCase.branch}
             </AppText>
             <View className={cn('mt-2 items-center gap-2', rowClassName)}>
@@ -194,6 +221,29 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
             </View>
           </View>
 
+          <View className="mt-3 gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3">
+            <AppText align="right" variant="heading-4" className="font-ui-bold">
+              تفاصيل المرحلة الحالية
+            </AppText>
+            <AppText align="right" variant="label" className="font-ui-semibold">
+              {getCareStageSummary(careCase).current?.title ??
+                (careCase.progress >= 100 ? 'العلاج مكتمل' : 'تابع تفاصيل العلاج')}
+            </AppText>
+            {careCase.progress < 100 && careCase.nextAction !== 'لا يوجد إجراء مطلوب' ? (
+              <View className="gap-1 border-t border-border-subtle pt-2">
+                <AppText align="right" variant="caption" className="text-content-secondary">
+                  الإجراء التالي
+                </AppText>
+                <AppText align="right" variant="label">
+                  {careCase.nextAction}
+                </AppText>
+                <AppText align="right" variant="caption" className="text-content-secondary">
+                  {careCase.nextDateLabel}
+                </AppText>
+              </View>
+            ) : null}
+          </View>
+
           {careCase.progress >= 100 && reviewsAvailable ? (
             <View className="mt-2 rounded-[13px] border border-tone-success-border bg-tone-success-fill p-[10px]">
               <View className={cn('items-center gap-2', rowClassName)}>
@@ -203,7 +253,11 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
                   tone="success"
                 />
                 <View className="min-w-0 flex-1 items-end">
-                  <AppText align="right" className="font-ui-semibold text-content-primary" variant="label">
+                  <AppText
+                    align="right"
+                    className="font-ui-semibold text-content-primary"
+                    variant="label"
+                  >
                     {submittedReview ? 'تم إرسال تقييمك لهذه الحالة' : 'اكتمل العلاج، قيّم تجربتك'}
                   </AppText>
                   <AppText align="right" className="text-content-secondary" variant="caption">
@@ -218,15 +272,17 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
                 endIcon={{ ios: 'star', android: 'star', web: 'star' }}
                 label={submittedReview ? 'عرض تقييمي' : 'تقييم الحالة المكتملة'}
                 onPress={() =>
-                  router.push(submittedReview
-                    ? {
-                        pathname: '/care/[caseId]/reviews/[reviewId]',
-                        params: { caseId, reviewId: submittedReview.id },
-                      }
-                    : {
-                        pathname: '/care/[caseId]/reviews/new',
-                        params: { caseId },
-                      })
+                  router.push(
+                    submittedReview
+                      ? {
+                          pathname: '/care/[caseId]/reviews/[reviewId]',
+                          params: { caseId, reviewId: submittedReview.id },
+                        }
+                      : {
+                          pathname: '/care/[caseId]/reviews/new',
+                          params: { caseId },
+                        },
+                  )
                 }
               />
             </View>
@@ -243,10 +299,12 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
               <Button
                 className="h-[44px] rounded-[12px]"
                 label="التحقق من حالة الدفعة"
-                onPress={() => router.push({
-                  pathname: '/care/[caseId]/financial/timeline',
-                  params: { caseId },
-                })}
+                onPress={() =>
+                  router.push({
+                    pathname: '/care/[caseId]/financial/timeline',
+                    params: { caseId },
+                  })
+                }
                 size="sm"
                 variant="outline"
               />
@@ -267,10 +325,12 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
                 disabled={claimsReadState !== 'success'}
                 endIcon={{ ios: 'plus.bubble', android: 'add_comment', web: 'add_comment' }}
                 label="إنشاء شكوى"
-                onPress={() => router.push({
-                  pathname: '/care/[caseId]/claims',
-                  params: { caseId },
-                })}
+                onPress={() =>
+                  router.push({
+                    pathname: '/care/[caseId]/claims',
+                    params: { caseId },
+                  })
+                }
                 size="sm"
               />
               {hasDemoFinancialRecord ? (
@@ -283,10 +343,12 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
                     web: 'report_problem',
                   }}
                   label="فتح نزاع على دفعة"
-                  onPress={() => router.push({
-                    pathname: '/care/[caseId]/claims',
-                    params: { caseId, issue: 'payment' },
-                  })}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/care/[caseId]/claims',
+                      params: { caseId, issue: 'payment' },
+                    })
+                  }
                   size="sm"
                   variant="outline"
                 />
@@ -301,10 +363,12 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
                     web: 'undo',
                   }}
                   label="طلب استرداد"
-                  onPress={() => router.push({
-                    pathname: '/care/[caseId]/claims',
-                    params: { caseId, issue: 'refund' },
-                  })}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/care/[caseId]/claims',
+                      params: { caseId, issue: 'refund' },
+                    })
+                  }
                   size="sm"
                   variant="outline"
                 />
@@ -371,29 +435,30 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
           <AppText className="mt-1 text-content-secondary" variant="badge">
             يظهر المحتوى من سجلّ الحالة وملفاتها؛ الإجراءات المالية والسريرية تُراجع بحسب الحالة.
           </AppText>
-
         </ScrollView>
 
         <CareActionFooter>
-            <Button
-              className="h-[52px] rounded-[12px]"
-              endIcon={{ ios: 'doc.text.fill', android: 'description', web: 'description' }}
-              label="خطتي العلاجية"
-              onPress={() =>
-                router.push({ pathname: '/care/[caseId]/plan', params: { caseId } })
-              }
-            />
-            {hasDemoFinancialRecord ? (
+          <Button
+            className="h-[52px] rounded-[12px]"
+            endIcon={{ ios: 'doc.text.fill', android: 'description', web: 'description' }}
+            label="خطتي العلاجية"
+            onPress={() => router.push({ pathname: '/care/[caseId]/plan', params: { caseId } })}
+          />
+          {hasDemoFinancialRecord ? (
             <Button
               className="h-11 rounded-[11px]"
-              endIcon={{ ios: 'building.columns.fill', android: 'account_balance', web: 'account_balance' }}
+              endIcon={{
+                ios: 'building.columns.fill',
+                android: 'account_balance',
+                web: 'account_balance',
+              }}
               label="الشروط المالية"
               onPress={openFinance}
               size="sm"
               variant="secondary"
             />
-            ) : null}
-          </CareActionFooter>
+          ) : null}
+        </CareActionFooter>
       </ReadStateBoundary>
     </Screen>
   );

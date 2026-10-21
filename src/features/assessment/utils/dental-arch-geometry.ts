@@ -54,7 +54,7 @@ export function dentalArchPoints(
   const centerX = width / 2;
   const radiusX = Math.max(50, (width - 62) / 2);
   const radiusY = Math.min(88, radiusX * 0.71);
-  const baseline = lower ? 221 : 121;
+  const baseline = lower ? 252 : 115;
   // Arc-length sampling prevents molars from bunching at the sides of the U.
   const samples = 180;
   const points = Array.from({ length: samples + 1 }, (_, i) => {

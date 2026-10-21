@@ -20,8 +20,6 @@ interface DentalArchSelectorProps {
   selectedTeeth: string[];
   location: string;
   onToggleTooth: (tooth: string) => void;
-  onSelectRegion: () => void;
-  onSelectGum: () => void;
   onClear: () => void;
 }
 
@@ -156,8 +154,6 @@ export function DentalArchSelector({
   selectedTeeth,
   location,
   onToggleTooth,
-  onSelectRegion,
-  onSelectGum,
   onClear,
 }: DentalArchSelectorProps) {
   const { colors } = useAppTheme();
@@ -188,7 +184,7 @@ export function DentalArchSelector({
   const radiusX = Math.max(50, (width - 62) / 2);
   const radiusY = Math.min(88, radiusX * 0.71);
   const curve = (lowerArch: boolean) => {
-    const baseline = lowerArch ? 221 : 121;
+    const baseline = lowerArch ? 252 : 115;
     const dir = lowerArch ? 1 : -1;
     return `M ${width / 2 - radiusX} ${baseline} C ${width / 2 - radiusX} ${baseline + dir * radiusY * 0.8}, ${width / 2 - radiusX * 0.6} ${baseline + dir * radiusY}, ${width / 2} ${baseline + dir * radiusY} C ${width / 2 + radiusX * 0.6} ${baseline + dir * radiusY}, ${width / 2 + radiusX} ${baseline + dir * radiusY * 0.8}, ${width / 2 + radiusX} ${baseline}`;
   };
@@ -200,7 +196,7 @@ export function DentalArchSelector({
       </AppText>
       <View
         className="w-full overflow-hidden rounded-[18px] bg-surface-subtle"
-        style={{ height: 345 }}
+        style={{ height: 397 }}
         onLayout={(event) => {
           const next = Math.floor(event.nativeEvent.layout.width);
           if (next >= 230 && next !== width) setWidth(next);
@@ -210,7 +206,7 @@ export function DentalArchSelector({
           accessible={false}
           pointerEvents="none"
           width={width}
-          height={345}
+          height={397}
           className="absolute left-0 top-0"
         >
           <Path
@@ -262,7 +258,7 @@ export function DentalArchSelector({
         ))}
         <View
           pointerEvents="none"
-          className="absolute left-0 right-0 top-[138px] items-center gap-1"
+          className="absolute left-0 right-0 top-[159px] items-center gap-8"
         >
           <AppText variant="caption" className="font-ui-semibold text-content-secondary">
             الفك العلوي
@@ -271,15 +267,14 @@ export function DentalArchSelector({
             الفك السفلي
           </AppText>
         </View>
-        <View
-          pointerEvents="none"
-          className="absolute bottom-2 left-3 right-3 flex-row justify-between"
-        >
-          <AppText variant="caption" className="text-content-secondary">
-            يمينك
-          </AppText>
+        <View pointerEvents="none" className="absolute bottom-3 left-3">
           <AppText variant="caption" className="text-content-secondary">
             يسارك
+          </AppText>
+        </View>
+        <View pointerEvents="none" className="absolute bottom-3 right-3">
+          <AppText variant="caption" className="text-content-secondary">
+            يمينك
           </AppText>
         </View>
       </View>
@@ -310,32 +305,6 @@ export function DentalArchSelector({
           </Pressable>
         </View>
       ) : null}
-      <View className="flex-row-reverse gap-2">
-        <Pressable
-          accessibilityRole="button"
-          onPress={onSelectRegion}
-          className="min-h-[43px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[11px] border border-border-subtle"
-        >
-          <AppIcon name={{ ios: 'map', android: 'map', web: 'map' }} size={16} tone="action" />
-          <AppText variant="caption" className="font-ui-semibold">
-            تحديد منطقة
-          </AppText>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onSelectGum}
-          className="min-h-[43px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[11px] border border-border-subtle"
-        >
-          <AppIcon
-            name={{ ios: 'cross.case', android: 'dentistry', web: 'dentistry' }}
-            size={16}
-            tone="action"
-          />
-          <AppText variant="caption" className="font-ui-semibold">
-            منطقة اللثة
-          </AppText>
-        </Pressable>
-      </View>
     </View>
   );
 }

@@ -17,16 +17,20 @@ export function SectionTabs<T extends string>({
   value,
   onValueChange,
   stacked = false,
+  solidActive = false,
 }: {
   items: readonly SectionTabOption<T>[];
   value: T;
   onValueChange: (value: T) => void;
   stacked?: boolean;
+  solidActive?: boolean;
 }) {
   return (
     <Tabs value={value} onValueChange={(next) => onValueChange(next as T)} variant="primary">
       <Tabs.List className="rounded-[15px] bg-surface-subtle p-1" style={{ direction: 'rtl' }}>
-        <Tabs.Indicator className="rounded-[11px]" />
+        <Tabs.Indicator
+          className={solidActive ? 'rounded-[11px] bg-action-primary' : 'rounded-[11px]'}
+        />
         {items.map((item) => (
           <Tabs.Trigger
             key={item.value}
@@ -43,11 +47,20 @@ export function SectionTabs<T extends string>({
               {item.icon ? (
                 <AppIcon
                   name={item.icon}
-                  tone={value === item.value ? 'action' : 'secondary'}
+                  tone={value === item.value ? (solidActive ? 'onAction' : 'action') : 'secondary'}
                   size={16}
                 />
               ) : null}
-              <Tabs.Label numberOfLines={1} className="text-center font-ui-semibold">
+              <Tabs.Label
+                numberOfLines={1}
+                className={
+                  solidActive
+                    ? value === item.value
+                      ? 'text-center font-ui-semibold text-content-on-action'
+                      : 'text-center font-ui-semibold text-content-primary'
+                    : 'text-center font-ui-semibold'
+                }
+              >
                 {item.label}
               </Tabs.Label>
               {item.count ? (

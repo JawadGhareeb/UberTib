@@ -39,7 +39,7 @@ function SummaryRow({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={'تعديل ' + title}
-        className="min-h-[42px] min-w-[48px] items-center justify-center"
+        className="min-h-[38px] min-w-[58px] items-center justify-center rounded-[10px] bg-action-subtle px-2"
         onPress={onEdit}
       >
         <AppText variant="caption" className="font-ui-semibold text-content-link">

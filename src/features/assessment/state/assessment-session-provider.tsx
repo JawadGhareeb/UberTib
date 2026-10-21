@@ -47,7 +47,8 @@ const AssessmentSessionContext = createContext<AssessmentSessionContextValue | n
 
 function suggestedDentition(patient: AssessmentPatient): DentitionMode {
   if (patient === 'adam') return 'primary';
-  if (patient === 'nour') return 'mixed';
+  // The selection UI offers only permanent and primary dentition.
+  if (patient === 'nour') return 'permanent';
   return 'permanent';
 }
 

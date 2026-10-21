@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { Checkbox } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
@@ -73,12 +73,11 @@ export function AssessmentQuestionsScreen() {
           {answers.map((answer) => {
             const selected = selectedAnswers.includes(answer);
             return (
-              <Pressable
+              <Checkbox
                 key={answer}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: selected }}
+                isSelected={selected}
+                onSelectedChange={() => toggleAnswer(answer)}
                 accessibilityLabel={answer}
-                onPress={() => toggleAnswer(answer)}
                 className={cn(
                   'min-h-[52px] w-full flex-row-reverse items-center gap-3 rounded-[12px] border px-3 py-2.5',
                   selected
@@ -86,11 +85,7 @@ export function AssessmentQuestionsScreen() {
                     : 'border-border-subtle bg-surface-default',
                 )}
               >
-                <View pointerEvents="none" className="h-6 w-6 shrink-0 items-center justify-center">
-                  <Checkbox isSelected={selected} animation="disable-all">
-                    <Checkbox.Indicator />
-                  </Checkbox>
-                </View>
+                <Checkbox.Indicator />
                 <AppText
                   align="right"
                   variant="label"
@@ -102,7 +97,7 @@ export function AssessmentQuestionsScreen() {
                 >
                   {answer}
                 </AppText>
-              </Pressable>
+              </Checkbox>
             );
           })}
         </View>

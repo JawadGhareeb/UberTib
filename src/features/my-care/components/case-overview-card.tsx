@@ -3,7 +3,7 @@ import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { View } from 'react-native';
 
 import { CenteredActionIcon } from '@/shared/components/ui/centered-action-icon';
-import { AppIcon, AppText } from '@/shared/components/ui';
+import { AppText } from '@/shared/components/ui';
 import type { MockCareCase } from '../mocks/care.mock';
 import { getCareStageSummary } from '../model/care-overview-view';
 import { CareCaseStatusBadge } from './care-case-status-badge';
@@ -31,11 +31,8 @@ function CareProgressTrack({ progress }: { progress: number }) {
 /** The single card style for every treatment case, with two explicit actions. */
 export function CaseRow({ item }: { item: MockCareCase }) {
   const router = useRouter();
-  const complete = item.progress >= 100;
-  const { current, finished, total } = getCareStageSummary(item);
+  const { finished, total } = getCareStageSummary(item);
   const progress = Math.min(100, Math.max(0, item.progress));
-  const nextAction =
-    !complete && item.nextAction !== 'لا يوجد إجراء مطلوب' ? item.nextAction : undefined;
 
   const openDetails = () =>
     router.push({ pathname: '/care/[caseId]/timeline', params: { caseId: item.id } });
@@ -80,44 +77,6 @@ export function CaseRow({ item }: { item: MockCareCase }) {
           <CareProgressTrack progress={progress} />
         </View>
       ) : null}
-
-      <View className="gap-2 rounded-[11px] bg-surface-subtle px-3 py-3">
-        <View className="flex-row-reverse items-center justify-between gap-2">
-          <AppText variant="caption" align="right" className="text-content-secondary">
-            المرحلة الحالية
-          </AppText>
-          <AppText
-            variant="label"
-            align="right"
-            className="min-w-0 flex-1 font-ui-semibold"
-            numberOfLines={2}
-          >
-            {current?.title ?? (complete ? 'العلاج مكتمل' : 'تابع تفاصيل العلاج')}
-          </AppText>
-        </View>
-        {nextAction ? (
-          <View className="flex-row-reverse items-start gap-2">
-            <AppIcon
-              name={{ ios: 'info.circle', android: 'info_outline', web: 'info_outline' }}
-              size={17}
-              tone="action"
-            />
-            <View className="min-w-0 flex-1 items-end gap-0.5">
-              <AppText variant="caption" align="right" className="font-ui-medium" numberOfLines={2}>
-                {nextAction}
-              </AppText>
-              <AppText
-                variant="caption"
-                align="right"
-                className="text-content-secondary"
-                numberOfLines={1}
-              >
-                {item.nextDateLabel}
-              </AppText>
-            </View>
-          </View>
-        ) : null}
-      </View>
 
       <View className="flex-row-reverse gap-2">
         <HeroButton

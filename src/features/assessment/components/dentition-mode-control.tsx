@@ -6,8 +6,6 @@ import { View } from 'react-native';
 const modes: { value: DentitionMode; label: string }[] = [
   { value: 'permanent', label: 'دائمة' },
   { value: 'primary', label: 'لبنية' },
-  { value: 'mixed', label: 'مختلطة' },
-  { value: 'uncertain', label: 'غير متأكد' },
 ];
 
 export function DentitionModeControl({
@@ -27,7 +25,12 @@ export function DentitionModeControl({
           يمكنك تغييره
         </AppText>
       </View>
-      <SectionTabs items={modes} value={value} onValueChange={onChange} />
+      <SectionTabs
+        items={modes}
+        value={value === 'primary' ? 'primary' : 'permanent'}
+        onValueChange={onChange}
+        solidActive
+      />
     </View>
   );
 }

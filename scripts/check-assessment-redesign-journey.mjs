@@ -136,6 +136,52 @@ assert.ok(
     stepper.includes('accessibilityRole="progressbar"'),
 );
 assert.ok(
+  stepper.includes('{number}/{steps.length}') &&
+    stepper.includes('height: 6') &&
+    stepper.includes('direction="ltr"'),
+  'Step progress must display 1/8 format with a visible single rail',
+);
+assert.ok(
+  location.includes('solidActive') &&
+    read('src/features/assessment/components/dentition-mode-control.tsx').includes('solidActive') &&
+    read('src/shared/components/ui/section-tabs.tsx').includes('text-content-on-action'),
+  'Selected HeroUI tabs must use brand-filled background with contrast text',
+);
+assert.ok(
+  !chart.includes('تحديد منطقة') &&
+    !chart.includes('منطقة اللثة') &&
+    chart.includes('left-3') &&
+    chart.includes('right-3'),
+  'Dental diagram should not duplicate region buttons and must anchor directional text',
+);
+assert.ok(
+  read('src/features/assessment/components/dentition-mode-control.tsx').includes(
+    "label: 'دائمة'",
+  ) &&
+    read('src/features/assessment/components/dentition-mode-control.tsx').includes(
+      "label: 'لبنية'",
+    ) &&
+    !read('src/features/assessment/components/dentition-mode-control.tsx').includes(
+      "label: 'مختلطة'",
+    ),
+  'Dentition selector must have two visible choices',
+);
+assert.ok(
+  review.includes('rounded-[10px] bg-action-subtle px-2') &&
+    result.includes('ملخص حالتك') &&
+    result.includes('المشكلة الرئيسية') &&
+    result.includes('الأعراض اللي ذكرتها'),
+  'Review edit actions and result summary require the revised visual rhythm',
+);
+assert.ok(
+  !read('src/features/my-care/components/case-overview-card.tsx').includes('المرحلة الحالية') &&
+    read('src/features/my-care/screens/case-timeline-screen.tsx').includes(
+      'تفاصيل المرحلة الحالية',
+    ) &&
+    read('src/features/my-care/screens/case-timeline-screen.tsx').includes('{careCase.nextAction}'),
+  'Case cards must omit the grey stage box while timeline details retain the actual stage and next action',
+);
+assert.ok(
   start.includes('تصفّح الخدمات') &&
     start.includes("router.push('/(tabs)/discover')") &&
     !start.includes('لديك تقييم غير مكتمل'),
@@ -148,7 +194,7 @@ assert.ok(
 assert.ok(
   complaint.includes('<RadioGroup.Item') &&
     questions.includes('<Checkbox') &&
-    questions.includes('accessibilityRole="checkbox"'),
+    questions.includes('onSelectedChange={() => toggleAnswer(answer)}'),
 );
 assert.ok(
   health.includes('<Accordion') &&

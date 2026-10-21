@@ -28,18 +28,19 @@ export function AssessmentJourneyProgress({ phase }: { phase: string }) {
         <AppText variant="label" className="font-ui-semibold">
           {label}
         </AppText>
-        <AppText variant="caption" className="text-content-secondary">
-          {number} من {steps.length}
+        <AppText direction="ltr" variant="label" className="font-ui-semibold text-content-link">
+          {number}/{steps.length}
         </AppText>
       </View>
       <View
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 0, max: steps.length, now: number }}
-        className="h-[6px] w-full overflow-hidden rounded-full bg-border-subtle"
+        className="w-full overflow-hidden rounded-full bg-border-subtle"
+        style={{ height: 6, flexShrink: 0 }}
       >
         <View
-          className="h-full rounded-full bg-action-primary"
-          style={{ width: `${(number / steps.length) * 100}%` }}
+          className="rounded-full bg-action-primary"
+          style={{ width: `${(number / steps.length) * 100}%`, height: 6 }}
         />
       </View>
     </View>

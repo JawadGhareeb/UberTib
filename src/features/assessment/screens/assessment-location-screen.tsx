@@ -64,6 +64,7 @@ export function AssessmentLocationScreen() {
         ]}
         value={showRegions ? 'region' : 'chart'}
         onValueChange={(next) => setShowRegions(next === 'region')}
+        solidActive
       />
       {showRegions ? (
         <View className="gap-3 rounded-[17px] border border-border-subtle bg-surface-default p-3">
@@ -105,8 +106,6 @@ export function AssessmentLocationScreen() {
           mode={dentitionMode}
           selectedTeeth={selectedTeeth}
           onClear={clearDentalSelection}
-          onSelectRegion={() => setShowRegions(true)}
-          onSelectGum={() => setRegionLocation('منطقة اللثة')}
           onToggleTooth={toggleTooth}
         />
       )}
