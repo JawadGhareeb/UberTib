@@ -3,8 +3,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Image, Pressable, View } from 'react-native';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
+import { IntroArtwork } from '@/features/app-entry/components/intro-artwork';
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import {
   MediaSourceDialog,
@@ -15,8 +15,6 @@ import {
   type AssessmentMediaAttachment,
 } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
-import { theme } from '@/shared/theme';
-import { useAppTheme } from '@/shared/theme/use-app-theme';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
@@ -98,85 +96,6 @@ function readableSize(size?: number): string {
   return size < 1048576
     ? Math.max(1, Math.round(size / 1024)) + ' KB'
     : (size / 1048576).toFixed(1) + ' MB';
-}
-
-function FocusGuide() {
-  const { scheme, colors } = useAppTheme();
-  return (
-    <Svg width="100%" height={110} viewBox="0 0 320 110" accessible={false}>
-      <Rect
-        x={67}
-        y={21}
-        width={186}
-        height={70}
-        rx={35}
-        fill={theme.illustration.warm[scheme].surface}
-        stroke={theme.illustration.warm[scheme].border}
-        strokeWidth={2}
-      />
-      <Rect
-        x={122}
-        y={38}
-        width={76}
-        height={37}
-        rx={19}
-        fill={colors.action.subtle}
-        stroke={colors.action.primary}
-        strokeWidth={2}
-      />
-      <Circle
-        cx={219}
-        cy={56}
-        r={8}
-        stroke={colors.action.primary}
-        strokeWidth={2}
-        strokeDasharray="3 5"
-        fill="none"
-      />
-      <Path
-        d="M25 48 V39 H34 M48 39 H57 V48 M25 62 V71 H34 M48 71 H57 V62 M263 48 V39 H272 M286 39 H295 V48 M263 62 V71 H272 M286 71 H295 V62"
-        stroke={colors.action.primary}
-        strokeWidth={2.3}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </Svg>
-  );
-}
-
-function QualityExample({ good }: { good: boolean }) {
-  return (
-    <View
-      className={
-        'min-h-[97px] flex-1 items-center justify-center gap-1.5 rounded-[13px] ' +
-        (good ? 'bg-tone-success-fill' : 'bg-surface-subtle')
-      }
-    >
-      <AppIcon
-        name={
-          good
-            ? { ios: 'checkmark.seal', android: 'verified', web: 'verified' }
-            : { ios: 'photo', android: 'hide_image', web: 'hide_image' }
-        }
-        size={30}
-        tone={good ? 'success' : 'secondary'}
-      />
-      <AppText
-        className={'font-ui-bold ' + (good ? 'text-tone-success-text' : 'text-content-secondary')}
-        variant="label"
-      >
-        {good ? 'واضح' : 'غير واضح'}
-      </AppText>
-      <AppText
-        className="text-content-secondary"
-        style={{ fontSize: 10, lineHeight: 15 }}
-        variant="caption"
-      >
-        {good ? 'المنطقة كاملة' : 'بعيد أو مظلم'}
-      </AppText>
-    </View>
-  );
 }
 
 export function AssessmentMediaScreen() {
@@ -322,9 +241,9 @@ export function AssessmentMediaScreen() {
 
   return (
     <AssessmentScaffold
-      title="هل لديك صورة أو ملف يساعدنا؟"
+      title="أضف صوراً أو ملفات (اختياري)"
       phase="الصور والملفات"
-      primaryLabel="متابعة بدون إضافة أخرى"
+      primaryLabel={mediaAttachments.length ? 'متابعة' : 'متابعة بدون مرفقات'}
       primaryDisabled={picking || sourceLaunching || sourceDialogOpen}
       onPrimary={() => {
         if (returnTo === 'review') {
@@ -345,7 +264,7 @@ export function AssessmentMediaScreen() {
         </AppText>
       }
     >
-      <View className="mt-2 rounded-[20px] border border-action-primary/25 bg-action-subtle p-3">
+      <View className="gap-3 rounded-[17px] border border-border-subtle bg-surface-default p-3">
         <View className="flex-row-reverse items-center gap-2">
           <Pressable
             accessibilityLabel="إضافة صورة أو ملف"
@@ -360,8 +279,8 @@ export function AssessmentMediaScreen() {
               tone="action"
             />
           </Pressable>
-          <AppText className="min-w-0 flex-1 font-ui-bold text-content-link" variant="label">
-            صور المنطقة المتأثرة
+          <AppText className="min-w-0 flex-1 font-ui-bold" variant="label">
+            أرفق صورة للأسنان أو الأشعة
           </AppText>
           <View className="rounded-full bg-surface-default px-2.5 py-1">
             <AppText style={{ fontSize: 10 }} variant="caption">
@@ -373,7 +292,7 @@ export function AssessmentMediaScreen() {
         <Pressable
           accessibilityLabel="اختيار مصدر الصورة أو الملف"
           accessibilityRole="button"
-          className="mt-2 min-h-[125px] items-center justify-center overflow-hidden rounded-[16px] border border-action-primary/25 bg-surface-default px-2"
+          className="min-h-[166px] items-center justify-center overflow-hidden rounded-[14px] border-2 border-dashed border-action-primary/40 bg-action-subtle px-3 py-3"
           disabled={picking || sourceLaunching}
           onPress={openMediaSource}
         >
@@ -385,19 +304,27 @@ export function AssessmentMediaScreen() {
               source={{ uri: firstImage.uri }}
             />
           ) : (
-            <FocusGuide />
+            <View className="w-full items-center gap-1">
+              <IntroArtwork step={0} height={115} />
+              <AppText variant="label" className="font-ui-semibold text-content-link">
+                اضغط لإضافة صورة أو ملف
+              </AppText>
+              <AppText align="center" variant="caption" className="text-content-secondary">
+                من الكاميرا أو المعرض أو ملفات الجهاز
+              </AppText>
+            </View>
           )}
         </Pressable>
         <AppText
           align="right"
-          className="mt-2 text-content-link"
+          className="text-content-secondary"
           style={{ fontSize: 10.5, lineHeight: 17 }}
           variant="caption"
         >
           قرّب الكاميرا · استخدم ضوءاً واضحاً · أظهر المنطقة كاملة
         </AppText>
         <Button
-          className="mt-2 h-12"
+          className="min-h-[48px] rounded-[12px]"
           endIcon={{ ios: 'plus', android: 'add', web: 'add' }}
           label="إضافة صورة أو ملف"
           loading={picking || sourceLaunching}
@@ -406,41 +333,15 @@ export function AssessmentMediaScreen() {
         />
       </View>
 
-      <View className="mt-2 rounded-[18px] border border-border-subtle bg-surface-default p-3">
-        <AppText
-          align="right"
-          className="font-ui-semibold"
-          style={{ fontSize: 11, lineHeight: 18 }}
-          variant="label"
-        >
-          مثال سريع قبل الالتقاط
+      <View className="flex-row-reverse items-start gap-2 rounded-[11px] bg-tone-info-fill px-3 py-3">
+        <AppIcon
+          name={{ ios: 'info.circle', android: 'info_outline', web: 'info_outline' }}
+          tone="info"
+          size={17}
+        />
+        <AppText align="right" variant="caption" className="min-w-0 flex-1 text-tone-info-text">
+          إضافة الملفات اختيارية. تأكد إن الصورة واضحة، وتستطيع حذفها قبل متابعة التقييم.
         </AppText>
-        <View className="mt-2 flex-row-reverse gap-2">
-          <QualityExample good />
-          <QualityExample good={false} />
-        </View>
-      </View>
-      <View className="mt-2 flex-row-reverse gap-2">
-        <View className="min-h-[33px] flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[9px] bg-tone-success-fill">
-          <AppIcon
-            name={{ ios: 'checkmark.circle', android: 'check_circle', web: 'check_circle' }}
-            size={14}
-            tone="success"
-          />
-          <AppText className="text-tone-success-text" style={{ fontSize: 10.5 }} variant="caption">
-            الجودة مناسبة
-          </AppText>
-        </View>
-        <View className="min-h-[33px] flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[9px] bg-surface-subtle">
-          <AppIcon
-            name={{ ios: 'photo', android: 'hide_image', web: 'hide_image' }}
-            size={14}
-            tone="secondary"
-          />
-          <AppText style={{ fontSize: 10.5 }} variant="caption">
-            أعد الالتقاط
-          </AppText>
-        </View>
       </View>
 
       {mediaAttachments.length ? (
@@ -520,19 +421,19 @@ export function AssessmentMediaScreen() {
         </View>
       ) : null}
 
-      <View className="mt-3">
+      <View className="gap-2">
         <View className="flex-row-reverse items-center justify-between gap-2">
           <AppText className="font-ui-bold" variant="label">
             أنواع ملفات نتعرّف عليها
           </AppText>
-          <AppText className="text-content-secondary" style={{ fontSize: 9.5 }} variant="caption">
+          <AppText className="text-content-secondary" variant="caption">
             صورة، تقرير، أشعة أو مسح
           </AppText>
         </View>
-        <View className="mt-2 flex-row-reverse flex-wrap justify-between gap-y-[6px]">
+        <View className="flex-row-reverse flex-wrap justify-between gap-y-2">
           {mediaTypes.map((type) => (
             <View
-              className="h-[59px] w-[19%] items-center justify-center gap-1 rounded-[11px] border border-border-subtle bg-surface-default px-0.5"
+              className="min-h-[70px] w-[31.8%] items-center justify-center gap-1.5 rounded-[12px] border border-border-subtle bg-surface-default px-2 py-2"
               key={type.label}
             >
               <AppIcon name={type.icon} size={20} tone="action" />
@@ -540,7 +441,7 @@ export function AssessmentMediaScreen() {
                 align="center"
                 className="font-ui-semibold"
                 numberOfLines={1}
-                style={{ fontSize: 9.5, lineHeight: 15 }}
+                style={{ fontSize: 11, lineHeight: 17 }}
                 variant="caption"
               >
                 {type.label}
@@ -550,7 +451,7 @@ export function AssessmentMediaScreen() {
         </View>
         <AppText
           align="right"
-          className="mt-1.5 text-content-secondary"
+          className="mt-1 text-content-secondary"
           style={{ fontSize: 9.5, lineHeight: 15 }}
           variant="caption"
         >

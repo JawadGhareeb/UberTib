@@ -3,7 +3,7 @@ import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 import { theme } from '@/shared/theme';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 
-export function IntroArtwork({ step }: { step: 0 | 1 }) {
+export function IntroArtwork({ step, height = 280 }: { step: 0 | 1; height?: number }) {
   const { colors } = useAppTheme();
   const teal = theme.brand.mark;
   const ink = colors.text.primary;
@@ -17,7 +17,7 @@ export function IntroArtwork({ step }: { step: 0 | 1 }) {
       accessibilityRole="image"
       className="w-full items-center justify-center"
     >
-      <Svg width="100%" height={280} viewBox="0 0 320 280" fill="none">
+      <Svg width="100%" height={height} viewBox="0 0 320 280" fill="none">
         {step === 0 ? (
           <>
             <Circle cx="160" cy="139" r="116" fill={colors.action.subtle} />

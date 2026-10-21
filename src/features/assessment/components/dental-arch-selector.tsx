@@ -1,134 +1,19 @@
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { Checkbox } from 'heroui-native';
+import Svg, { Path } from 'react-native-svg';
 
 import type { DentitionMode } from '@/features/assessment/state/assessment-session-provider';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import {
+  dentalArchPoints,
+  PERMANENT_LOWER,
+  PERMANENT_UPPER,
+  PRIMARY_LOWER,
+  PRIMARY_UPPER,
+  toothShapeForCode,
+} from '@/features/assessment/utils/dental-arch-geometry';
 import { AppIcon, AppText } from '@/shared/components/ui';
-import { ToothSvg, type ToothShape } from '@/shared/components/ui/tooth-svg';
-import { MixedToothTarget } from '@/features/assessment/components/mixed-tooth-target';
-import { cn } from '@/shared/utils/cn';
-
-const permanentUpper = [
-  '18',
-  '17',
-  '16',
-  '15',
-  '14',
-  '13',
-  '12',
-  '11',
-  '21',
-  '22',
-  '23',
-  '24',
-  '25',
-  '26',
-  '27',
-  '28',
-];
-const permanentLower = [
-  '48',
-  '47',
-  '46',
-  '45',
-  '44',
-  '43',
-  '42',
-  '41',
-  '31',
-  '32',
-  '33',
-  '34',
-  '35',
-  '36',
-  '37',
-  '38',
-];
-const primaryUpper = ['55', '54', '53', '52', '51', '61', '62', '63', '64', '65'];
-const primaryLower = ['85', '84', '83', '82', '81', '71', '72', '73', '74', '75'];
-
-function toothKind(code: string, primary: boolean): ToothShape {
-  const position = Number(code[1]);
-  if (position <= 2) return 'incisor';
-  if (position === 3) return 'canine';
-  if (!primary && position <= 5) return 'premolar';
-  return 'molar';
-}
-
-// Use one curvature profile for both arches, mirrored vertically. The old
-// lower-specific offsets flattened the bottom teeth relative to the top row.
-function toothOffset(code: string, _lower: boolean, primary: boolean): number {
-  const position = Number(code[1]);
-  if (primary) return [0, 0, 1, 4, 9, 13][position] ?? 0;
-  return [0, 30, 30, 27, 24, 22, 18, 16, 14][position] ?? 14;
-}
-
-function ToothTarget({
-  code,
-  selected,
-  primary,
-  lower,
-  scale,
-  onPress,
-}: {
-  code: string;
-  selected: boolean;
-  primary: boolean;
-  lower: boolean;
-  scale: number;
-  onPress: () => void;
-}) {
-  const kind = toothKind(code, primary);
-  const primaryWidth = kind === 'molar' ? 20 : kind === 'canine' ? 16 : 15;
-  const permanentWidth = kind === 'molar' ? 18 : kind === 'premolar' ? 16 : 14;
-  const width = primary ? primaryWidth : permanentWidth;
-  const glyphHeight = primary ? 35 : 37;
-
-  return (
-    <Checkbox
-      isSelected={selected}
-      onSelectedChange={onPress}
-      accessibilityLabel={`السن ${code}`}
-      className="min-h-[90px] min-w-0 flex-1 items-center justify-center overflow-visible"
-      hitSlop={{ top: 3, bottom: 3 }}
-      style={{
-        paddingTop: !lower ? toothOffset(code, lower, primary) : 0,
-        paddingBottom: lower ? toothOffset(code, lower, primary) : 0,
-        overflow: 'visible',
-      }}
-      testID={`tooth-${code}`}
-    >
-      <ToothSvg
-        kind={kind}
-        lower={lower}
-        primary={primary}
-        selected={selected}
-        width={width * scale}
-        height={glyphHeight * scale}
-      />
-    </Checkbox>
-  );
-}
-
-function describeTooth(code: string, primary: boolean): string {
-  const quadrant = Number(code[0]);
-  const position = Number(code[1]);
-  const upper = quadrant === 1 || quadrant === 2 || quadrant === 5 || quadrant === 6;
-  const right = quadrant === 1 || quadrant === 4 || quadrant === 5 || quadrant === 8;
-  const kind =
-    position <= 2
-      ? 'القاطع'
-      : position === 3
-        ? 'الناب'
-        : primary && position >= 4
-          ? 'الضرس'
-          : position <= 5
-            ? 'الضاحك'
-            : 'الضرس';
-  const depth = position <= 3 ? 'الأمامي' : 'الخلفي';
-  return `${kind}${primary ? ' اللبني' : ''} ${upper ? 'العلوي' : 'السفلي'} ${right ? 'الأيمن' : 'الأيسر'} ${depth}`;
-}
+import { useAppTheme } from '@/shared/theme/use-app-theme';
+import type { ToothShape } from '@/shared/components/ui/tooth-svg';
 
 interface DentalArchSelectorProps {
   mode: DentitionMode;
@@ -140,6 +25,132 @@ interface DentalArchSelectorProps {
   onClear: () => void;
 }
 
+/** Occlusal/crown view: rounded incisors, cusped canines and grooved molars.
+ * This diagram is illustrative, not a clinical odontogram.
+ */
+const crownPaths: Record<ToothShape, { outline: string; detail: string }> = {
+  incisor: {
+    outline: 'M9 6C13 3 27 3 31 7C34 13 32 26 29 31C23 35 16 35 10 31C6 26 6 12 9 6Z',
+    detail: 'M12 11C17 9 24 9 28 12M13 29C19 31 24 31 27 28',
+  },
+  canine: {
+    outline: 'M20 3C25 5 31 8 32 15C33 22 27 30 20 35C13 30 7 22 8 15C9 8 15 5 20 3Z',
+    detail: 'M14 14Q20 9 26 14M15 21L20 26L25 21',
+  },
+  premolar: {
+    outline: 'M9 5C14 2 26 2 31 6C35 12 34 26 29 32C23 36 16 36 10 32C5 26 5 12 9 5Z',
+    detail: 'M13 10Q20 16 27 10M20 13L20 28M12 25Q20 19 28 26',
+  },
+  molar: {
+    outline: 'M9 5C15 2 26 2 32 6C36 12 35 28 30 33C24 36 15 36 9 33C5 29 4 12 9 5Z',
+    detail: 'M13 10Q19 17 26 10M12 27Q20 20 28 27M19 13Q23 20 19 28',
+  },
+};
+
+function DentalCrown({
+  kind,
+  selected,
+  rotate,
+  size,
+}: {
+  kind: ToothShape;
+  selected: boolean;
+  rotate: number;
+  size: number;
+}) {
+  const { colors } = useAppTheme();
+  const paths = crownPaths[kind];
+  return (
+    <View style={{ transform: [{ rotate: `${rotate}deg` }] }}>
+      <Svg width={size} height={size * 1.06} viewBox="0 0 40 40">
+        <Path
+          d={paths.outline}
+          fill={selected ? colors.action.subtle : colors.surface.default}
+          stroke={selected ? colors.action.primary : colors.border.strong}
+          strokeWidth={selected ? 2.4 : 1.55}
+          strokeLinejoin="round"
+        />
+        <Path
+          d={paths.detail}
+          stroke={selected ? colors.action.primary : colors.border.default}
+          strokeWidth={1.3}
+          strokeLinecap="round"
+          fill="none"
+          opacity={selected ? 0.8 : 0.65}
+        />
+      </Svg>
+    </View>
+  );
+}
+
+function SelectableTooth({
+  code,
+  index,
+  count,
+  crownSize,
+  lower,
+  mixed,
+  selected,
+  x,
+  y,
+  onPress,
+}: {
+  code: string;
+  index: number;
+  count: number;
+  crownSize: number;
+  lower: boolean;
+  mixed: boolean;
+  selected: boolean;
+  x: number;
+  y: number;
+  onPress: () => void;
+}) {
+  const kind = mixed
+    ? index < 2 || index > count - 3
+      ? 'molar'
+      : index === 3 || index === count - 4
+        ? 'canine'
+        : 'incisor'
+    : toothShapeForCode(code);
+  const size = crownSize * (kind === 'molar' ? 1 : kind === 'incisor' ? 0.88 : 0.94);
+  const rotate = (index / (count - 1) - 0.5) * (lower ? -58 : 58);
+  return (
+    <Pressable
+      testID={`tooth-${code}`}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: selected }}
+      accessibilityLabel={
+        mixed
+          ? `موضع ${index + 1} في الفك ${lower ? 'السفلي' : 'العلوي'}`
+          : `السن ${code} في الفك ${lower ? 'السفلي' : 'العلوي'}`
+      }
+      accessibilityHint="اضغط للاختيار أو إلغاء الاختيار"
+      onPress={onPress}
+      className="absolute items-center justify-center"
+      style={{
+        left: x - (count > 10 ? 14 : 18),
+        top: y - (count > 10 ? 20 : 24),
+        width: count > 10 ? 28 : 36,
+        height: count > 10 ? 40 : 48,
+      }}
+    >
+      <DentalCrown kind={kind} selected={selected} rotate={rotate} size={size} />
+      {selected ? (
+        <AppText
+          align="center"
+          direction="ltr"
+          variant="caption"
+          className="font-ui-bold text-content-link"
+          style={{ fontSize: 9, lineHeight: 12 }}
+        >
+          {mixed ? String(index + 1) : code}
+        </AppText>
+      ) : null}
+    </Pressable>
+  );
+}
+
 export function DentalArchSelector({
   mode,
   selectedTeeth,
@@ -149,256 +160,182 @@ export function DentalArchSelector({
   onSelectGum,
   onClear,
 }: DentalArchSelectorProps) {
-  const { rowClassName } = useAppDirection();
-  const [archWidth, setArchWidth] = useState(0);
+  const { colors } = useAppTheme();
+  const [width, setWidth] = useState(300);
   const primary = mode === 'primary';
   const mixed = mode === 'mixed' || mode === 'uncertain';
-  const upper = primary ? primaryUpper : permanentUpper;
-  const lower = primary ? primaryLower : permanentLower;
-  // Fit all 16 permanent teeth without horizontally scrolling a dental arch.
-  const glyphScale =
-    !primary && !mixed && archWidth ? Math.min(1, Math.max(0.7, (archWidth - 20) / (16 * 18))) : 1;
-  const hasSelection = Boolean(location);
-  const humanTooth = (value: string) => {
-    const match = /^mixed-(upper|lower)-(\d+)$/.exec(value);
-    return match ? 'الموضع ' + match[2] + (match[1] === 'upper' ? ' العلوي' : ' السفلي') : value;
+  const upper = mixed
+    ? Array.from({ length: 10 }, (_, i) => `mixed-upper-${i + 1}`)
+    : primary
+      ? [...PRIMARY_UPPER]
+      : [...PERMANENT_UPPER];
+  const lower = mixed
+    ? Array.from({ length: 10 }, (_, i) => `mixed-lower-${i + 1}`)
+    : primary
+      ? [...PRIMARY_LOWER]
+      : [...PERMANENT_LOWER];
+  const upperPoints = dentalArchPoints(upper, width, false);
+  const lowerPoints = dentalArchPoints(lower, width, true);
+  const crownSizeFor = (points: typeof upperPoints) => {
+    const distances = points
+      .slice(1)
+      .map((point, index) => Math.hypot(point.x - points[index]!.x, point.y - points[index]!.y));
+    // Adapt crown size to the narrowest gap, with larger crowns for the 10-tooth primary arches.
+    return Math.min(points.length > 10 ? 29 : 35, Math.max(16, Math.min(...distances) * 1.02));
   };
-  const summary =
-    selectedTeeth.length === 1
-      ? mixed
-        ? `حددت: ${humanTooth(selectedTeeth[0]!)}`
-        : `حددت: ${describeTooth(selectedTeeth[0]!, primary)}`
-      : selectedTeeth.length > 1
-        ? `حددت: ${selectedTeeth.length} أسنان · ${selectedTeeth.map(humanTooth).join('، ')}`
-        : location
-          ? `حددت: ${location}`
-          : '';
+  const upperCrownSize = crownSizeFor(upperPoints);
+  const lowerCrownSize = crownSizeFor(lowerPoints);
+  const radiusX = Math.max(50, (width - 62) / 2);
+  const radiusY = Math.min(88, radiusX * 0.71);
+  const curve = (lowerArch: boolean) => {
+    const baseline = lowerArch ? 221 : 121;
+    const dir = lowerArch ? 1 : -1;
+    return `M ${width / 2 - radiusX} ${baseline} C ${width / 2 - radiusX} ${baseline + dir * radiusY * 0.8}, ${width / 2 - radiusX * 0.6} ${baseline + dir * radiusY}, ${width / 2} ${baseline + dir * radiusY} C ${width / 2 + radiusX * 0.6} ${baseline + dir * radiusY}, ${width / 2 + radiusX} ${baseline + dir * radiusY * 0.8}, ${width / 2 + radiusX} ${baseline}`;
+  };
 
   return (
-    <View className="rounded-[18px] border border-border-default bg-surface-default p-[14px]">
-      <View className={cn('min-h-[44px] items-start justify-between gap-2', rowClassName)}>
-        <View className="rounded-full border border-border-subtle bg-surface-subtle px-2.5 py-1.5">
-          <AppText className="text-content-secondary" variant="caption">
-            اختيار متعدد متاح
-          </AppText>
-        </View>
-        <View className="min-w-0 flex-1 items-end">
-          <AppText className="font-ui-bold" variant="heading-4">
-            حدّد مكان المشكلة
-          </AppText>
-          <AppText className="text-content-secondary" variant="caption">
-            {mixed
-              ? 'أسنان مختلطة • اختر المكان لا الرمز'
-              : primary
-                ? 'أسنان لبنية • 20 سناً • بدون ضواحك'
-                : 'أسنان دائمة • 32 موضعاً'}
-          </AppText>
-        </View>
-      </View>
-
-      <View className={cn('mt-3 min-h-6 items-center justify-between', rowClassName)}>
-        <AppText className="font-ui-bold text-content-link" variant="caption">
-          يمينك
-        </AppText>
-        <View
-          className={cn(
-            'items-center gap-1 rounded-full bg-surface-subtle px-2 py-1',
-            rowClassName,
-          )}
+    <View className="gap-3 rounded-[16px] border border-border-subtle bg-surface-default p-3">
+      <AppText align="right" variant="caption" className="text-content-secondary">
+        اضغط على سن أو أكثر من الرسم، أو اختر المنطقة إذا ما بتعرف السن.
+      </AppText>
+      <View
+        className="w-full overflow-hidden rounded-[18px] bg-surface-subtle"
+        style={{ height: 345 }}
+        onLayout={(event) => {
+          const next = Math.floor(event.nativeEvent.layout.width);
+          if (next >= 230 && next !== width) setWidth(next);
+        }}
+      >
+        <Svg
+          accessible={false}
+          pointerEvents="none"
+          width={width}
+          height={345}
+          className="absolute left-0 top-0"
         >
-          <AppIcon
-            name={{ ios: 'face.smiling', android: 'face', web: 'face' }}
-            size={11}
-            tone="secondary"
+          <Path
+            d={curve(false)}
+            fill="none"
+            stroke={colors.surface.default}
+            strokeWidth={38}
+            strokeLinecap="round"
+            opacity={0.75}
           />
-          <AppText className="text-content-secondary" variant="caption">
-            الأمام
-          </AppText>
-        </View>
-        <AppText className="font-ui-bold text-content-link" variant="caption">
-          يسارك
-        </AppText>
-      </View>
-
-      {mixed ? (
-        <View
-          className={cn(
-            'mt-2 min-h-[42px] flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-[10px] bg-surface-subtle px-2 py-2',
-            rowClassName,
-          )}
-        >
-          <View className={cn('items-center gap-1', rowClassName)}>
-            <View className="h-3 w-3 rounded-full border border-action-primary bg-surface-default" />
-            <AppText
-              className="text-type-caption font-ui-bold text-content-secondary"
-              variant="caption"
-            >
-              دائم
-            </AppText>
-          </View>
-          <View className={cn('items-center gap-1', rowClassName)}>
-            <View className="h-3 w-3 rounded-full border border-tone-warning-border bg-tone-warning-fill" />
-            <AppText
-              className="text-type-caption font-ui-bold text-content-secondary"
-              variant="caption"
-            >
-              لبني
-            </AppText>
-          </View>
-          <View className={cn('items-center gap-1', rowClassName)}>
-            <View className="h-3 w-3 rounded-full border border-border-default bg-surface-subtle" />
-            <AppText
-              className="text-type-caption font-ui-bold text-content-secondary"
-              variant="caption"
-            >
-              موقع انتقالي
-            </AppText>
-          </View>
-        </View>
-      ) : null}
-
-      <View className="mt-2 gap-2.5">
-        <View
-          className={cn(
-            'flex-row overflow-visible border border-border-subtle bg-surface-subtle',
-            mixed
-              ? 'min-h-[76px] items-center rounded-t-[24px] rounded-b-[12px] px-[7px] py-2'
-              : 'min-h-[112px] items-center rounded-t-[28px] rounded-b-[14px] px-2 py-3',
-          )}
-          onLayout={(event) => setArchWidth(event.nativeEvent.layout.width)}
-          style={{ direction: 'ltr' }}
-        >
-          {mixed
-            ? Array.from({ length: 10 }, (_, index) => {
-                const key = `mixed-upper-${index + 1}`;
-                return (
-                  <MixedToothTarget
-                    key={key}
-                    index={index}
-                    lower={false}
-                    onPress={() => onToggleTooth(key)}
-                    selected={selectedTeeth.includes(key)}
-                  />
-                );
-              })
-            : upper.map((code) => (
-                <ToothTarget
-                  key={code}
-                  code={code}
-                  lower={false}
-                  onPress={() => onToggleTooth(code)}
-                  primary={primary}
-                  scale={glyphScale}
-                  selected={selectedTeeth.includes(code)}
-                />
-              ))}
-        </View>
-
-        <View
-          className={cn(
-            'flex-row overflow-visible border border-border-subtle bg-surface-subtle',
-            mixed
-              ? 'min-h-[76px] items-center rounded-t-[12px] rounded-b-[24px] px-[7px] py-2'
-              : 'min-h-[112px] items-center rounded-t-[14px] rounded-b-[28px] px-2 py-3',
-          )}
-          style={{ direction: 'ltr' }}
-        >
-          {mixed
-            ? Array.from({ length: 10 }, (_, index) => {
-                const key = `mixed-lower-${index + 1}`;
-                return (
-                  <MixedToothTarget
-                    key={key}
-                    index={index}
-                    lower={true}
-                    onPress={() => onToggleTooth(key)}
-                    selected={selectedTeeth.includes(key)}
-                  />
-                );
-              })
-            : lower.map((code) => (
-                <ToothTarget
-                  key={code}
-                  code={code}
-                  lower={true}
-                  onPress={() => onToggleTooth(code)}
-                  primary={primary}
-                  scale={glyphScale}
-                  selected={selectedTeeth.includes(code)}
-                />
-              ))}
-        </View>
-      </View>
-
-      <View className={cn('mt-3 min-h-[48px] gap-2', rowClassName)}>
-        <Pressable
-          accessibilityRole="button"
-          className={cn(
-            'min-h-[48px] flex-1 items-center justify-center gap-1 rounded-[10px] border border-action-secondary-border bg-surface-default',
-            rowClassName,
-          )}
-          onPress={onSelectRegion}
-        >
-          <AppText className="text-type-caption font-ui-bold" variant="label">
-            تحديد منطقة
-          </AppText>
-          <AppIcon name={{ ios: 'map', android: 'map', web: 'map' }} size={15} tone="action" />
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          className={cn(
-            'min-h-[48px] flex-1 items-center justify-center gap-1 rounded-[10px] border border-action-secondary-border bg-surface-default',
-            rowClassName,
-          )}
-          onPress={onSelectGum}
-        >
-          <AppText className="text-type-caption font-ui-bold" variant="label">
-            منطقة اللثة
-          </AppText>
-          <AppIcon
-            name={{ ios: 'line.3.horizontal', android: 'dentistry', web: 'dentistry' }}
-            size={15}
-            tone="action"
+          <Path
+            d={curve(true)}
+            fill="none"
+            stroke={colors.surface.default}
+            strokeWidth={38}
+            strokeLinecap="round"
+            opacity={0.75}
           />
-        </Pressable>
+        </Svg>
+        {upperPoints.map((point, index) => (
+          <SelectableTooth
+            key={point.code}
+            code={point.code}
+            index={index}
+            count={upper.length}
+            crownSize={upperCrownSize}
+            x={point.x}
+            y={point.y}
+            mixed={mixed}
+            lower={false}
+            selected={selectedTeeth.includes(point.code)}
+            onPress={() => onToggleTooth(point.code)}
+          />
+        ))}
+        {lowerPoints.map((point, index) => (
+          <SelectableTooth
+            key={point.code}
+            code={point.code}
+            index={index}
+            count={lower.length}
+            crownSize={lowerCrownSize}
+            x={point.x}
+            y={point.y}
+            mixed={mixed}
+            lower
+            selected={selectedTeeth.includes(point.code)}
+            onPress={() => onToggleTooth(point.code)}
+          />
+        ))}
+        <View
+          pointerEvents="none"
+          className="absolute left-0 right-0 top-[138px] items-center gap-1"
+        >
+          <AppText variant="caption" className="font-ui-semibold text-content-secondary">
+            الفك العلوي
+          </AppText>
+          <AppText variant="caption" className="font-ui-semibold text-content-secondary">
+            الفك السفلي
+          </AppText>
+        </View>
+        <View
+          pointerEvents="none"
+          className="absolute bottom-2 left-3 right-3 flex-row justify-between"
+        >
+          <AppText variant="caption" className="text-content-secondary">
+            يمينك
+          </AppText>
+          <AppText variant="caption" className="text-content-secondary">
+            يسارك
+          </AppText>
+        </View>
       </View>
 
-      {hasSelection ? (
-        <View
-          className={cn(
-            'mt-3 items-center gap-2 rounded-[12px] border border-action-secondary-border bg-action-subtle px-[11px] py-2',
-            rowClassName,
-          )}
-        >
-          <Pressable
-            className="h-8 items-center justify-center rounded-[9px] border border-action-secondary-border bg-surface-default px-3"
-            onPress={onClear}
-          >
-            <AppText className="font-ui-bold text-content-link" variant="caption">
-              تغيير
-            </AppText>
-          </Pressable>
-          <View className="min-w-0 flex-1 items-end">
-            <AppText className="font-ui-bold text-content-link" variant="label">
-              {summary}
-            </AppText>
-            <AppText className="mt-0.5 text-type-caption text-content-secondary" variant="caption">
-              {mixed
-                ? 'لبني أو دائم • اختر المكان فقط • ليس تشخيصاً'
-                : primary
-                  ? 'سن لبني • للموقع فقط، وليس تشخيصاً'
-                  : selectedTeeth.length === 1
-                    ? `معرّف السن ${selectedTeeth[0]} • للموقع فقط، وليس تشخيصاً`
-                    : 'الموقع للمساعدة بالتوجيه فقط، وليس تشخيصاً'}
-            </AppText>
-          </View>
+      {location ? (
+        <View className="flex-row-reverse items-center gap-2 rounded-[11px] bg-action-subtle p-2.5">
           <AppIcon
             name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
-            size={19}
+            size={18}
             tone="action"
           />
+          <AppText
+            align="right"
+            variant="label"
+            className="min-w-0 flex-1 font-ui-semibold text-content-link"
+          >
+            {selectedTeeth.length > 1 ? `تم تحديد ${selectedTeeth.length} أسنان` : location}
+          </AppText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="مسح التحديد"
+            onPress={onClear}
+            className="min-h-[36px] justify-center px-2"
+          >
+            <AppText variant="caption" className="font-ui-semibold text-content-link">
+              مسح
+            </AppText>
+          </Pressable>
         </View>
       ) : null}
+      <View className="flex-row-reverse gap-2">
+        <Pressable
+          accessibilityRole="button"
+          onPress={onSelectRegion}
+          className="min-h-[43px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[11px] border border-border-subtle"
+        >
+          <AppIcon name={{ ios: 'map', android: 'map', web: 'map' }} size={16} tone="action" />
+          <AppText variant="caption" className="font-ui-semibold">
+            تحديد منطقة
+          </AppText>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onSelectGum}
+          className="min-h-[43px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[11px] border border-border-subtle"
+        >
+          <AppIcon
+            name={{ ios: 'cross.case', android: 'dentistry', web: 'dentistry' }}
+            size={16}
+            tone="action"
+          />
+          <AppText variant="caption" className="font-ui-semibold">
+            منطقة اللثة
+          </AppText>
+        </Pressable>
+      </View>
     </View>
   );
 }

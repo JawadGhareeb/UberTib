@@ -58,7 +58,7 @@ export function AssessmentProcessingScreen() {
   }));
 
   return (
-    <AssessmentScaffold phase="المعالجة" scroll={false} title="نراجع معلومات حالتك">
+    <AssessmentScaffold phase="المعالجة" scroll={false} title="نجهّز التوجيه الأولي">
       <View className="pt-2">
         <View className="h-[300px] items-center justify-center rounded-[22px] bg-surface-subtle">
           <Animated.View
@@ -97,7 +97,7 @@ export function AssessmentProcessingScreen() {
 
         <View className="mt-3 h-[46px] flex-row items-center justify-end gap-2 rounded-[13px] bg-action-subtle px-3">
           <AppText className="flex-1 text-type-label text-content-link" variant="label">
-            الآن: نرتب المعلومات المرتبطة بحالتك
+            نراجع الإجابات والاختيارات
           </AppText>
           <AppIcon
             name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
@@ -111,17 +111,17 @@ export function AssessmentProcessingScreen() {
             شو عم نعمل؟
           </AppText>
           <AppText className="mt-1.5 text-type-label  text-content-secondary" variant="caption">
-            نفهم المعلومات ونجهّز نتائج البحث عن الخدمة الأقرب، بدون إصدار تشخيص نهائي.
+            نجهّز ملخص إجاباتك وخيارات البحث عن فحص مناسب. ما عم نصدر تشخيصاً طبياً.
           </AppText>
         </View>
 
         <View className="mt-3 flex-row items-center gap-3 rounded-[14px] bg-tone-info-fill p-3">
           <View className="min-w-0 flex-1 items-end">
             <AppText className="font-ui-bold text-type-label text-tone-info-text" variant="label">
-              إجاباتك محفوظة
+              إجاباتك موجودة ضمن الجلسة الحالية
             </AppText>
             <AppText className="mt-1 text-type-caption text-content-secondary" variant="caption">
-              يمكنك العودة للرئيسية وسنخبرك عند الجاهزية.
+              رح تظهر النتيجة بهالصفحة بعد تجهيزها.
             </AppText>
           </View>
           <AppIcon
@@ -133,7 +133,7 @@ export function AssessmentProcessingScreen() {
 
         <View className="mt-2 flex-row items-center justify-end gap-2 rounded-[11px] bg-surface-subtle px-3 py-2.5">
           <AppText className="flex-1 text-type-caption text-content-secondary" variant="caption">
-            إذا انقطع الاتصال، يمكنك إعادة المحاولة دون فقدان الإجابات.
+            لا تغادر الصفحة قبل ظهور النتيجة إذا بدك تكمل بنفس الجلسة.
           </AppText>
           <AppIcon
             name={{ ios: 'wifi.exclamationmark', android: 'wifi', web: 'wifi' }}

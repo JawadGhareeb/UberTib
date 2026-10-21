@@ -4,141 +4,109 @@ import { Pressable, View } from 'react-native';
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
-import type { AppIconName } from '@/shared/components/ui/app-icon';
 
 export function AssessmentResultScreen() {
   const router = useRouter();
-  const { answers, complaint, location, mediaAttached } = useAssessmentSession();
+  const { complaint, answers, location, mediaAttachments } = useAssessmentSession();
 
   return (
     <AssessmentScaffold
-      onPrimary={() => router.push({
-        pathname: '/discover/providers/results',
-        params: { serviceCode: 'dental-checkup' },
-      })}
-      primaryLabel="عرض أطباء الفحص الأولي"
       phase="النتيجة"
-      title="التقييم الأولي لحالتك"
+      title="التوجيه الأولي جاهز"
+      primaryLabel="عرض أطباء الفحص الأولي"
+      onPrimary={() =>
+        router.push({
+          pathname: '/discover/providers/results',
+          params: { serviceCode: 'dental-checkup' },
+        })
+      }
+      topContent={
+        <AppText align="right" variant="label" className="text-content-secondary">
+          هذه ملخصات إجاباتك لمساعدتك بالبحث، وليست تشخيصاً أو تحديداً مؤكداً لخدمة علاجية.
+        </AppText>
+      }
     >
-      <View className="mt-2 h-[250px] items-center justify-center rounded-[22px] bg-surface-subtle">
-        <View className="h-28 w-28 items-center justify-center rounded-full bg-action-subtle">
-          <View className="h-20 w-20 items-center justify-center rounded-full bg-surface-default">
-            <AppIcon
-              name={{ ios: 'checkmark.seal.fill', android: 'verified', web: 'verified' }}
-              size={34}
-              tone="action"
-            />
-          </View>
+      <View className="items-center gap-3 rounded-[19px] bg-action-subtle px-4 py-6">
+        <View className="h-20 w-20 items-center justify-center rounded-full bg-surface-default">
+          <AppIcon
+            name={{ ios: 'checkmark.seal', android: 'verified', web: 'verified' }}
+            tone="action"
+            size={41}
+          />
         </View>
-        <AppText className="mt-4 font-ui-bold text-type-heading-4">جاهز للبحث</AppText>
-        <AppText
-          className="mt-1 max-w-[260px] text-center text-type-label  text-content-secondary"
-          variant="caption"
-        >
-          استخدمنا المعلومات كإشارة توجيه فقط، والطبيب يؤكد التشخيص النهائي.
+        <AppText align="center" variant="heading-3" className="font-ui-bold">
+          جاهز للخطوة التالية
+        </AppText>
+        <AppText align="center" variant="label" className="text-content-secondary">
+          خلصت مراجعة المعلومات. الطبيب هو اللي بيأكد المشكلة والعلاج المناسب بعد الفحص.
         </AppText>
       </View>
 
-      <View className="mt-3 flex-row items-center justify-end gap-2 rounded-[11px] bg-tone-success-fill px-3 py-2.5">
-        <AppText className="flex-1 text-type-label text-tone-success-text" variant="label">
-          المعلومات كافية للبحث عن أطباء مؤهلين
+      <View className="gap-2 rounded-[15px] border border-border-subtle bg-surface-default p-3">
+        <AppText align="right" variant="heading-4" className="font-ui-bold">
+          ملخص حالتك
         </AppText>
-        <AppIcon
-          name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
-          size={15}
-          tone="success"
-        />
-      </View>
-
-      <View className="mt-3">
-        <AppText className="font-ui-bold text-type-caption">اعتمدنا على</AppText>
-        <View className="mt-2 flex-row gap-2">
-          {[
-            ['3 أيام', { ios: 'clock.fill', android: 'schedule', web: 'schedule' }],
-            [
-              answers.length ? answers.join('، ') : 'بارد ومضغ',
-              { ios: 'snowflake', android: 'ac_unit', web: 'ac_unit' },
-            ],
-            [
-              location || 'يمين سفلي',
-              { ios: 'mappin.circle.fill', android: 'location_on', web: 'location_on' },
-            ],
-          ].map(([label, icon]) => (
-            <View
-              className="min-h-[48px] flex-1 items-center justify-center rounded-[12px] bg-surface-default px-2"
-              key={String(label)}
+        {[
+          ['المشكلة', complaint || 'لم تُحدّد'],
+          ['المكان', location || 'لم يُحدّد'],
+          ['الأعراض', answers.length ? answers.join('، ') : 'غير محددة'],
+          ['المرفقات', mediaAttachments.length ? `${mediaAttachments.length} ملف` : 'بدون مرفقات'],
+        ].map(([label, value]) => (
+          <View
+            key={label}
+            className="min-h-[39px] flex-row-reverse items-start gap-2 border-b border-border-subtle py-2"
+          >
+            <AppText align="right" variant="label" className="w-[75px] font-ui-semibold">
+              {label}
+            </AppText>
+            <AppText
+              align="right"
+              variant="caption"
+              className="min-w-0 flex-1 text-content-secondary"
             >
-              <AppIcon name={icon as AppIconName} size={15} tone="action" />
-              <AppText
-                align="center"
-                className="mt-1 text-type-caption text-content-secondary"
-                variant="caption"
-              >
-                {String(label)}
-              </AppText>
-            </View>
-          ))}
-        </View>
+              {value}
+            </AppText>
+          </View>
+        ))}
       </View>
 
-      <View className="mt-3 rounded-[14px] border border-border-subtle bg-surface-default p-3">
-        <View className="flex-row items-center justify-end gap-2">
-          <AppText className="font-ui-bold text-type-label">ما زال الطبيب بحاجة لتأكيد</AppText>
+      <View className="gap-2 rounded-[14px] bg-surface-subtle p-3">
+        <View className="flex-row-reverse items-center gap-2">
           <AppIcon
-            name={{ ios: 'stethoscope', android: 'stethoscope', web: 'stethoscope' }}
-            size={17}
+            name={{ ios: 'stethoscope', android: 'medical_services', web: 'medical_services' }}
             tone="action"
+            size={20}
           />
+          <AppText align="right" variant="label" className="min-w-0 flex-1 font-ui-bold">
+            الخيار الآمن للمتابعة
+          </AppText>
         </View>
-        <AppText className="mt-1.5 text-type-label  text-content-secondary" variant="caption">
-          التشخيص السريري النهائي • الحاجة للأشعة • الإجراء المناسب داخل الخدمة
+        <AppText align="right" variant="label" className="text-content-secondary">
+          تقدر تبدأ بفحص أسنان عام. بعد التقييم السريري الطبيب بيحدد إذا بتحتاج إجراء تاني.
         </AppText>
       </View>
-
-      <View className="mt-3 h-[66px] flex-row items-center gap-2">
-        <View className="min-w-0 flex-1 items-end">
-          <AppText className="font-ui-bold text-type-label">الأدلة المرفقة</AppText>
-          <AppText className="mt-0.5 text-type-caption text-content-secondary" variant="caption">
-            {mediaAttached ? 'صورة + أشعة سابقة' : 'أشعة سابقة'}
-          </AppText>
-        </View>
-        <View className="h-full w-[62px] items-center justify-center rounded-[11px] bg-surface-subtle">
-          <AppIcon
-            name={{ ios: 'photo.fill', android: 'image', web: 'image' }}
-            size={19}
-            tone="action"
-          />
-          <AppText className="mt-1 text-type-caption text-content-secondary" variant="caption">
-            صورة
-          </AppText>
-        </View>
-        <View className="h-full w-[62px] items-center justify-center rounded-[11px] bg-surface-subtle">
-          <AppIcon
-            name={{ ios: 'waveform.path.ecg.rectangle', android: 'radiology', web: 'radiology' }}
-            size={19}
-            tone="action"
-          />
-          <AppText className="mt-1 text-type-caption text-content-secondary" variant="caption">
-            أشعة
-          </AppText>
-        </View>
-      </View>
-
-      <View className="mt-3 rounded-[11px] bg-surface-subtle px-3 py-2.5">
-        <AppText className="text-type-caption text-content-secondary" variant="caption">
-          الشكوى: {complaint || 'ألم في سن أو ضرس'}
-        </AppText>
-      </View>
-
       <Pressable
         accessibilityRole="button"
-        className="mt-2 min-h-10 flex-row items-center justify-center gap-1.5"
+        className="min-h-[46px] items-center justify-center rounded-[12px] border border-border-subtle bg-surface-default"
+        onPress={() => router.push('/(tabs)/discover')}
+      >
+        <AppText variant="label" className="font-ui-semibold text-content-link">
+          تصفّح جميع الخدمات
+        </AppText>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        className="min-h-[40px] flex-row-reverse items-center justify-center gap-2"
         onPress={() => router.push('/assessment/complaint')}
       >
-        <AppText className="text-type-label text-content-link" variant="label">
+        <AppText variant="label" className="text-content-secondary">
           تعديل الإجابات
         </AppText>
-        <AppIcon name={{ ios: 'pencil', android: 'edit', web: 'edit' }} size={15} tone="action" />
+        <AppIcon
+          name={{ ios: 'pencil', android: 'edit', web: 'edit' }}
+          tone="secondary"
+          size={16}
+        />
       </Pressable>
     </AssessmentScaffold>
   );

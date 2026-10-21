@@ -1,118 +1,105 @@
-import { useRouter } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { View } from 'react-native';
+import { RadioGroup } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
+import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
-import { AppIcon, AppText, TextField } from '@/shared/components/ui';
+import { AppIcon, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
 
 const complaints = [
-  ['ألم في سن أو ضرس', { ios: 'bolt.fill', android: 'bolt', web: 'bolt' }, false],
-  ['تورم أو انتفاخ', { ios: 'drop.fill', android: 'water_drop', web: 'water_drop' }, true],
-  ['كسر أو إصابة', { ios: 'bandage.fill', android: 'healing', web: 'healing' }, true],
-  ['نزيف أو مشكلة لثة', { ios: 'heart.fill', android: 'favorite', web: 'favorite' }, false],
-  ['حشوة أو تاج', { ios: 'square.fill', android: 'crop_square', web: 'crop_square' }, false],
+  ['ألم في سن أو ضرس', { ios: 'cross.case', android: 'dentistry', web: 'dentistry' }],
+  ['تورم أو انتفاخ', { ios: 'exclamationmark.triangle', android: 'warning', web: 'warning' }],
+  ['حساسية الأسنان', { ios: 'snowflake', android: 'ac_unit', web: 'ac_unit' }],
+  ['نزيف أو مشكلة لثة', { ios: 'drop.fill', android: 'water_drop', web: 'water_drop' }],
+  ['كسر أو إصابة', { ios: 'bandage.fill', android: 'healing', web: 'healing' }],
   [
     'سن مفقود / زرعة',
     { ios: 'circle.dashed', android: 'radio_button_unchecked', web: 'radio_button_unchecked' },
-    true,
   ],
-  ['المظهر أو اللون', { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' }, true],
-  ['فحص أو تنظيف', { ios: 'checkmark.seal.fill', android: 'verified', web: 'verified' }, false],
-  ['مشكلة لدى طفل', { ios: 'figure.child', android: 'child_care', web: 'child_care' }, false],
-  ['شيء آخر / غير متأكد', { ios: 'ellipsis', android: 'more_horiz', web: 'more_horiz' }, true],
+  ['فحص أو تنظيف', { ios: 'checkmark.seal', android: 'verified', web: 'verified' }],
+  ['المظهر أو اللون', { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' }],
+  ['مشكلة لدى طفل', { ios: 'figure.child', android: 'child_care', web: 'child_care' }],
+  ['غير متأكد / أخرى', { ios: 'ellipsis', android: 'more_horiz', web: 'more_horiz' }],
 ] as const;
 
 export function AssessmentComplaintScreen() {
   const router = useRouter();
-  const { complaint, details, setComplaint, setDetails } = useAssessmentSession();
-
+  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
+  const { patient, complaint, setComplaint } = useAssessmentSession();
   return (
     <AssessmentScaffold
-      onPrimary={() => router.push('/assessment/location')}
+      onPrimary={() => {
+        if (returnTo === 'review') router.replace('/assessment/review');
+        else router.push('/assessment/location');
+      }}
       primaryDisabled={!complaint}
       primaryLabel="متابعة"
       phase="المشكلة الرئيسية"
-      title="ما أكثر شيء يزعجك الآن؟"
+      title="شو نوع المشكلة اللي عم تواجهها؟"
       topContent={
-        <View className="gap-2 pt-1">
-          <View className="self-end flex-row items-center gap-1.5 rounded-full bg-action-subtle px-2.5 py-1.5">
-            <AppText className="text-type-label text-content-link" variant="caption">
-              سارة الأحمد • 31 سنة
-            </AppText>
-            <AppIcon
-              name={{ ios: 'person.fill', android: 'person', web: 'person' }}
-              size={13}
-              tone="action"
-            />
-          </View>
-          <AppText className="text-type-label  text-content-secondary">
-            اختر المشكلة الرئيسية فقط. سنسألك عن الأعراض الأخرى لاحقاً.
+        <View className="flex-row-reverse items-center justify-between">
+          <AppText variant="label" className="text-content-secondary">
+            اختار المشكلة الأقرب لحالتك.
+          </AppText>
+          <AppText variant="caption" className="text-content-link">
+            {ASSESSMENT_PATIENT_FIXTURES[patient].name}
           </AppText>
         </View>
       }
     >
-      <View className="mt-2 flex-row flex-wrap justify-between gap-y-1.5">
-        {complaints.map(([label, icon, warm]) => {
+      <RadioGroup
+        value={complaint}
+        onValueChange={setComplaint}
+        className="flex-row-reverse flex-wrap justify-between gap-y-2"
+      >
+        {complaints.map(([label, icon]) => {
           const selected = complaint === label;
-
           return (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ selected }}
+            <RadioGroup.Item
+              key={label}
+              value={label}
               className={cn(
-                'h-[58px] w-[49%] flex-row items-center gap-2 rounded-[13px] border px-2',
+                'min-h-[84px] w-[48.5%] flex-col items-center justify-center gap-1.5 rounded-[13px] border px-2 py-2',
                 selected
                   ? 'border-action-primary bg-action-subtle'
                   : 'border-border-subtle bg-surface-default',
               )}
-              key={label}
-              onPress={() => setComplaint(label)}
             >
               <View
                 className={cn(
-                  'h-[38px] w-[38px] items-center justify-center rounded-[12px]',
-                  selected
-                    ? 'bg-action-primary'
-                    : warm
-                      ? 'bg-tone-warning-fill'
-                      : 'bg-action-subtle',
+                  'h-9 w-9 items-center justify-center rounded-[11px]',
+                  selected ? 'bg-action-primary' : 'bg-surface-subtle',
                 )}
               >
                 <AppIcon name={icon} size={20} tone={selected ? 'onAction' : 'action'} />
               </View>
               <AppText
-                className={cn(
-                  'min-w-0 flex-1 text-type-label ',
-                  selected && 'font-ui-bold text-content-link',
-                )}
+                align="center"
                 variant="label"
+                className={selected ? 'font-ui-bold text-content-link' : 'font-ui-medium'}
+                numberOfLines={2}
               >
                 {label}
               </AppText>
-            </Pressable>
+              {selected ? (
+                <View className="absolute right-2 top-2">
+                  <AppIcon
+                    name={{
+                      ios: 'checkmark.circle.fill',
+                      android: 'check_circle',
+                      web: 'check_circle',
+                    }}
+                    size={17}
+                    tone="action"
+                  />
+                </View>
+              ) : null}
+            </RadioGroup.Item>
           );
         })}
-      </View>
-
-      <View className="mt-3 gap-1">
-        <TextField
-          label="صف المشكلة بكلماتك (اختياري)"
-          maxLength={240}
-          multiline
-          onChangeText={setDetails}
-          placeholder="ألم في الضرس الخلفي الأيمن منذ 3 أيام ويزداد مع البارد."
-          value={details}
-        />
-        <AppText
-          align="left"
-          className="text-content-placeholder"
-          direction="ltr"
-          variant="caption"
-        >
-          {details.length} / 240
-        </AppText>
-      </View>
+      </RadioGroup>
     </AssessmentScaffold>
   );
 }

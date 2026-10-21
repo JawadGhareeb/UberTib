@@ -1,5 +1,9 @@
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
+import type { AssessmentPatient } from '@/features/assessment/state/assessment-session-provider';
+import { ScrollView, TextInput, View } from 'react-native';
+import { Accordion } from 'heroui-native';
 
 import {
   ReferenceCard,
@@ -10,7 +14,6 @@ import { AppIcon, AppText, Button, ReadStateBoundary, Screen } from '@/shared/co
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { mockPatientWorld } from '@/shared/mock/patient.mock';
 import { useMockScenario } from '@/shared/mock';
-import { cn } from '@/shared/utils/cn';
 
 type HealthSection = {
   id: string;
@@ -81,93 +84,91 @@ const sections: HealthSection[] = [
   },
 ];
 
-function HealthAccordion({
-  section,
-  expanded,
-  onToggle,
-}: {
-  section: HealthSection;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  const cardTone =
-    section.tone === 'warning'
-      ? 'border-tone-warning-border/50 bg-tone-warning-fill/70'
-      : section.tone === 'info'
-        ? 'border-tone-info-border/40 bg-tone-info-fill/80'
-        : section.tone === 'primary'
-          ? 'border-action-primary/40'
-          : '';
-
+function HealthCategory({ section }: { section: HealthSection }) {
   return (
-    <ReferenceCard className={cn('overflow-hidden px-[9px] py-[6px]', expanded && cardTone)}>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ expanded }}
-        className="min-h-[42px] flex-row-reverse items-center gap-[8px]"
-        onPress={onToggle}
-      >
-        <ReferenceIcon icon={section.icon} warm={section.tone === 'warning'} size={33} />
-        <View className="min-w-0 flex-1 items-end">
-          <AppText
-            align="right"
-            className="font-ui-semibold"
-            numberOfLines={2}
-            style={{ fontSize: 11.5, lineHeight: 18 }}
-            variant="caption"
-          >
+    <Accordion.Item value={section.id}>
+      <Accordion.Trigger className="min-h-[66px] flex-row-reverse items-center gap-3 px-3 py-2.5">
+        <ReferenceIcon icon={section.icon} warm={section.tone === 'warning'} size={37} />
+        <View className="min-w-0 flex-1 items-end gap-1">
+          <AppText align="right" variant="label" className="font-ui-semibold" numberOfLines={2}>
             {section.title}
           </AppText>
           <AppText
             align="right"
-            className="mt-0.5 text-content-secondary"
-            numberOfLines={1}
-            style={{ fontSize: 9.5, lineHeight: 14 }}
             variant="caption"
+            className="text-content-secondary"
+            numberOfLines={2}
           >
             {section.summary}
           </AppText>
         </View>
-        <AppIcon
-          name={{
-            ios: expanded ? 'chevron.up' : 'chevron.down',
-            android: expanded ? 'expand_less' : 'expand_more',
-            web: expanded ? 'expand_less' : 'expand_more',
-          }}
-          size={15}
-          tone="secondary"
-        />
-      </Pressable>
-      {expanded ? (
-        <View className="mt-1 gap-1 rounded-[9px] bg-surface-subtle px-3 py-[7px]">
+        <Accordion.Indicator />
+      </Accordion.Trigger>
+      <Accordion.Content className="px-4 pb-4">
+        <View className="gap-2 rounded-[11px] bg-surface-subtle px-3 py-3">
           {section.facts.map((fact) => (
-            <AppText
-              align="right"
-              className="text-content-secondary"
-              key={fact}
-              style={{ fontSize: 9.5, lineHeight: 16 }}
-              variant="caption"
-            >
+            <AppText key={fact} align="right" variant="label" className="text-content-secondary">
               {fact}
             </AppText>
           ))}
         </View>
-      ) : null}
-    </ReferenceCard>
+      </Accordion.Content>
+    </Accordion.Item>
   );
 }
 
 export function PatientHealthInformationScreen() {
+  const router = useRouter();
+  const { assessmentPatient } = useLocalSearchParams<{ assessmentPatient?: string }>();
+  const assessmentPerson =
+    assessmentPatient === 'self' || assessmentPatient === 'adam' || assessmentPatient === 'nour'
+      ? ASSESSMENT_PATIENT_FIXTURES[assessmentPatient as AssessmentPatient]
+      : undefined;
   const { getSurfaceState } = useMockScenario();
-  const [expanded, setExpanded] = useState<string[]>(['allergy', 'dental', 'media']);
   const [editing, setEditing] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const [draftNote, setDraftNote] = useState('');
   const [previewNote, setPreviewNote] = useState('');
-  const toggle = (id: string) =>
-    setExpanded((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+  // The account mock health screen cannot impersonate another selected patient's record.
+  if (assessmentPerson) {
+    return (
+      <Screen contentClassName="px-0 py-0">
+        <ReferenceHeader
+          title="معلومات المريض الصحية"
+          icon={{ ios: 'heart.text.square', android: 'monitor_heart', web: 'monitor_heart' }}
+        />
+        <View className="mx-auto w-full max-w-[430px] flex-1 gap-3 px-4 pt-3">
+          <View className="flex-row-reverse items-center gap-3 rounded-[15px] bg-action-subtle p-3">
+            <View className="h-11 w-11 items-center justify-center rounded-full bg-surface-default">
+              <AppIcon
+                name={{ ios: 'person.fill', android: 'person', web: 'person' }}
+                tone="action"
+                size={22}
+              />
+            </View>
+            <View className="min-w-0 flex-1 items-end gap-1">
+              <AppText variant="label" className="font-ui-bold">
+                {assessmentPerson.name}
+              </AppText>
+              <AppText variant="caption" className="text-content-secondary">
+                {assessmentPerson.age} سنة · المريض الذي اخترته للتقييم
+              </AppText>
+            </View>
+          </View>
+          <View className="gap-2 rounded-[15px] border border-border-subtle bg-surface-default p-4">
+            <AppText align="right" variant="heading-4" className="font-ui-bold">
+              السجل الصحي غير متصل بعد
+            </AppText>
+            <AppText align="right" variant="label" className="text-content-secondary">
+              لا نعرض بيانات طبية تخص صاحب الحساب أو شخصاً آخر على أنها معلومات هذا المريض. الربط
+              والتحديث الفعلي للسجل يحتاجان إلى خدمة الملف الصحي للمريض المختار.
+            </AppText>
+          </View>
+          <Button label="العودة لمراجعة معلومات المريض" onPress={() => router.back()} />
+        </View>
+      </Screen>
     );
+  }
 
   return (
     <Screen contentClassName="px-0 py-0">
@@ -210,16 +211,15 @@ export function PatientHealthInformationScreen() {
             </View>
           </View>
 
-          <View className="mt-[4px] gap-[4px]">
+          <Accordion
+            selectionMode="multiple"
+            variant="default"
+            className="mt-3 overflow-hidden rounded-[15px] border border-border-subtle bg-surface-default"
+          >
             {sections.map((section) => (
-              <HealthAccordion
-                expanded={expanded.includes(section.id)}
-                key={section.id}
-                onToggle={() => toggle(section.id)}
-                section={section}
-              />
+              <HealthCategory key={section.id} section={section} />
             ))}
-          </View>
+          </Accordion>
 
           <View className="mt-[6px] rounded-[12px] bg-tone-warning-fill px-3 py-[10px]">
             <View className="flex-row-reverse items-center gap-2">

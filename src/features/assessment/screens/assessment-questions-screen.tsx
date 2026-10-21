@@ -3,24 +3,28 @@ import { Pressable, View } from 'react-native';
 import { Checkbox } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
+import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
-import { AppIcon, AppText } from '@/shared/components/ui';
+import { AppIcon, AppText, TextField } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
 
 const answers = ['مع البارد', 'مع الساخن', 'عند المضغ', 'بدون سبب واضح', 'لا أعرف'] as const;
 
-const conceptItems = [
-  ['المدة', { ios: 'clock', android: 'schedule', web: 'schedule' }],
-  ['الشدة', { ios: 'waveform.path.ecg', android: 'monitor_heart', web: 'monitor_heart' }],
-  ['حرارة', { ios: 'thermometer', android: 'thermostat', web: 'thermostat' }],
-  ['المضغ', { ios: 'fork.knife', android: 'restaurant', web: 'restaurant' }],
-  ['إصابة', { ios: 'bandage.fill', android: 'healing', web: 'healing' }],
-] as const;
-
 export function AssessmentQuestionsScreen() {
   const router = useRouter();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
-  const { answers: selectedAnswers, toggleAnswer } = useAssessmentSession();
+  const {
+    patient,
+    complaint,
+    details,
+    setDetails,
+    answers: selectedAnswers,
+    toggleAnswer,
+  } = useAssessmentSession();
+  const question =
+    complaint.includes('ألم') || complaint.includes('حساسية')
+      ? 'متى بيزيد الألم عادةً؟'
+      : 'بأي حالات بتلاحظ المشكلة؟';
 
   return (
     <AssessmentScaffold
@@ -35,106 +39,95 @@ export function AssessmentQuestionsScreen() {
       primaryDisabled={selectedAnswers.length === 0}
       primaryLabel="متابعة"
       phase="أسئلة متكيّفة"
-      title="تفاصيل الحالة"
+      title="تفاصيل الأعراض"
       topContent={
-        <View className="gap-2 pt-1">
-          <View className="flex-row items-center justify-between">
-            <View className="rounded-full bg-tone-success-fill px-2.5 py-1.5">
-              <AppText className="text-type-caption text-tone-success-text" variant="caption">
-                تم الحفظ
-              </AppText>
-            </View>
-            <View className="rounded-full bg-action-subtle px-2.5 py-1.5">
-              <AppText className="text-type-caption text-content-link" variant="caption">
-                سارة الأحمد
-              </AppText>
-            </View>
-          </View>
-
-          <View className="h-11 rounded-[12px] bg-surface-subtle px-3 py-2">
-            <View className="flex-row items-center justify-between">
-              <AppText className="text-type-label text-content-secondary" variant="caption">
-                المكان ✓ الأعراض — السياق
-              </AppText>
-              <View className="h-1.5 w-24 overflow-hidden rounded-full bg-border-subtle">
-                <View className="h-full w-[55%] rounded-full bg-action-primary" />
-              </View>
-            </View>
-          </View>
+        <View className="flex-row-reverse items-center justify-between gap-2">
+          <AppText variant="label" className="min-w-0 flex-1 text-content-secondary">
+            اختر كل الإجابات اللي بتنطبق عليك.
+          </AppText>
+          <AppText variant="caption" className="text-content-link">
+            {ASSESSMENT_PATIENT_FIXTURES[patient].name}
+          </AppText>
         </View>
       }
     >
-      <View className="mt-2 rounded-[16px] border border-border-subtle bg-surface-default p-3.5">
-        <View className="flex-row items-center justify-between gap-1.5">
-          {conceptItems.map(([label, icon]) => (
-            <View className="flex-1 items-center gap-1" key={label}>
-              <View className="h-9 w-9 items-center justify-center rounded-[11px] bg-action-subtle">
-                <AppIcon name={icon} size={17} tone="action" />
-              </View>
-              <AppText className="text-type-caption text-content-secondary" variant="caption">
-                {label}
-              </AppText>
-            </View>
-          ))}
+      <View className="gap-3 rounded-[17px] border border-border-subtle bg-surface-default p-3">
+        <View className="flex-row-reverse items-center gap-2">
+          <View className="h-11 w-11 items-center justify-center rounded-[12px] bg-action-subtle">
+            <AppIcon
+              name={{ ios: 'waveform.path.ecg', android: 'monitor_heart', web: 'monitor_heart' }}
+              size={21}
+              tone="action"
+            />
+          </View>
+          <View className="min-w-0 flex-1 items-end gap-1">
+            <AppText variant="caption" className="text-content-link">
+              أسئلة حسب المشكلة المختارة
+            </AppText>
+            <AppText align="right" variant="heading-4" className="font-ui-bold">
+              {question}
+            </AppText>
+          </View>
         </View>
-
-        <View className="mt-3">
-          <AppText className="text-type-caption text-content-link" variant="caption">
-            سؤال مرتبط بالألم
-          </AppText>
-          <AppText className="mt-1 font-ui-bold text-type-heading-4 ">
-            متى يزيد الألم عادةً؟
-          </AppText>
-          <AppText className="mt-1 text-type-label text-content-secondary" variant="caption">
-            يمكنك اختيار أكثر من إجابة
-          </AppText>
-        </View>
-
-        <View className="mt-3 gap-1.5">
+        <View className="gap-2">
           {answers.map((answer) => {
             const selected = selectedAnswers.includes(answer);
-
             return (
-              <Checkbox
-                isSelected={selected}
-                onSelectedChange={() => toggleAnswer(answer)}
+              <Pressable
+                key={answer}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: selected }}
+                accessibilityLabel={answer}
+                onPress={() => toggleAnswer(answer)}
                 className={cn(
-                  'h-10 flex-row items-center justify-between rounded-[11px] border px-3',
+                  'min-h-[52px] w-full flex-row-reverse items-center gap-3 rounded-[12px] border px-3 py-2.5',
                   selected
                     ? 'border-action-primary bg-action-subtle'
-                    : 'border-border-subtle bg-surface-canvas',
+                    : 'border-border-subtle bg-surface-default',
                 )}
-                key={answer}
               >
-                <Checkbox.Indicator />
+                <View pointerEvents="none" className="h-6 w-6 shrink-0 items-center justify-center">
+                  <Checkbox isSelected={selected} animation="disable-all">
+                    <Checkbox.Indicator />
+                  </Checkbox>
+                </View>
                 <AppText
-                  className={cn('text-type-label', selected && 'font-ui-bold text-content-link')}
+                  align="right"
                   variant="label"
+                  className={
+                    selected
+                      ? 'min-w-0 flex-1 font-ui-semibold text-content-link'
+                      : 'min-w-0 flex-1 text-content-primary'
+                  }
                 >
                   {answer}
                 </AppText>
-              </Checkbox>
+              </Pressable>
             );
           })}
         </View>
-
-        <View className="mt-3 flex-row items-center justify-end gap-2 rounded-[10px] bg-tone-info-fill px-3 py-2.5">
-          <AppIcon
-            name={{ ios: 'info.circle.fill', android: 'info', web: 'info' }}
-            size={17}
-            tone="info"
-          />
-        </View>
       </View>
-
-      <View className="mt-3 flex-row items-center justify-between rounded-[11px] bg-surface-subtle px-3 py-2.5">
-        <Pressable accessibilityRole="button">
-          <AppText className="text-type-label text-content-link" variant="label">
-            تعديل
-          </AppText>
-        </Pressable>
-        <AppText className="text-type-label text-content-secondary" variant="caption">
-          بدأ منذ 3 أيام • الشدة متوسطة
+      <View className="gap-1.5">
+        <TextField
+          label="معلومات إضافية (اختياري)"
+          multiline
+          maxLength={240}
+          placeholder="خبرنا أي تفاصيل إضافية ممكن تساعد الطبيب"
+          value={details}
+          onChangeText={setDetails}
+        />
+        <AppText align="left" direction="ltr" variant="caption" className="text-content-secondary">
+          {details.length} / 240
+        </AppText>
+      </View>
+      <View className="flex-row-reverse items-center gap-2 rounded-[11px] bg-tone-info-fill p-3">
+        <AppIcon
+          name={{ ios: 'info.circle', android: 'info_outline', web: 'info_outline' }}
+          size={17}
+          tone="info"
+        />
+        <AppText align="right" variant="caption" className="min-w-0 flex-1 text-tone-info-text">
+          إجاباتك بتساعد على التوجيه الأولي، والطبيب بيحدد التشخيص النهائي بعد الفحص.
         </AppText>
       </View>
     </AssessmentScaffold>

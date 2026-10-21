@@ -1,73 +1,33 @@
-import { View } from 'react-native';
-import { Radio } from 'heroui-native';
-
 import type { DentitionMode } from '@/features/assessment/state/assessment-session-provider';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { SectionTabs } from '@/shared/components/ui/section-tabs';
 import { AppText } from '@/shared/components/ui';
-import { useAppTheme } from '@/shared/theme/use-app-theme';
-import { cn } from '@/shared/utils/cn';
+import { View } from 'react-native';
 
 const modes: { value: DentitionMode; label: string }[] = [
+  { value: 'permanent', label: 'دائمة' },
   { value: 'primary', label: 'لبنية' },
   { value: 'mixed', label: 'مختلطة' },
-  { value: 'permanent', label: 'دائمة' },
   { value: 'uncertain', label: 'غير متأكد' },
 ];
 
-interface DentitionModeControlProps {
+export function DentitionModeControl({
+  value,
+  onChange,
+}: {
   value: DentitionMode;
-  onChange: (value: DentitionMode) => void;
-}
-
-export function DentitionModeControl({ value, onChange }: DentitionModeControlProps) {
-  const { rowClassName } = useAppDirection();
-  const { colors } = useAppTheme();
-
+  onChange: (next: DentitionMode) => void;
+}) {
   return (
-    <View className="rounded-[16px] border border-border-default bg-surface-default px-[10px] py-2">
-      <View className={cn('items-center justify-between', rowClassName)}>
-        <AppText className="font-ui-bold" variant="label">
+    <View className="gap-2">
+      <View className="flex-row-reverse items-center justify-between gap-2">
+        <AppText variant="label" className="font-ui-semibold">
           نمط الأسنان
         </AppText>
-        <AppText className="text-content-secondary" variant="caption">
-          اقتراح أولي • يمكنك التغيير
+        <AppText variant="caption" className="text-content-secondary">
+          يمكنك تغييره
         </AppText>
       </View>
-
-      <View
-        className={cn(
-          'mt-[7px] h-[36px] gap-[3px] rounded-[10px] bg-surface-subtle p-[3px]',
-          rowClassName,
-        )}
-      >
-        {modes.map((mode) => {
-          const selected = value === mode.value;
-
-          return (
-            <Radio
-              isSelected={selected}
-              onSelectedChange={() => onChange(mode.value)}
-              className={cn(
-                'min-w-0 flex-1 items-center justify-center rounded-[8px]',
-                selected ? 'bg-action-primary' : 'bg-surface-subtle',
-              )}
-              hitSlop={4}
-              key={mode.value}
-            >
-              <AppText
-                style={selected ? { color: colors.text.onAction } : undefined}
-                className={cn(
-                  'text-type-caption font-ui-bold',
-                  selected ? 'text-content-on-action' : 'text-content-secondary',
-                )}
-                variant="caption"
-              >
-                {mode.label}
-              </AppText>
-            </Radio>
-          );
-        })}
-      </View>
+      <SectionTabs items={modes} value={value} onValueChange={onChange} />
     </View>
   );
 }

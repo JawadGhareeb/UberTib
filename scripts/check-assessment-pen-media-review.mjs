@@ -19,12 +19,11 @@ assert(
   'The two steps must reuse the existing Expo Router pages',
 );
 assert(
-  media.includes('FocusGuide') &&
-    media.includes('QualityExample') &&
-    media.includes('صور المنطقة المتأثرة') &&
+  media.includes('<IntroArtwork step={0} height={115} />') &&
+    media.includes('border-2 border-dashed') &&
     media.includes('أنواع ملفات نتعرّف عليها') &&
     media.includes('لا نطلب منك إجراء أشعة جديدة'),
-  'Files step must preserve the Pen photo guide, quality tips, media-type grid and warning',
+  'Files step must follow the approved new design, retain real media guidance and safety note',
 );
 assert(
   media.includes('launchImageLibraryAsync') &&
@@ -50,21 +49,22 @@ assert(
   'Assessment session must preserve multiple selected files and backwards compatibility',
 );
 assert(
-  review.includes('issueSummary') &&
-    review.includes('healthSummary') &&
+  review.includes('complaint') &&
+    review.includes('selectedTeeth.length') &&
+    review.includes('answers.length') &&
+    review.includes('healthConfirmed') &&
     review.includes('mediaAttachments.length') &&
-    review.includes('patientName') &&
+    review.includes('who.name') &&
     !review.includes("'ألم ضرس خلفي'") &&
     !review.includes("'حساسية بنسلين'"),
   "Review summary must read actual session data instead of displaying a fixed patient\'s details",
 );
 assert(
-  review.includes('كل معلومة في مكانها') &&
-    review.includes('ما سيُحلَّل الآن') &&
-    review.includes('ما سيُشارك لاحقاً فقط') &&
-    review.includes('التقييم الأولي ليس تشخيصاً نهائياً.') &&
-    review.includes('primaryLabel="أوافق وأبدأ التقييم"'),
-  'Review step must preserve Pen consent hierarchy and patient-safe copy',
+  review.includes('مراجعة الخصوصية') &&
+    review.includes('للتوجيه الأولي فقط') &&
+    review.includes('موافقة مستقلة عند') &&
+    review.includes('primaryDisabled={!complaint || !location || !healthConfirmed}'),
+  'Review step must preserve clear privacy scope and prevent unreviewed health steps',
 );
 assert(
   review.includes("params: { returnTo: 'review' }") &&
@@ -85,5 +85,5 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('Assessment files and review UI/source route checks passed.');
+  console.log('Assessment files and redesigned review UI/source route checks passed.');
 }
