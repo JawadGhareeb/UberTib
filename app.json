@@ -11,13 +11,13 @@
       [
         "expo-splash-screen",
         {
-          "image": "./src/shared/assets/splash-mark.png",
+          "image": "./src/shared/assets/icon.jpg",
           "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#F9F9F9",
+          "backgroundColor": "#ffffff",
           "dark": {
-            "image": "./src/shared/assets/splash-mark.png",
-            "backgroundColor": "#0A0A0A"
+            "image": "./src/shared/assets/icon.jpg",
+            "backgroundColor": "#ffffff"
           }
         }
       ],
@@ -51,7 +51,7 @@
     "android": {
       "package": "com.upertib.patient",
       "adaptiveIcon": {
-        "foregroundImage": "./src/shared/assets/icon.png",
+        "foregroundImage": "./src/shared/assets/icon.jpg",
         "backgroundColor": "#111111"
       },
       "softwareKeyboardLayoutMode": "resize"
@@ -59,7 +59,7 @@
     "web": {
       "lang": "ar",
       "dir": "rtl",
-      "favicon": "./src/shared/assets/icon.png"
+      "favicon": "./src/shared/assets/icon.jpg"
     },
     "extra": {
       "router": {},
@@ -68,6 +68,6 @@
       }
     },
     "owner": "hares12345123412",
-    "icon": "./src/shared/assets/icon.png"
+    "icon": "./src/shared/assets/icon.jpg"
   }
 }
