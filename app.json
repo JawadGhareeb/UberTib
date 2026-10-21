@@ -17,7 +17,7 @@
           "backgroundColor": "#F9F9F9",
           "dark": {
             "image": "./src/shared/assets/splash-mark.png",
-            "backgroundColor": "#F9F9F9"
+            "backgroundColor": "#0A0A0A"
           }
         }
       ],
@@ -45,7 +45,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./src/shared/assets/icon.png",
         "backgroundColor": "#111111"
-      }
+      },
+      "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "lang": "ar",

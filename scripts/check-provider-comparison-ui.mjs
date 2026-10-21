@@ -50,17 +50,24 @@ assert.ok(screen.includes("providerIds: remaining.join(',')"));
 assert.ok(screen.includes('بيانات الأطباء تجريبية') && screen.includes('ليست حجوزات مؤكدة'));
 
 assert.ok(
-  grid.includes('headerScrollRef') &&
-    grid.includes('rowsScrollRef') &&
-    grid.includes('synchronizeHorizontal') &&
-    grid.includes('scrollTo({ x: offset, animated: false })'),
-  'Header and data rows must stay synchronized when horizontally swiped',
+  !grid.includes('headerScrollRef') &&
+    !grid.includes('rowsScrollRef') &&
+    !grid.includes('synchronizeHorizontal') &&
+    !grid.includes('scrollTo({ x: offset'),
+  'There must be no two-way synchronized horizontal scrolling (three-doctor jitter)',
+);
+assert.ok(
+  (grid.match(/^\s*horizontal\s*$/gm) ?? []).length === 1 &&
+    grid.includes('bounces={false}') &&
+    grid.includes('overScrollMode="never"') &&
+    grid.includes('style={{ width: doctorViewport, flexGrow: 0, flexShrink: 0 }}'),
+  'One bounded horizontal owner prevents bounce and independent child offsets',
 );
 assert.ok(
   grid.includes('className="min-h-0 flex-1"') &&
     grid.includes('ProviderComparisonDoctorHeader') &&
     grid.includes('ProviderComparisonDoctorRows'),
-  'Fixed doctor profiles must be separate from the vertically scrollable criteria',
+  'Doctor header and corresponding facts must remain within the same horizontally scrolling column',
 );
 assert.ok(
   screen.includes('<ProviderComparisonGrid') &&
@@ -78,5 +85,5 @@ assert.ok(column.includes('عرض الملف') && column.includes('border-action
 
 assert.ok(!screen.includes('doctor[attribute.key]'), 'No untyped generic attribute string map');
 console.log(
-  'Doctor comparison UI: aligned 2/3 doctor grid, shared fixture facts, safe navigation and six criteria passed.',
+  'Doctor comparison UI: stable 2/3 doctor single-scroll grid, shared facts, safe navigation and six criteria passed.',
 );

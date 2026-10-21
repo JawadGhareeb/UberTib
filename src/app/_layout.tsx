@@ -46,14 +46,14 @@ function RootNavigator() {
         backgroundColor="transparent"
         translucent
       />
-      <Stack
-        screenOptions={{
-          contentStyle: {
-            backgroundColor: colors.surface.canvas,
-          },
-          headerShown: false,
-        }}
-      />
+      <View style={{ flex: 1, backgroundColor: colors.surface.canvas }}>
+        <Stack
+          screenOptions={{
+            contentStyle: { backgroundColor: colors.surface.canvas },
+            headerShown: false,
+          }}
+        />
+      </View>
     </>
   );
 }

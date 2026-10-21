@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-import { View } from 'react-native';
+import { KeyboardAvoidingView, Platform, View } from 'react-native';
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useResolveClassNames } from 'uniwind';
@@ -12,9 +12,18 @@ interface ScreenProps extends PropsWithChildren {
   context?: ReactNode;
   className?: string;
   contentClassName?: string;
+  /** Disable when a child already manages keyboard avoidance. */
+  keyboardAvoiding?: boolean;
 }
 
-export function Screen({ children, header, context, className, contentClassName }: ScreenProps) {
+export function Screen({
+  children,
+  header,
+  context,
+  className,
+  contentClassName,
+  keyboardAvoiding = true,
+}: ScreenProps) {
   const insets = useSafeAreaInsets();
   // SafeAreaView is from a third-party library: resolve the semantic Tailwind
   // background into a native style as well, so it updates reliably in Dark.
@@ -34,20 +43,26 @@ export function Screen({ children, header, context, className, contentClassName 
           {header}
         </View>
       ) : null}
-      <Animated.View
-        className={resolvedContentClassName}
+      <KeyboardAvoidingView
         style={{ flex: 1 }}
-        entering={FadeIn.duration(theme.motion.duration.stateChange).reduceMotion(
-          ReduceMotion.System,
-        )}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        enabled={keyboardAvoiding && Platform.OS === 'ios'}
       >
-        {context ? (
-          <View className="mb-4 mt-3">{context}</View>
-        ) : !contentClassName ? (
-          <View className="h-3" />
-        ) : null}
-        {children}
-      </Animated.View>
+        <Animated.View
+          className={resolvedContentClassName}
+          style={{ flex: 1 }}
+          entering={FadeIn.duration(theme.motion.duration.stateChange).reduceMotion(
+            ReduceMotion.System,
+          )}
+        >
+          {context ? (
+            <View className="mb-4 mt-3">{context}</View>
+          ) : !contentClassName ? (
+            <View className="h-3" />
+          ) : null}
+          {children}
+        </Animated.View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

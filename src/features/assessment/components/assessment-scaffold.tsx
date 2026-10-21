@@ -46,7 +46,7 @@ export function AssessmentScaffold({
     </View>
   );
   return (
-    <Screen contentClassName="px-0 py-0">
+    <Screen contentClassName="px-0 py-0" keyboardAvoiding={false}>
       <AppHeader title="تحديد حالتي" showBack={!hideBack} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
