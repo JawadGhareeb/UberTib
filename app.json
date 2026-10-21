@@ -64,10 +64,10 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "3c589cc9-c3b2-40b9-9e3b-dd6b4d849145"
+        "projectId": "6d51957d-51b2-4626-922b-baaca411e359"
       }
     },
-    "owner": "hares12345123412",
+    "owner": "jawad_ghareeb",
     "icon": "./src/shared/assets/icon.jpg"
   }
 }
