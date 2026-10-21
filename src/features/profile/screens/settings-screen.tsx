@@ -43,7 +43,7 @@ export function SettingsScreen() {
           />
         </View>
         <AppText align="right" variant="caption" className="text-content-secondary">
-          تفضيلات العرض الحالية تجريبية، والتنبيهات الفعلية بتعتمد على إعدادات النظام والموافقة على
+          تفضيلات العرض قابلة للتعديل من هون، والتنبيهات بتعتمد على إعدادات النظام والموافقة على
           الإشعارات.
         </AppText>
       </View>

@@ -182,7 +182,7 @@ export function PlanAcceptanceScreen({ caseId }: { caseId: string }) {
         <ConfirmationDialog
           visible={confirmingAccept && needsAcceptance && !submitted && readState === 'success'}
           title="تأكيد قبول الخطة العلاجية"
-          description="راجع النسخة والمبلغ قبل الموافقة. يُرسل قبول تجريبي قيد التأكيد، ولا يُعتبر معتمداً حتى تصل استجابة موثوقة."
+          description="راجع النسخة والمبلغ قبل الموافقة. سيُسجّل قبولك بانتظار التأكيد، ولا تُعتمد الخطة قبل اعتماد الطرف المعني."
           confirmLabel="تأكيد إرسال الموافقة"
           onConfirm={() => {
             if (submitted || !needsAcceptance || readState !== 'success') return;

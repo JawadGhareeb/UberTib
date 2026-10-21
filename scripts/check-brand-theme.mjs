@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 const tokens = JSON.parse(readFileSync('src/shared/theme/tokens.json', 'utf8'));
 const expectedPrimary = tokens.brand.mark;
-const expectedPressed = tokens.brand.mark;
+const expectedPressed = '#00836E';
 
 for (const [name, palette] of [
   ['light', tokens.color],

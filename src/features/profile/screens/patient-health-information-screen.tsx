@@ -206,7 +206,7 @@ export function PatientHealthInformationScreen() {
                 style={{ fontSize: 9.5, lineHeight: 16 }}
                 variant="caption"
               >
-                ملف الصحة والأسنان · بيانات تجريبية للمعاينة
+                ملف الصحة والأسنان
               </AppText>
             </View>
           </View>
@@ -306,7 +306,7 @@ export function PatientHealthInformationScreen() {
                   value={draftNote}
                 />
                 <AppText align="right" className="text-content-secondary" variant="caption">
-                  التحديث هنا مسودة محلية للمعاينة فقط؛ لا تُرسل إلى طبيب أو عيادة.
+                  تُحفظ ملاحظاتك على هذا الجهاز، ولا تظهر للطبيب تلقائياً.
                 </AppText>
                 <Button
                   label="حفظ المسودة محلياً"

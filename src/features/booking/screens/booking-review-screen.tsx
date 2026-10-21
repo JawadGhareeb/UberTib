@@ -244,7 +244,7 @@ export function BookingReviewScreen() {
               variant="caption"
               className="mt-2 max-w-[300px] text-content-secondary"
             >
-              حفظنا طلبك التجريبي ضمن حجوزاتي. الموعد ما بيصير مؤكداً قبل رد العيادة.
+              تم حفظ طلبك ضمن حجوزاتي. الموعد ما بيصير مؤكداً قبل موافقة العيادة.
             </AppText>
           </View>
           <BookingCard className="mt-5 gap-1 p-3">
@@ -515,7 +515,7 @@ export function BookingReviewScreen() {
                       variant="caption"
                       className="min-w-0 flex-1 text-tone-info-text"
                     >
-                      الصورة أو PDF للمعاينة المحلية فقط، ولا تُرفع أو تُرسل للطبيب ضمن نسخة Mock.
+                      المرفق متاح للمعاينة على جهازك، ولا يُشارك مع الطبيب حتى يتم إرسال المرفقات.
                     </AppText>
                   </View>
                 </View>

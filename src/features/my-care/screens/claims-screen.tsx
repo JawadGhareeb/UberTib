@@ -401,15 +401,15 @@ export function ClaimsScreen({ caseId }: { caseId: string }) {
                   variant="caption"
                   className="min-w-0 flex-1 text-tone-warning-text"
                 >
-                  الصور المختارة محلياً، ولا تُرسل لفريق الدعم أو العيادة ضمن نسخة Mock. يُسجّل اسم
-                  الملف فقط.
+                  الصور المختارة قابلة للمعاينة على جهازك، ويُحفظ اسم الملف فقط.
                 </AppText>
               </View>
             </View>
           ) : (
             <View className="rounded-[11px] bg-tone-info-fill p-3">
               <AppText align="right" variant="caption" className="text-tone-info-text">
-                إثبات الدفع والاسترداد يحتاج مسار التحقق المختص؛ هذه النسخة لا ترسل ملفات فعلية.
+                إثبات الدفع والاسترداد يخضع لمراجعة الجهة المختصة. مرفقات هذا الطلب محفوظة على
+                جهازك.
               </AppText>
             </View>
           )}

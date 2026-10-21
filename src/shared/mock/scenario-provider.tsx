@@ -99,7 +99,13 @@ export interface MockClaimSubmission {
   id: string;
   caseId: string;
   kind: 'refund' | 'protection' | 'issue';
-  type: 'refund' | 'protection' | 'clinical' | 'appointment' | 'external-payment-dispute' | 'refund-execution';
+  type:
+    | 'refund'
+    | 'protection'
+    | 'clinical'
+    | 'appointment'
+    | 'external-payment-dispute'
+    | 'refund-execution';
   typeLabel: string;
   title: string;
   amountLabel: string;
@@ -155,7 +161,9 @@ interface MockScenarioContextValue {
   getSurfaceState: (surface: MockSurface) => MockReadState;
 
   bookingRequests: MockBookingRequest[];
-  submitBookingRequest: (input: Omit<MockBookingRequest, 'id' | 'status' | 'statusLabel' | 'note'>) => void;
+  submitBookingRequest: (
+    input: Omit<MockBookingRequest, 'id' | 'status' | 'statusLabel' | 'note'>,
+  ) => void;
   getBookingMutation: (bookingId?: string) => MockBookingMutation | undefined;
   submitBookingCancellation: (bookingId: string) => void;
   submitBookingReschedule: (
@@ -239,7 +247,9 @@ export function MockScenarioProvider({ children }: PropsWithChildren) {
   const [grantMutations, setGrantMutations] = useState<Record<string, MockGrantMutation>>({});
   const [claimSubmissions, setClaimSubmissions] = useState<MockClaimSubmission[]>([]);
   const [claimAppealIds, setClaimAppealIds] = useState<string[]>([]);
-  const [claimAppealDrafts, setClaimAppealDrafts] = useState<Record<string, { reason: string; evidenceName?: string }>>({});
+  const [claimAppealDrafts, setClaimAppealDrafts] = useState<
+    Record<string, { reason: string; evidenceName?: string }>
+  >({});
   const [claimExplanationRequestIds, setClaimExplanationRequestIds] = useState<string[]>([]);
   const [reviewSubmissions, setReviewSubmissions] = useState<MockReviewSubmission[]>([]);
   const [reviewAppealIds, setReviewAppealIds] = useState<string[]>([]);
@@ -247,12 +257,16 @@ export function MockScenarioProvider({ children }: PropsWithChildren) {
   const [financialEventResponses, setFinancialEventResponses] = useState<
     Record<string, MockFinancialEventResponse>
   >({});
-  const [stageEvidenceDrafts, setStageEvidenceDrafts] = useState<Record<string, MockStageEvidenceDraft>>({});
+  const [stageEvidenceDrafts, setStageEvidenceDrafts] = useState<
+    Record<string, MockStageEvidenceDraft>
+  >({});
   const [planAcceptanceCaseIds, setPlanAcceptanceCaseIds] = useState<string[]>([]);
   const [planAmendmentDecisions, setPlanAmendmentDecisions] = useState<
     Record<string, 'accept' | 'reject'>
   >({});
-  const [planAmendmentRejectionReasons, setPlanAmendmentRejectionReasons] = useState<Record<string, string>>({});
+  const [planAmendmentRejectionReasons, setPlanAmendmentRejectionReasons] = useState<
+    Record<string, string>
+  >({});
   const [readNotificationIds, setReadNotificationIds] = useState<string[]>([]);
   const scenario = useMemo(() => getMockScenario(scenarioId), [scenarioId]);
 
@@ -286,20 +300,27 @@ export function MockScenarioProvider({ children }: PropsWithChildren) {
       submitBookingRequest: (input) => {
         setBookingRequests((current) => {
           // Repeated taps or a retry of the same mock request must not create a second appointment.
-          if (current.some((request) =>
-            request.patientName === input.patientName &&
-            request.providerId === input.providerId &&
-            request.serviceCode === input.serviceCode &&
-            request.dateLabel === input.dateLabel &&
-            request.timeLabel === input.timeLabel
-          )) return current;
-          return [{
-            ...input,
-            id: `session-booking-${current.length + 1}`,
-            status: 'pending',
-            statusLabel: 'قيد التأكيد',
-            note: 'طلب تجريبي محفوظ في هذه الجلسة؛ لم يصل تأكيد من العيادة بعد.',
-          }, ...current];
+          if (
+            current.some(
+              (request) =>
+                request.patientName === input.patientName &&
+                request.providerId === input.providerId &&
+                request.serviceCode === input.serviceCode &&
+                request.dateLabel === input.dateLabel &&
+                request.timeLabel === input.timeLabel,
+            )
+          )
+            return current;
+          return [
+            {
+              ...input,
+              id: `session-booking-${current.length + 1}`,
+              status: 'pending',
+              statusLabel: 'قيد التأكيد',
+              note: 'الطلب محفوظ، ولم يصل تأكيد من العيادة بعد.',
+            },
+            ...current,
+          ];
         });
       },
       getBookingMutation: (bookingId) => (bookingId ? bookingMutations[bookingId] : undefined),
@@ -467,11 +488,13 @@ export function MockScenarioProvider({ children }: PropsWithChildren) {
             title,
             status: 'pending' as const,
           })),
-          history: [{
-            id: `${id}-h1`,
-            title: `حُفظت مشكلة تجريبية للمراجعة: ${reason}`,
-            dateLabel: 'الآن',
-          }],
+          history: [
+            {
+              id: `${id}-h1`,
+              title: `حُفظت المشكلة للمراجعة: ${reason}`,
+              dateLabel: 'الآن',
+            },
+          ],
           appealEligible: false,
         };
         setClaimSubmissions((current) => upsertById(current, submission));

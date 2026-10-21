@@ -6,7 +6,15 @@ import { CareActionFooter, CareDetailRow } from '@/features/my-care/components/c
 import { CareV5Badge, CareV5Card, CareV5Header } from '@/features/my-care/components/care-v5-ui';
 import { getMockClaimForScenario } from '@/features/my-care/mocks/records.mock';
 import { getMockCareCaseForScenario } from '@/features/my-care/mocks/care.mock';
-import { AppIcon, AppText, Button, ConfirmationDialog, ReadStateBoundary, Screen, StateView } from '@/shared/components/ui';
+import {
+  AppIcon,
+  AppText,
+  Button,
+  ConfirmationDialog,
+  ReadStateBoundary,
+  Screen,
+  StateView,
+} from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
 interface MockClaimDecision {
@@ -34,8 +42,12 @@ interface ClaimDetailScreenProps {
 export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
   const router = useRouter();
   const {
-    claimAppealIds, claimExplanationRequestIds, claimSubmissions, getSurfaceState,
-    requestClaimExplanation, scenario,
+    claimAppealIds,
+    claimExplanationRequestIds,
+    claimSubmissions,
+    getSurfaceState,
+    requestClaimExplanation,
+    scenario,
   } = useMockScenario();
   const [confirmingExplanation, setConfirmingExplanation] = useState(false);
   const readState = getSurfaceState('claims');
@@ -44,9 +56,13 @@ export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
     getMockClaimForScenario(claimId, scenario);
   const matchingClaim = claim?.caseId === caseId ? claim : undefined;
   const careCase = getMockCareCaseForScenario(caseId, scenario);
-  const hasDecision = Boolean(matchingClaim && 'decision' in matchingClaim && matchingClaim.decision);
+  const hasDecision = Boolean(
+    matchingClaim && 'decision' in matchingClaim && matchingClaim.decision,
+  );
   const appealPending = claimAppealIds.includes(claimId);
-  const canAppeal = Boolean(matchingClaim?.appealEligible && hasDecision && !appealPending && readState === 'success');
+  const canAppeal = Boolean(
+    matchingClaim?.appealEligible && hasDecision && !appealPending && readState === 'success',
+  );
   const explanationPending = claimExplanationRequestIds.includes(claimId);
 
   if (!matchingClaim) {
@@ -60,9 +76,9 @@ export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
     );
   }
 
-  const decision = ('decision' in matchingClaim && matchingClaim.decision
-    ? matchingClaim.decision
-    : undefined) as MockClaimDecision | undefined;
+  const decision = (
+    'decision' in matchingClaim && matchingClaim.decision ? matchingClaim.decision : undefined
+  ) as MockClaimDecision | undefined;
 
   return (
     <Screen contentClassName="px-0 py-0">
@@ -78,9 +94,13 @@ export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
           contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-[120px] pt-2"
           showsVerticalScrollIndicator={false}
         >
-          <View className={`rounded-[14px] border p-[11px] ${hasDecision
-            ? 'border-tone-warning-border bg-tone-warning-fill'
-            : 'border-tone-info-border bg-tone-info-fill'}`}>
+          <View
+            className={`rounded-[14px] border p-[11px] ${
+              hasDecision
+                ? 'border-tone-warning-border bg-tone-warning-fill'
+                : 'border-tone-info-border bg-tone-info-fill'
+            }`}
+          >
             <View className="flex-row items-center gap-2">
               <View className="h-10 w-10 items-center justify-center rounded-[10px] bg-surface-default">
                 <AppIcon
@@ -89,10 +109,17 @@ export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
                   tone={hasDecision ? 'warning' : 'info'}
                 />
               </View>
-              <AppText align="right" className="min-w-0 flex-1 font-ui-bold text-content-primary" variant="label">
+              <AppText
+                align="right"
+                className="min-w-0 flex-1 font-ui-bold text-content-primary"
+                variant="label"
+              >
                 {matchingClaim.typeLabel}
               </AppText>
-              <CareV5Badge label={matchingClaim.statusLabel} tone={hasDecision ? 'warning' : 'info'} />
+              <CareV5Badge
+                label={matchingClaim.statusLabel}
+                tone={hasDecision ? 'warning' : 'info'}
+              />
             </View>
             <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
               {matchingClaim.title} · الحالة {careCase?.title ?? 'العلاجية'}
@@ -100,20 +127,36 @@ export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
             {decision?.confirmedAmountLabel && decision.unverifiedAmountLabel ? (
               <View className="mt-2 flex-row gap-1.5">
                 <View className="min-w-0 flex-1 rounded-[9px] bg-tone-success-fill p-2">
-                  <AppText align="right" className="text-tone-success-text" variant="badge">مبلغ مؤكد</AppText>
-                  <AppText direction="ltr" className="mt-1 font-ui-bold text-tone-success-text" variant="label">
+                  <AppText align="right" className="text-tone-success-text" variant="badge">
+                    مبلغ مؤكد
+                  </AppText>
+                  <AppText
+                    direction="ltr"
+                    className="mt-1 font-ui-bold text-tone-success-text"
+                    variant="label"
+                  >
                     {decision.confirmedAmountLabel}
                   </AppText>
                 </View>
                 <View className="min-w-0 flex-1 rounded-[9px] bg-surface-default p-2">
-                  <AppText align="right" className="text-tone-warning-text" variant="badge">غير مثبت</AppText>
-                  <AppText direction="ltr" className="mt-1 font-ui-bold text-tone-warning-text" variant="label">
+                  <AppText align="right" className="text-tone-warning-text" variant="badge">
+                    غير مثبت
+                  </AppText>
+                  <AppText
+                    direction="ltr"
+                    className="mt-1 font-ui-bold text-tone-warning-text"
+                    variant="label"
+                  >
                     {decision.unverifiedAmountLabel}
                   </AppText>
                 </View>
               </View>
             ) : matchingClaim.amountLabel !== '—' ? (
-              <AppText direction="ltr" className="mt-2 font-ui-bold text-content-primary" variant="body-strong">
+              <AppText
+                direction="ltr"
+                className="mt-2 font-ui-bold text-content-primary"
+                variant="body-strong"
+              >
                 {matchingClaim.amountLabel}
               </AppText>
             ) : null}
@@ -122,8 +165,20 @@ export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
           {decision ? (
             <CareV5Card className="mt-2 gap-2 rounded-[14px] p-3">
               <View className="flex-row items-center gap-2">
-                <AppIcon name={{ ios: 'person.crop.circle.badge.checkmark', android: 'verified_user', web: 'verified_user' }} size={17} tone="info" />
-                <AppText align="right" className="min-w-0 flex-1 font-ui-bold text-content-primary" variant="label">
+                <AppIcon
+                  name={{
+                    ios: 'person.crop.circle.badge.checkmark',
+                    android: 'verified_user',
+                    web: 'verified_user',
+                  }}
+                  size={17}
+                  tone="info"
+                />
+                <AppText
+                  align="right"
+                  className="min-w-0 flex-1 font-ui-bold text-content-primary"
+                  variant="label"
+                >
                   سبب القرار
                 </AppText>
                 <CareV5Badge label="مراجعة بشرية" tone="info" />
@@ -137,8 +192,12 @@ export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
             </CareV5Card>
           ) : (
             <View className="mt-2 rounded-[12px] bg-tone-info-fill p-3">
-              <AppText align="right" className="font-ui-semibold text-tone-info-text" variant="label">
-                قيد المراجعة · مثال تجريبي
+              <AppText
+                align="right"
+                className="font-ui-semibold text-tone-info-text"
+                variant="label"
+              >
+                قيد المراجعة
               </AppText>
               <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
                 الطلب محفوظ محلياً فقط؛ لم يصدر قرار بشري أو يُثبت استحقاق مالي.
@@ -156,35 +215,55 @@ export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
                   label={item.status === 'complete' ? 'تمت مراجعته' : 'غير موفّر'}
                   tone={item.status === 'complete' ? 'success' : 'warning'}
                 />
-                <AppText align="right" className="min-w-0 flex-1 text-content-primary" numberOfLines={2} variant="caption">
+                <AppText
+                  align="right"
+                  className="min-w-0 flex-1 text-content-primary"
+                  numberOfLines={2}
+                  variant="caption"
+                >
                   {item.title}
                 </AppText>
                 <AppIcon
-                  name={item.status === 'complete'
-                    ? { ios: 'checkmark.square', android: 'fact_check', web: 'fact_check' }
-                    : { ios: 'xmark.square', android: 'disabled_by_default', web: 'disabled_by_default' }}
+                  name={
+                    item.status === 'complete'
+                      ? { ios: 'checkmark.square', android: 'fact_check', web: 'fact_check' }
+                      : {
+                          ios: 'xmark.square',
+                          android: 'disabled_by_default',
+                          web: 'disabled_by_default',
+                        }
+                  }
                   tone={item.status === 'complete' ? 'success' : 'warning'}
                   size={17}
                 />
               </View>
             ))}
             <AppText align="right" className="text-content-secondary" variant="caption">
-              {matchingClaim.evidenceProgressLabel} · أي دليل إضافي ينتظر المراجعة، ولا يُعتمد تلقائياً.
+              {matchingClaim.evidenceProgressLabel} · أي دليل إضافي ينتظر المراجعة، ولا يُعتمد
+              تلقائياً.
             </AppText>
           </CareV5Card>
 
           <View className="mt-2 rounded-[12px] bg-tone-info-fill p-3">
             <View className="flex-row items-center gap-2">
-              <AppText align="right" className="min-w-0 flex-1 font-ui-semibold text-tone-info-text" variant="label">
+              <AppText
+                align="right"
+                className="min-w-0 flex-1 font-ui-semibold text-tone-info-text"
+                variant="label"
+              >
                 {canAppeal ? 'مهلة الاستئناف' : 'حالة الاستئناف'}
               </AppText>
-              <AppIcon name={{ ios: 'calendar', android: 'event', web: 'event' }} size={17} tone="info" />
+              <AppIcon
+                name={{ ios: 'calendar', android: 'event', web: 'event' }}
+                size={17}
+                tone="info"
+              />
             </View>
             <AppText align="right" className="mt-1 text-content-secondary" variant="caption">
               {appealPending
                 ? 'الاستئناف قيد المراجعة، والقرار الأصلي ما زال محفوظاً.'
                 : canAppeal
-                  ? decision?.appealDeadlineLabel ?? matchingClaim.deadlineLabel
+                  ? (decision?.appealDeadlineLabel ?? matchingClaim.deadlineLabel)
                   : 'الاستئناف غير متاح قبل صدور قرار قابل للاستئناف.'}
             </AppText>
             {decision ? (
@@ -216,16 +295,22 @@ export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
                 className="h-12 rounded-[12px]"
                 endIcon={{ ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' }}
                 label="تقديم استئناف مع دليل جديد"
-                onPress={() => router.push({
-                  pathname: '/care/[caseId]/claims/[claimId]/appeal',
-                  params: { caseId, claimId },
-                })}
+                onPress={() =>
+                  router.push({
+                    pathname: '/care/[caseId]/claims/[claimId]/appeal',
+                    params: { caseId, claimId },
+                  })
+                }
               />
             ) : null}
             <Button
               className="h-11 rounded-[11px]"
               disabled={explanationPending || readState !== 'success'}
-              endIcon={{ ios: 'bubble.left', android: 'chat_bubble_outline', web: 'chat_bubble_outline' }}
+              endIcon={{
+                ios: 'bubble.left',
+                android: 'chat_bubble_outline',
+                web: 'chat_bubble_outline',
+              }}
               label={explanationPending ? 'طلب شرح القرار قيد المراجعة' : 'طلب شرح القرار'}
               onPress={() => setConfirmingExplanation(true)}
               variant="outline"

@@ -194,7 +194,7 @@ export function ProfilePrivacyProvider({ children }: PropsWithChildren) {
         );
       },
       dataExportStatus,
-      requestDataExport: () => setDataExportStatus('preparing'),
+      requestDataExport: () => setDataExportStatus('ready'),
       setDataExportStatus,
       accountClosureStatus,
       setAccountClosureStatus,

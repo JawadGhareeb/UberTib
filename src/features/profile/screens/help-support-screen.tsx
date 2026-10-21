@@ -40,7 +40,7 @@ const faq = [
     id: 'ticket',
     question: 'كيف بتابع طلب الدعم؟',
     answer:
-      'بتلاقي طلباتك ضمن المساعدة والدعم. الطلبات المحفوظة محلياً بالمعاينة مو مرسلة، والمدة المتوقعة للرد ما بتظهر إلا بعد قبول الطلب من نظام الدعم.',
+      'بتلاقي طلباتك ضمن المساعدة والدعم. الطلبات المحفوظة على جهازك تظهر في القائمة، ومدة الرد تُعرض بعد استلام الطلب لدى فريق الدعم.',
   },
 ] as const;
 
@@ -122,11 +122,7 @@ export function HelpSupportScreen() {
           />
           <NavigationRow
             title="طلبات الدعم"
-            detail={
-              tickets.length
-                ? tickets.length + ' طلب محفوظ محلياً · غير مرسل'
-                : 'تابع حالة الطلبات عند توفرها'
-            }
+            detail={tickets.length ? tickets.length + ' طلب محفوظ' : 'تابع حالة الطلبات عند توفرها'}
             icon={{ ios: 'ticket', android: 'confirmation_number', web: 'confirmation_number' }}
             onPress={() => router.push('/support/tickets')}
           />
@@ -204,8 +200,7 @@ export function HelpSupportScreen() {
           permissionTitle="معلومات الحساب غير متاحة"
         >
           <AppText align="right" variant="caption" className="text-content-secondary">
-            إنشاء تذكرة فعلية وتتبع مهلة الرد يحتاجان الاتصال بخدمة الدعم؛ المعاينة تحفظ مسودات
-            محلية فقط.
+            طلبات الدعم الموجودة على الجهاز تبقى محفوظة فيه إلى حين إرسالها للخدمة.
           </AppText>
         </ReadStateBoundary>
       </ScrollView>

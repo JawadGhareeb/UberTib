@@ -106,8 +106,8 @@ export function FollowUpsScreen({ caseId }: { caseId: string }) {
               </AppText>
             </View>
             <AppText align="right" variant="caption" className="text-content-secondary">
-              الدليل المقبول بالنسخة التجريبية قد يكون مسجّلاً بلا صورة قابلة للعرض. العين متاحة
-              للصور الموجودة فعلياً على جهازك.
+              المعاينة متاحة للصور المحفوظة على جهازك. قد تحتوي السجلات الأخرى على أسماء مرفقات دون
+              صور.
             </AppText>
             {caseId === 'case-001' ? (
               <View className="gap-2">

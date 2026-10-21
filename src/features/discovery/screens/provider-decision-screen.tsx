@@ -198,8 +198,7 @@ export function ProviderDecisionScreen() {
                 variant="caption"
                 className="min-w-0 flex-1 text-content-secondary"
               >
-                معلومات الطبيب والتقييمات معروضة من بيانات تجريبية، والتوثيق النهائي يحتاج تأكيد
-                النظام.
+                راجع معلومات الطبيب والفرع والخدمة قبل اختيار الموعد.
               </AppText>
             </View>
           </ScreenCard>
@@ -244,7 +243,7 @@ export function ProviderDecisionScreen() {
                     ? 'نطاق توضيحي'
                     : priceFact?.mode === 'requires-plan'
                       ? 'بعد الفحص'
-                      : 'بيانات تجريبية'}
+                      : 'بحاجة للتحقق'}
                 </AppText>
               </View>
               <View className="min-w-0 flex-1 items-end gap-1 rounded-[11px] bg-surface-default px-3 py-2.5">
@@ -260,7 +259,7 @@ export function ProviderDecisionScreen() {
                   {doctor.next}
                 </AppText>
                 <AppText variant="caption" className="text-content-secondary">
-                  تجريبي · غير مؤكّد
+                  بانتظار التأكيد
                 </AppText>
               </View>
             </View>

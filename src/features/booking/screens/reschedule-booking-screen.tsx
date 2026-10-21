@@ -227,7 +227,7 @@ export function RescheduleBookingScreen() {
       <ConfirmationDialog
         visible={confirmingReschedule && !pendingProposal}
         title="إرسال اقتراح الموعد الجديد؟"
-        description="سيُرسل الموعد المختار إلى العيادة كمقترح تجريبي، ويبقى الحجز الحالي كما هو حتى يصل رد مؤكد."
+        description="سيُسجّل الموعد المختار كمقترح للتغيير، ويبقى الحجز الحالي كما هو حتى اعتماد الموعد البديل."
         confirmLabel="إرسال الاقتراح"
         onCancel={() => setConfirmingReschedule(false)}
         onConfirm={() => {

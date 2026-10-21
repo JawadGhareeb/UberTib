@@ -198,7 +198,7 @@ export function ProfilePersonalInfoScreen() {
         />
       </Pressable>
       <AppText align="right" variant="caption" className="mt-2 text-content-secondary">
-        تعديل البيانات ضمن العرض التجريبي الحالي. موقعك بيتم اختياره من الخريطة بشكل مستقل.
+        يمكنك تعديل معلوماتك، وتحديد موقعك من الخريطة بشكل مستقل.
       </AppText>
       {pendingVerificationPhone ? (
         <ProfilePhoneChangeDialogs

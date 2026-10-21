@@ -338,7 +338,7 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
               <AppText align="right" variant="caption" className="text-content-secondary">
                 {hasDemoFinancialRecord
                   ? 'راجع حالة كل دفعة في السجل المالي؛ المبلغ غير المؤكد ليس مبلغاً مدفوعاً.'
-                  : 'ما في سجل دفعات مفصّل موثّق ضمن بيانات هذه الحالة التجريبية.'}
+                  : 'ما في تفاصيل دفعات إضافية مسجّلة لهذه الحالة.'}
               </AppText>
               {hasDemoFinancialRecord ? (
                 <Button

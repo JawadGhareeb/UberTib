@@ -89,7 +89,7 @@ export const mockBookings: MockBooking[] = [
     priceLabel: '1,150 ل.س',
     status: 'pending',
     statusLabel: 'قيد التأكيد',
-    note: 'العيادة لم تؤكد هذا الموعد بعد. هذا طلب حجز تجريبي فقط.',
+    note: 'العيادة لم تؤكد هذا الموعد بعد.',
   },
   {
     id: 'booking-005',

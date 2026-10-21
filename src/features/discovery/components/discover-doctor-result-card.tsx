@@ -15,6 +15,7 @@ export function DiscoverDoctorResultCard({
   patientId,
   selected,
   disabled,
+  disabledReason,
   onToggle,
 }: {
   doctor: Doctor;
@@ -22,6 +23,7 @@ export function DiscoverDoctorResultCard({
   patientId?: string;
   selected: boolean;
   disabled: boolean;
+  disabledReason?: string;
   onToggle: () => void;
 }) {
   const router = useRouter();
@@ -98,7 +100,7 @@ export function DiscoverDoctorResultCard({
         </View>
         <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
           <AppText variant="caption" className="text-content-secondary">
-            موعد تجريبي · غير مؤكّد
+            موعد بحاجة لتأكيد
           </AppText>
           <AppText
             align="right"
@@ -148,7 +150,7 @@ export function DiscoverDoctorResultCard({
           className={
             'min-h-[46px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[12px] border px-2 ' +
             (selected
-              ? 'border-action-primary bg-action-subtle'
+              ? 'border-state-selected-border bg-action-subtle'
               : 'border-border-subtle bg-surface-default')
           }
         >
@@ -169,7 +171,11 @@ export function DiscoverDoctorResultCard({
             }
             numberOfLines={1}
           >
-            {selected ? 'تم الاختيار' : disabled ? 'اكتمل العدد' : 'أضف للمقارنة'}
+            {selected
+              ? 'تم الاختيار'
+              : disabled
+                ? (disabledReason ?? 'اكتمل العدد')
+                : 'أضف للمقارنة'}
           </HeroButton.Label>
         </HeroButton>
       </View>

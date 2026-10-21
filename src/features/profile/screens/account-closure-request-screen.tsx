@@ -51,7 +51,7 @@ export function AccountClosureRequestScreen() {
             شو بيصير بعد الطلب؟
           </AppText>
           {[
-            'بيوصل طلب الإغلاق للمراجعة.',
+            'بيُحفظ طلب إغلاق الحساب للمتابعة.',
             'قد يُطلب منك التحقق من الهوية قبل الإغلاق الفعلي.',
             'بإمكانك متابعة حالة الطلب من هون.',
           ].map((item) => (
@@ -80,7 +80,7 @@ export function AccountClosureRequestScreen() {
             />
             <AppText variant="body-strong" align="center">
               {accountClosureStatus === 'requested'
-                ? 'طلب الإغلاق قيد المراجعة'
+                ? 'تم حفظ طلب الإغلاق'
                 : accountClosureStatus === 'review'
                   ? 'تتم مراجعة الطلب'
                   : accountClosureStatus === 'scheduled'
@@ -88,7 +88,7 @@ export function AccountClosureRequestScreen() {
                     : 'الحساب مغلق'}
             </AppText>
             <AppText variant="caption" align="center" className="text-content-secondary">
-              هذا عرض تجريبي؛ لم يتم حذف الحساب فعلياً.
+              تم حفظ طلبك في التطبيق، لكن الحساب لم يُغلق بعد.
             </AppText>
           </View>
         ) : (
@@ -102,7 +102,7 @@ export function AccountClosureRequestScreen() {
               onPress={() => setAccountClosureStatus('confirm')}
             />
             <AppText variant="caption" align="center" className="text-content-secondary">
-              تأكيدك بيسجل طلباً للمراجعة، مو حذفاً فورياً للحساب.
+              تأكيدك بيسجل طلباً داخل التطبيق، وما بيحذف الحساب فوراً.
             </AppText>
           </View>
         )}
@@ -110,7 +110,7 @@ export function AccountClosureRequestScreen() {
       <ConfirmationDialog
         visible={accountClosureStatus === 'confirm'}
         title="تأكيد طلب إغلاق الحساب"
-        description="هل تريد إرسال طلب الإغلاق للمراجعة؟ لا يتم حذف حسابك فوراً، وقد يلزم تحقق مستقل من الهوية."
+        description="هل تريد حفظ طلب إغلاق الحساب؟ ما رح ينحذف الحساب بمجرد هذا الإجراء، وقد يلزم تحقق مستقل من الهوية."
         confirmLabel="تأكيد طلب الإغلاق"
         cancelLabel="إلغاء"
         destructive

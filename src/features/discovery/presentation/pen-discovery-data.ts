@@ -1,4 +1,8 @@
-import { getMockProviderPriceFact, getMockProviderPriceLabel, getMockProviders } from '@/features/discovery/mocks/providers.mock';
+import {
+  getMockProviderPriceFact,
+  getMockProviderPriceLabel,
+  getMockProviders,
+} from '@/features/discovery/mocks/providers.mock';
 
 export interface PenServiceFamily {
   id: string;
@@ -238,7 +242,9 @@ function nextIllustrativeSlot(provider: ReturnType<typeof getMockProviders>[numb
   const firstFutureDay = provider.availability
     .filter((day) => day.dateKey >= today && day.slots.length > 0)
     .sort((a, b) => a.dateKey.localeCompare(b.dateKey))[0];
-  return firstFutureDay ? firstFutureDay.dateLabel + ' · ' + firstFutureDay.slots[0] : 'يلزم تحديث المواعيد';
+  return firstFutureDay
+    ? firstFutureDay.dateLabel + ' · ' + firstFutureDay.slots[0]
+    : 'يلزم تحديث المواعيد';
 }
 
 export function getPenDoctorsForService(serviceCode = 'root-canal', area?: string) {
@@ -262,7 +268,7 @@ export function getPenDoctorsForService(serviceCode = 'root-canal', area?: strin
       distance: provider.id === 'provider-layan' ? '2.4 كم' : 'غير متاح',
       accessibility: 'راجع تفاصيل الفرع',
       terms: 'راجع شروط الحجز',
-      availability: 'التوفر تجريبي ويحتاج تأكيد العيادة',
+      availability: 'الموعد يحتاج تأكيد العيادة',
       rating: `${provider.rating} · ${provider.reviews}`,
       reviews: String(provider.reviews),
       reason: 'يدعم الطبيب الخدمة المطلوبة ضمن بيانات التوفر الحالية.',

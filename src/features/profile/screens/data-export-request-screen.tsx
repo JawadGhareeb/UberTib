@@ -1,34 +1,69 @@
-import { View } from 'react-native';
+import { useState } from 'react';
+import { Share, View } from 'react-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
+import { useAccountDetails } from '@/features/profile/state/account-details-provider';
 import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-provider';
+import { useSupportTickets } from '@/features/profile/state/support-tickets-provider';
 import { AppIcon, AppText, Button, ReadStateBoundary } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
-const statusTexts = {
-  'not-requested': ['ما طلبت نسخة بعد', 'اطلب نسخة من بياناتك لحتى تبدأ عملية تجهيزها.'],
-  preparing: ['عم نجهّز نسختك', 'طلبك قيد التجهيز. ما في داعي تعيد الطلب.'],
-  ready: ['النسخة جاهزة', 'رابط التنزيل مش متوفر بالنسخة التجريبية الحالية.'],
-  expired: ['انتهت صلاحية النسخة', 'بتقدر تطلب نسخة جديدة.'],
-  failure: ['تعذّر تجهيز النسخة', 'جرّب تطلبها مرة ثانية.'],
-} as const;
-
 export function DataExportRequestScreen() {
   const { getSurfaceState } = useMockScenario();
-  const { dataExportStatus, requestDataExport } = useProfilePrivacy();
-  const [title, summary] = statusTexts[dataExportStatus];
-  const canRequest = ['not-requested', 'expired', 'failure'].includes(dataExportStatus);
+  const { name, phone, city } = useAccountDetails();
+  const { tickets } = useSupportTickets();
+  const { consents, dataExportStatus, requestDataExport } = useProfilePrivacy();
+  const [sharing, setSharing] = useState(false);
+  const [shareError, setShareError] = useState('');
+  const ready = dataExportStatus === 'ready';
+
+  const shareSnapshot = async () => {
+    if (sharing || !ready) return;
+    setSharing(true);
+    setShareError('');
+    try {
+      const data = {
+        exportedAt: new Date().toISOString(),
+        scope: 'بيانات الحساب المتاحة داخل التطبيق',
+        account: { name, phone, city },
+        consents: consents.map(({ id, title, status, version, history }) => ({
+          id,
+          title,
+          status,
+          version,
+          history,
+        })),
+        supportRequests: tickets.map(({ id, subject, topic, description, createdAt, status }) => ({
+          id,
+          subject,
+          topic,
+          description,
+          createdAt,
+          status,
+        })),
+      };
+      await Share.share({
+        title: 'بياناتي في UberTib',
+        message: JSON.stringify(data, null, 2),
+      });
+    } catch {
+      setShareError('تعذّر فتح خيارات مشاركة البيانات. حاول مرة ثانية.');
+    } finally {
+      setSharing(false);
+    }
+  };
+
   return (
     <ProfileScreenShell eyebrow="بياناتي" title="بياناتي">
       <ReadStateBoundary
         state={getSurfaceState('profile')}
-        emptyTitle="لا توجد بيانات قابلة للطلب"
-        permissionTitle="طلب البيانات غير متاح"
+        emptyTitle="لا توجد بيانات قابلة للعرض"
+        permissionTitle="ما عندك صلاحية لعرض بيانات الحساب"
       >
         <View className="items-center gap-3 rounded-[17px] border border-border-subtle bg-surface-default px-5 py-6">
           <View className="h-16 w-16 items-center justify-center rounded-full bg-action-subtle">
             <AppIcon
-              name={{ ios: 'square.and.arrow.down', android: 'download', web: 'download' }}
+              name={{ ios: 'square.and.arrow.up', android: 'ios_share', web: 'share' }}
               size={30}
               tone="action"
             />
@@ -37,47 +72,52 @@ export function DataExportRequestScreen() {
             نسخة من بياناتي
           </AppText>
           <AppText variant="label" align="center" className="text-content-secondary">
-            اطلب نسخة خاصة من البيانات المتاحة بحسابك، وتابع تجهيزها هون.
+            جهّز نسخة من بيانات الحساب والموافقات وطلبات الدعم المحفوظة داخل التطبيق.
           </AppText>
         </View>
+
         <View className="mt-4 gap-2 rounded-[15px] border border-border-subtle bg-surface-default p-4">
-          <View className="flex-row-reverse items-center justify-between">
-            <AppText align="right" variant="heading-4">
-              حالة الطلب
-            </AppText>
-            <View className="rounded-full bg-action-subtle px-3 py-1.5">
-              <AppText variant="caption" className="font-ui-semibold text-content-link">
-                {dataExportStatus === 'preparing'
-                  ? 'قيد التجهيز'
-                  : dataExportStatus === 'ready'
-                    ? 'جاهز'
-                    : 'متابعة'}
-              </AppText>
-            </View>
-          </View>
+          <AppText align="right" variant="heading-4">
+            حالة النسخة
+          </AppText>
           <AppText align="right" variant="body-strong">
-            {title}
+            {ready ? 'البيانات جاهزة للمشاركة' : 'ما جهّزت نسخة بعد'}
           </AppText>
           <AppText align="right" variant="label" className="text-content-secondary">
-            {summary}
+            {ready
+              ? 'يمكنك حفظ البيانات أو إرسالها للتطبيق الذي تختاره باستخدام خيارات المشاركة.'
+              : 'اضغط تجهيز البيانات لتحضير نسخة من المعلومات المتاحة داخل التطبيق.'}
           </AppText>
         </View>
+
         <View className="mt-4 gap-3">
-          {canRequest ? (
+          {ready ? (
+            <>
+              <Button
+                className="min-h-[50px]"
+                label={sharing ? 'جاري فتح خيارات المشاركة...' : 'مشاركة نسخة بياناتي'}
+                loading={sharing}
+                disabled={sharing}
+                onPress={() => void shareSnapshot()}
+              />
+              <Button variant="outline" label="تجهيز نسخة محدثة" onPress={requestDataExport} />
+            </>
+          ) : (
             <Button
               className="min-h-[50px]"
-              label={
-                dataExportStatus === 'not-requested' ? 'طلب نسخة من بياناتي' : 'طلب نسخة جديدة'
-              }
+              label="تجهيز نسخة من بياناتي"
               onPress={requestDataExport}
             />
-          ) : null}
-          <View className="rounded-[13px] bg-surface-subtle p-3">
-            <AppText variant="caption" align="right" className="text-content-secondary">
-              الملف مش قابل للتنزيل فوراً. لما يصبح جاهزاً لازم يتوفر رابط تنزيل آمن ومدة صلاحية
-              واضحة من الخادم؛ ما رح نعرض تنزيل وهمي.
+          )}
+          {shareError ? (
+            <AppText align="right" variant="caption" className="text-tone-danger-text">
+              {shareError}
             </AppText>
-          </View>
+          ) : null}
+          <AppText variant="caption" align="right" className="text-content-secondary">
+            تشمل المشاركة البيانات المتاحة داخل التطبيق فقط، وليست بديلاً عن طلب نسخة كاملة من
+            السجلات التي يحتفظ بها مزود الخدمة.
+          </AppText>
         </View>
       </ReadStateBoundary>
     </ProfileScreenShell>

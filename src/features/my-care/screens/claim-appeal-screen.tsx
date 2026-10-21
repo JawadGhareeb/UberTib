@@ -20,8 +20,14 @@ interface ClaimAppealScreenProps {
 }
 
 export function ClaimAppealScreen({ caseId, claimId }: ClaimAppealScreenProps) {
-  const { claimAppealDrafts, claimAppealIds, claimSubmissions, getSurfaceState, scenario, submitClaimAppeal } =
-    useMockScenario();
+  const {
+    claimAppealDrafts,
+    claimAppealIds,
+    claimSubmissions,
+    getSurfaceState,
+    scenario,
+    submitClaimAppeal,
+  } = useMockScenario();
   const claim =
     claimSubmissions.find((item) => item.id === claimId && item.caseId === caseId) ??
     getMockClaimForScenario(claimId, scenario);
@@ -32,7 +38,10 @@ export function ClaimAppealScreen({ caseId, claimId }: ClaimAppealScreenProps) {
   const pickLocalEvidence = async () => {
     try {
       setAttachmentError('');
-      const response = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
+      const response = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.8,
+      });
       if (response.canceled || !response.assets[0]) return;
       const asset = response.assets[0];
       if (asset.fileSize && asset.fileSize > 25 * 1024 * 1024) {
@@ -83,14 +92,16 @@ export function ClaimAppealScreen({ caseId, claimId }: ClaimAppealScreenProps) {
 
         {appealPending ? (
           <View className="mt-5">
-            <StatusIndicator label="تم إرسال الاستئناف · قيد المراجعة" tone="warning" />
+            <StatusIndicator label="الاستئناف محفوظ · بانتظار المراجعة" tone="warning" />
             <AppText className="mt-2 text-content-secondary" variant="caption">
-              القرار الأصلي بقي كما هو. الاستئناف محفوظ كطلب تجريبي بانتظار مراجعة مستقلة.
+              القرار الأصلي بقي كما هو. بانتظار مراجعة الاستئناف.
             </AppText>
             {claimAppealDrafts[claimId] ? (
               <AppText className="mt-2 text-content-secondary" variant="caption">
                 السبب: {claimAppealDrafts[claimId].reason}
-                {claimAppealDrafts[claimId].evidenceName ? ` · الصورة المحلية: ${claimAppealDrafts[claimId].evidenceName}` : ''}
+                {claimAppealDrafts[claimId].evidenceName
+                  ? ` · الصورة المحلية: ${claimAppealDrafts[claimId].evidenceName}`
+                  : ''}
               </AppText>
             ) : null}
           </View>
@@ -116,8 +127,12 @@ export function ClaimAppealScreen({ caseId, claimId }: ClaimAppealScreenProps) {
 
             <View className="mt-3 gap-1">
               <Button
-                label={localEvidenceName ? 'تغيير الصورة الداعمة' : 'إضافة دليل جديد من الصور (اختياري)'}
-                onPress={() => { void pickLocalEvidence(); }}
+                label={
+                  localEvidenceName ? 'تغيير الصورة الداعمة' : 'إضافة دليل جديد من الصور (اختياري)'
+                }
+                onPress={() => {
+                  void pickLocalEvidence();
+                }}
                 variant="outline"
               />
               {localEvidenceName ? (
@@ -125,14 +140,23 @@ export function ClaimAppealScreen({ caseId, claimId }: ClaimAppealScreenProps) {
                   {localEvidenceName} · محفوظ محلياً ضمن التجربة، وليس مرفوعاً للسيرفر
                 </AppText>
               ) : null}
-              {attachmentError ? <AppText className="text-tone-danger-text" variant="caption">{attachmentError}</AppText> : null}
+              {attachmentError ? (
+                <AppText className="text-tone-danger-text" variant="caption">
+                  {attachmentError}
+                </AppText>
+              ) : null}
             </View>
             {readState === 'success' ? (
               <Button
                 className="mt-6"
                 disabled={!canSubmit}
                 label="إرسال الاستئناف"
-                onPress={() => submitClaimAppeal(claimId, { reason: reason.trim(), evidenceName: localEvidenceName })}
+                onPress={() =>
+                  submitClaimAppeal(claimId, {
+                    reason: reason.trim(),
+                    evidenceName: localEvidenceName,
+                  })
+                }
               />
             ) : (
               <AppText className="mt-5 text-content-secondary" variant="caption">

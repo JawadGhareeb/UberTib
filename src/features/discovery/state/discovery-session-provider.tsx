@@ -1,5 +1,9 @@
 import type { PropsWithChildren } from 'react';
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  toggleCatalogComparison,
+  type CatalogComparisonSelection,
+} from '@/features/discovery/model/catalog-comparison';
 
 import {
   defaultProviderFilters,
@@ -21,6 +25,13 @@ export interface DiscoveryServiceState {
 interface DiscoverySessionContextValue {
   catalogQuery: string;
   setCatalogQuery: (query: string) => void;
+  catalogComparison: CatalogComparisonSelection | null;
+  toggleCatalogComparisonProvider: (
+    providerId: string,
+    serviceCode: string,
+    services: readonly string[],
+  ) => void;
+  setCatalogComparison: (selection: CatalogComparisonSelection | null) => void;
   getServiceState: (serviceCode?: string) => DiscoveryServiceState;
   setProviderArea: (serviceCode: string, area: string) => void;
   setProviderFilter: (serviceCode: string, key: ProviderFilterKey, enabled: boolean) => void;
@@ -50,6 +61,17 @@ const DiscoverySessionContext = createContext<DiscoverySessionContextValue | nul
 
 export function DiscoverySessionProvider({ children }: PropsWithChildren) {
   const [catalogQuery, setCatalogQuery] = useState('');
+  const [catalogComparison, setCatalogComparison] = useState<CatalogComparisonSelection | null>(
+    null,
+  );
+  const toggleCatalogComparisonProvider = useCallback(
+    (providerId: string, serviceCode: string, services: readonly string[]) => {
+      setCatalogComparison((current) =>
+        toggleCatalogComparison(current, providerId, serviceCode, services),
+      );
+    },
+    [],
+  );
   const [serviceStates, setServiceStates] = useState<Record<string, DiscoveryServiceState>>({});
 
   const updateServiceState = useCallback(
@@ -184,6 +206,9 @@ export function DiscoverySessionProvider({ children }: PropsWithChildren) {
     () => ({
       catalogQuery,
       setCatalogQuery,
+      catalogComparison,
+      toggleCatalogComparisonProvider,
+      setCatalogComparison,
       getServiceState,
       setProviderArea,
       setProviderFilter,
@@ -197,6 +222,8 @@ export function DiscoverySessionProvider({ children }: PropsWithChildren) {
     [
       catalogQuery,
       getServiceState,
+      catalogComparison,
+      toggleCatalogComparisonProvider,
       setComparisonProviders,
       setProviderArea,
       setProviderFilter,

@@ -47,9 +47,7 @@ export function getMockFinancialEventsForScenario(scenario: MockScenarioDefiniti
   // Accepted amendment changes the due balance, not the previously confirmed payment.
   const activeEvents = scenario.flags?.carePlanAmendmentAccepted
     ? mockFinancialRecord.events.map((event) =>
-        event.id === 'financial-event-002'
-          ? { ...event, amountLabel: '2,125 ل.س' }
-          : event,
+        event.id === 'financial-event-002' ? { ...event, amountLabel: '2,125 ل.س' } : event,
       )
     : mockFinancialRecord.events;
   if (!scenario.flags?.financeLifecycle) {
@@ -246,7 +244,7 @@ export const mockClaims = [
     history: [
       { id: 'pd-h1', title: 'تم إنشاء النزاع', dateLabel: '22 حزيران' },
       { id: 'pd-h2', title: 'ردت العيادة', dateLabel: '23 حزيران' },
-      { id: 'pd-h3', title: 'قرار جزئي موثّق (بيانات تجريبية)', dateLabel: '24 حزيران' },
+      { id: 'pd-h3', title: 'قرار جزئي موثّق', dateLabel: '24 حزيران' },
     ],
     decision: {
       outcomeLabel: 'مقبول جزئياً · 1,000 ل.س مثبت / 500 ل.س غير مثبت',

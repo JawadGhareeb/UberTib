@@ -17,12 +17,14 @@ export function ProviderComparisonScreen() {
     providerIds,
     serviceCode = 'root-canal',
     patientId,
+    fromSearch,
   } = useLocalSearchParams<{
     providerIds?: string;
     serviceCode?: string;
     patientId?: string;
+    fromSearch?: 'tab' | 'search';
   }>();
-  const { getServiceState, setComparisonProviders } = useDiscoverySession();
+  const { getServiceState, setComparisonProviders, setCatalogComparison } = useDiscoverySession();
   const routeIds = providerIds?.split(',').filter(Boolean) ?? [];
   const ids = [
     ...new Set(routeIds.length ? routeIds : getServiceState(serviceCode).comparisonProviderIds),
@@ -32,23 +34,33 @@ export function ProviderComparisonScreen() {
     .map((id) => serviceDoctors.find((doctor) => doctor.id === id))
     .filter((doctor): doctor is (typeof serviceDoctors)[number] => Boolean(doctor));
 
-  const editComparison = () => {
-    setComparisonProviders(
-      serviceCode,
-      doctors.map((doctor) => doctor.id),
-    );
+  const returnToSelection = (selectedIds: string[]) => {
+    if (fromSearch === 'tab' || fromSearch === 'search') {
+      setCatalogComparison(selectedIds.length ? { serviceCode, providerIds: selectedIds } : null);
+      router.replace(fromSearch === 'tab' ? '/(tabs)/discover' : '/discover/search');
+      return;
+    }
     router.replace({
       pathname: '/discover/providers/results',
       params: { serviceCode, ...(patientId ? { patientId } : {}) },
     });
+  };
+
+  const editComparison = () => {
+    const selectedIds = doctors.map((doctor) => doctor.id);
+    setComparisonProviders(serviceCode, selectedIds);
+    returnToSelection(selectedIds);
   };
   const removeDoctor = (providerId: string) => {
     const remaining = doctors
       .filter((doctor) => doctor.id !== providerId)
       .map((doctor) => doctor.id);
     setComparisonProviders(serviceCode, remaining);
+    if (fromSearch) {
+      setCatalogComparison(remaining.length ? { serviceCode, providerIds: remaining } : null);
+    }
     if (remaining.length < 2) {
-      router.replace({ pathname: '/discover/providers/results', params: { serviceCode } });
+      returnToSelection(remaining);
       return;
     }
     router.replace({
@@ -57,6 +69,7 @@ export function ProviderComparisonScreen() {
         serviceCode,
         providerIds: remaining.join(','),
         ...(patientId ? { patientId } : {}),
+        ...(fromSearch ? { fromSearch } : {}),
       },
     });
   };
@@ -69,9 +82,7 @@ export function ProviderComparisonScreen() {
           <StateView
             actionLabel="العودة لاختيار الأطباء"
             description="اختر طبيبين على الأقل من نفس الخدمة قبل فتح المقارنة."
-            onAction={() =>
-              router.replace({ pathname: '/discover/providers/results', params: { serviceCode } })
-            }
+            onAction={() => returnToSelection(doctors.map((doctor) => doctor.id))}
             title="المقارنة تحتاج طبيبين"
           />
         </View>
@@ -103,7 +114,7 @@ export function ProviderComparisonScreen() {
           onChoose={(providerId) =>
             router.push({
               pathname: '/booking/slots',
-              params: { providerId, serviceCode },
+              params: { providerId, serviceCode, ...(patientId ? { patientId } : {}) },
             })
           }
         />
@@ -116,7 +127,7 @@ export function ProviderComparisonScreen() {
               tone="info"
             />
             <AppText align="right" variant="caption" className="min-w-0 flex-1 text-tone-info-text">
-              الأسعار والمواعيد وبيانات الأطباء تجريبية للمقارنة، وليست حجوزات مؤكدة.
+              قارن بين الأطباء والمواعيد، والتكلفة النهائية تخضع لتفاصيل الخدمة وتأكيد العيادة.
             </AppText>
           </View>
           <Button

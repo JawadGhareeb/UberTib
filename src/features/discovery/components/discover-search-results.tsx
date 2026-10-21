@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { DiscoverDoctorResultCard } from '@/features/discovery/components/discover-doctor-result-card';
@@ -6,9 +5,7 @@ import { type MockProvider } from '@/features/discovery/mocks/providers.mock';
 import {
   findPenFamily,
   getPenDoctorsForService,
-  type PenServiceFamily,
 } from '@/features/discovery/presentation/pen-discovery-data';
-import { useDiscoverySession } from '@/features/discovery/state/discovery-session-provider';
 import { AppText } from '@/shared/components/ui';
 import { matchingPricedServices, type DiscoveryFilterSelection } from '../model/discover-filters';
 import { matchesDiscoverQuery, selectDiscoverMatches } from '../model/discover-search';
@@ -33,14 +30,14 @@ function matchingService(provider: MockProvider, query: string, filters: Discove
 export function DiscoverSearchResults({
   query,
   filters,
+  comparison,
+  onToggleComparison,
 }: {
   query: string;
   filters: DiscoveryFilterSelection;
-  onChooseFamily: (family: PenServiceFamily) => void;
-  onChooseArea: (area: string) => void;
+  comparison: { serviceCode: string; providerIds: string[] } | null;
+  onToggleComparison: (providerId: string, serviceCode: string) => void;
 }) {
-  const router = useRouter();
-  const { getServiceState, toggleComparisonProvider } = useDiscoverySession();
   const matches = selectDiscoverMatches(query, filters);
 
   if (!matches.hasCriteria) return <DiscoverSearchIllustration />;
@@ -57,24 +54,34 @@ export function DiscoverSearchResults({
       <AppText align="right" variant="heading-4" className="font-ui-bold">
         النتائج ({doctors.length})
       </AppText>
+      {comparison?.providerIds.length ? (
+        <AppText align="right" variant="caption" className="text-content-secondary">
+          المقارنة بين أطباء نفس الخدمة. يمكنك اختيار 3 أطباء كحد أقصى.
+        </AppText>
+      ) : null}
       {doctors.length ? (
         <View className="gap-3">
           {doctors.map(({ doctor, serviceCode }) => {
-            const selection = getServiceState(serviceCode).comparisonProviderIds;
+            const selection = comparison?.providerIds ?? [];
+            const selected = selection.includes(doctor.id);
+            const sameService =
+              !comparison ||
+              Boolean(
+                matches.providers.find(
+                  (provider) =>
+                    provider.id === doctor.id &&
+                    provider.serviceCodes.includes(comparison.serviceCode),
+                ),
+              );
             return (
               <DiscoverDoctorResultCard
                 key={doctor.id}
                 doctor={doctor}
                 serviceCode={serviceCode}
-                selected={selection.includes(doctor.id)}
-                disabled={selection.length >= 3 && !selection.includes(doctor.id)}
-                onToggle={() => {
-                  toggleComparisonProvider(serviceCode, doctor.id);
-                  router.push({
-                    pathname: '/discover/providers/results',
-                    params: { serviceCode },
-                  });
-                }}
+                selected={selected}
+                disabled={!selected && (!sameService || selection.length >= 3)}
+                disabledReason={!sameService ? 'خدمة مختلفة' : undefined}
+                onToggle={() => onToggleComparison(doctor.id, serviceCode)}
               />
             );
           })}

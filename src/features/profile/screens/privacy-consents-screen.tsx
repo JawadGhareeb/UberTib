@@ -45,18 +45,33 @@ export function PrivacyConsentsScreen() {
         <View className="mt-[8px] gap-[7px]">
           {consents.map((consent) => {
             const allowed = consent.withdrawalAllowed && consent.status === 'active';
-            const status = consent.status === 'active'
-              ? 'مفعّل'
-              : consent.status === 'withdrawn' ? 'مسحوب' : 'غير مفعّل';
+            const status =
+              consent.status === 'active'
+                ? 'مفعّل'
+                : consent.status === 'withdrawn'
+                  ? 'مسحوب'
+                  : 'غير مفعّل';
 
             return (
               <ProfileReferenceCard className="gap-[5px] p-[10px]" key={consent.id}>
                 <View className="flex-row items-center justify-between gap-2">
                   <ProfileReferenceBadge
                     label={status}
-                    tone={consent.status === 'active' ? 'success' : consent.status === 'withdrawn' ? 'warning' : 'neutral'}
+                    tone={
+                      consent.status === 'active'
+                        ? 'success'
+                        : consent.status === 'withdrawn'
+                          ? 'warning'
+                          : 'neutral'
+                    }
                   />
-                  <AppText align="right" className="min-w-0 flex-1 font-ui-bold" numberOfLines={2} style={{ fontSize: 12, lineHeight: 19 }} variant="label">
+                  <AppText
+                    align="right"
+                    className="min-w-0 flex-1 font-ui-bold"
+                    numberOfLines={2}
+                    style={{ fontSize: 12, lineHeight: 19 }}
+                    variant="label"
+                  >
                     {consent.title}
                   </AppText>
                 </View>
@@ -67,19 +82,26 @@ export function PrivacyConsentsScreen() {
                   style={{ fontSize: 9.5, lineHeight: 16 }}
                   variant="caption"
                 >
-                  الإصدار {consent.version} · وافق عليه في {consent.acceptedAtLabel} · آخر تحديث {consent.lastUpdatedLabel}
+                  الإصدار {consent.version} · وافق عليه في {consent.acceptedAtLabel} · آخر تحديث{' '}
+                  {consent.lastUpdatedLabel}
                 </AppText>
                 <View className="flex-row items-center justify-between gap-2">
                   <Pressable
                     accessibilityRole="button"
                     className="min-h-[36px] justify-center"
                     hitSlop={4}
-                    onPress={() => router.push({
-                      pathname: '/profile/privacy/consents/[consentId]',
-                      params: { consentId: consent.id },
-                    })}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/profile/privacy/consents/[consentId]',
+                        params: { consentId: consent.id },
+                      })
+                    }
                   >
-                    <AppText className="font-ui-semibold text-content-link" style={{ fontSize: 10.5, lineHeight: 17 }} variant="caption">
+                    <AppText
+                      className="font-ui-semibold text-content-link"
+                      style={{ fontSize: 10.5, lineHeight: 17 }}
+                      variant="caption"
+                    >
                       عرض التفاصيل
                     </AppText>
                   </Pressable>
@@ -92,7 +114,11 @@ export function PrivacyConsentsScreen() {
                   >
                     <AppText
                       align="right"
-                      className={allowed ? 'font-ui-semibold text-tone-danger-text' : 'text-content-placeholder'}
+                      className={
+                        allowed
+                          ? 'font-ui-semibold text-tone-danger-text'
+                          : 'text-content-placeholder'
+                      }
                       style={{ fontSize: 10.5, lineHeight: 17 }}
                       variant="caption"
                     >
@@ -108,12 +134,14 @@ export function PrivacyConsentsScreen() {
         <ConfirmationDialog
           visible={Boolean(pendingWithdrawal)}
           title="تأكيد سحب الموافقة"
-          description="قد تبقى السجلات اللازمة للرعاية أو الالتزامات النظامية؛ السحب لا يمحوها بأثر رجعي. الطلب حالياً تجريبي."
+          description="قد تبقى السجلات اللازمة للرعاية أو الالتزامات النظامية؛ السحب لا يمحوها بأثر رجعي. يُحفظ اختيارك ضمن إعدادات التطبيق، ويحتاج تطبيقه على السجلات المتصلة إلى تأكيد من الخدمة."
           confirmLabel="تأكيد السحب"
           destructive
           loading={submitting}
           onConfirm={confirmWithdrawal}
-          onCancel={() => { if (!submitting) setPendingWithdrawal(undefined); }}
+          onCancel={() => {
+            if (!submitting) setPendingWithdrawal(undefined);
+          }}
         />
 
         <View className="mt-[8px]">

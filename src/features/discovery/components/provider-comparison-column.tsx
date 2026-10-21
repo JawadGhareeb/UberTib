@@ -52,7 +52,7 @@ function ComparisonValue({
     kind === 'price'
       ? facts.priceType
       : kind === 'appointment'
-        ? 'موعد تجريبي · غير مؤكّد'
+        ? 'بحاجة لتأكيد العيادة'
         : kind === 'clinic'
           ? facts.area
           : undefined;

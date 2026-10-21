@@ -326,11 +326,11 @@ export function CreateSupportTicketScreen() {
               ) : null}
               <View className="gap-2 rounded-[12px] bg-surface-subtle p-3">
                 <AppText variant="caption" align="right" className="text-content-secondary">
-                  بالنسخة التجريبية رح ينحفظ الطلب والمرفقات كأسماء فقط على هالجهاز، بدون إرسال
-                  للسيرفر. ما في رقم تذكرة رسمي أو SLA قبل قبول الطلب من خدمة الدعم.
+                  سيُحفظ الطلب على هذا الجهاز مع أسماء المرفقات. يظهر رقم التذكرة وموعد الرد بعد
+                  استلام فريق الدعم للطلب.
                 </AppText>
               </View>
-              <Button label="حفظ الطلب التجريبي" disabled={!canSave} onPress={save} />
+              <Button label="حفظ الطلب" disabled={!canSave} onPress={save} />
             </View>
           )}
         </View>

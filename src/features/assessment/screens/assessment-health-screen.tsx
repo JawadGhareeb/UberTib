@@ -101,7 +101,7 @@ export function AssessmentHealthScreen() {
                 {item.description}
               </AppText>
               <AppText align="right" variant="caption" className="mt-1 text-content-secondary">
-                لا توجد بيانات مؤكدة متصلة بهذه الجلسة في نسخة Mock.
+                ما في معلومات صحية متصلة بملف طبي معتمد لهالقسم حالياً.
               </AppText>
             </Accordion.Content>
           </Accordion.Item>

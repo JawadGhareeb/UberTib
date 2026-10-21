@@ -114,7 +114,7 @@ export function CancelBookingScreen() {
       <ConfirmationDialog
         visible={confirmingCancel && !cancellationPending}
         title="تأكيد طلب إلغاء الحجز"
-        description="لن يُعتبر الموعد ملغى قبل وصول رد العيادة. سيتم إرسال طلب الإلغاء التجريبي مع الاحتفاظ بالحالة المؤكدة الحالية."
+        description="لن يُعتبر الموعد ملغى قبل وصول رد العيادة. سيُسجّل طلب الإلغاء، مع الاحتفاظ بحالة الموعد الحالية حتى يُعتمد الإلغاء."
         confirmLabel="إرسال طلب الإلغاء"
         destructive
         onCancel={() => setConfirmingCancel(false)}

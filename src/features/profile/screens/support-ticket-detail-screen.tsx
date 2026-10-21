@@ -18,7 +18,7 @@ export function SupportTicketDetailScreen() {
             الطلب غير موجود
           </AppText>
           <AppText variant="label" align="center" className="text-content-secondary">
-            ممكن انتهت الجلسة التجريبية، أو الرابط غير صحيح.
+            الطلب غير موجود ضمن الطلبات المحفوظة على هذا الجهاز.
           </AppText>
           <Button
             label="العودة إلى طلبات الدعم"
@@ -36,7 +36,7 @@ export function SupportTicketDetailScreen() {
             </AppText>
             <View className="self-end rounded-full bg-tone-warning-fill px-3 py-1.5">
               <AppText variant="caption" className="font-ui-semibold text-tone-warning-text">
-                مسودة محلية · غير مرسلة
+                محفوظ على الجهاز
               </AppText>
             </View>
             <View className="h-px bg-border-subtle" />
@@ -80,7 +80,7 @@ export function SupportTicketDetailScreen() {
               />
               <View className="min-w-0 flex-1 items-end gap-1">
                 <AppText variant="label" align="right" className="font-ui-semibold">
-                  بانتظار ربط نظام الدعم
+                  الطلب محفوظ على جهازك
                 </AppText>
                 <AppText variant="caption" align="right" className="text-content-secondary">
                   ما في رقم رسمي أو مراجع أو قرار أو رد من فريق الدعم لسه.

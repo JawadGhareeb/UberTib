@@ -2,10 +2,23 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
-import { CareActionFooter, CareDetailRow, CareFinancialCardHeading, CareFinancialPageHeader, FinancialCaseUnavailable } from '@/features/my-care/components/care-financial-ui';
+import {
+  CareActionFooter,
+  CareDetailRow,
+  CareFinancialCardHeading,
+  CareFinancialPageHeader,
+  FinancialCaseUnavailable,
+} from '@/features/my-care/components/care-financial-ui';
 
 import { CareV5Badge, CareV5Card } from '@/features/my-care/components/care-v5-ui';
-import { AppIcon, AppText, Button, ConfirmationDialog, ReadStateBoundary, Screen } from '@/shared/components/ui';
+import {
+  AppIcon,
+  AppText,
+  Button,
+  ConfirmationDialog,
+  ReadStateBoundary,
+  Screen,
+} from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
 interface RefundRequestScreenProps {
@@ -70,7 +83,9 @@ export function RefundRequestScreen({ caseId }: RefundRequestScreenProps) {
           </View>
 
           <CareV5Card className="mt-2 gap-[5px] p-[10px]">
-            <AppText align="right" className="font-ui-bold" variant="label">الاستحقاق والنافذة</AppText>
+            <AppText align="right" className="font-ui-bold" variant="label">
+              الاستحقاق والنافذة
+            </AppText>
             <CareDetailRow label="السطر المتأثر" value="بناء قلب للضرس 46 · لم يُنفّذ" />
             <CareDetailRow label="الأساس" value="شروط الإلغاء في اللقطة 2" />
             <CareDetailRow label="نافذة الطلب" value="حتى 28 حزيران 2026" />
@@ -78,7 +93,9 @@ export function RefundRequestScreen({ caseId }: RefundRequestScreenProps) {
           </CareV5Card>
 
           <CareV5Card className="mt-2 p-[10px]">
-            <AppText align="right" className="font-ui-bold" variant="label">مسار الاسترداد</AppText>
+            <AppText align="right" className="font-ui-bold" variant="label">
+              مسار الاسترداد
+            </AppText>
             <View className="mt-[6px] gap-[5px]">
               {[
                 { num: '1', title: 'قُدّم الطلب', state: '22 حزيران', tone: 'success' as const },
@@ -103,7 +120,13 @@ export function RefundRequestScreen({ caseId }: RefundRequestScreenProps) {
               ].map(({ num, title, state, tone }) => (
                 <View className="min-h-[34px] flex-row items-center gap-2" key={num}>
                   <CareV5Badge label={state} tone={tone} />
-                  <AppText align="right" className="min-w-0 flex-1 font-ui-semibold" numberOfLines={2} style={{ fontSize: 10.5, lineHeight: 17 }} variant="caption">
+                  <AppText
+                    align="right"
+                    className="min-w-0 flex-1 font-ui-semibold"
+                    numberOfLines={2}
+                    style={{ fontSize: 10.5, lineHeight: 17 }}
+                    variant="caption"
+                  >
                     {title}
                   </AppText>
                   <View
@@ -193,7 +216,7 @@ export function RefundRequestScreen({ caseId }: RefundRequestScreenProps) {
         <ConfirmationDialog
           visible={confirmingReceipt && !receiptResponse}
           title="هل استلمت مبلغ الاسترداد؟"
-          description="أكد فقط إذا وصل المبلغ إليك فعلياً من العيادة. لا يتم تحويل أي أموال داخل التطبيق، وسيبقى التأكيد التجريبي قيد التحقق."
+          description="أكد فقط إذا وصل المبلغ إليك فعلياً من العيادة. لا يتم تحويل أي أموال داخل التطبيق، ويبقى تسجيل الاستلام بانتظار التحقق."
           confirmLabel="نعم، استلمت المبلغ"
           onCancel={() => setConfirmingReceipt(false)}
           onConfirm={() => {

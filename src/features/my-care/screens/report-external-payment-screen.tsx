@@ -95,7 +95,7 @@ export function ReportExternalPaymentScreen({ caseId }: ReportExternalPaymentScr
         <ConfirmationDialog
           visible={confirmingReport && !submission}
           title="تسجيل دفعة خارجية؟"
-          description="تأكد أن الدفعة حصلت فعلاً خارج التطبيق، ولا يُعد التسجيل التجريبي تأكيداً باستلام العيادة للمبلغ."
+          description="تأكد أن الدفعة حصلت فعلاً خارج التطبيق، وتسجيل الدفعة لا يثبت استلام العيادة للمبلغ حتى تتحقق منه."
           confirmLabel="تسجيل الدفعة"
           onCancel={() => setConfirmingReport(false)}
           onConfirm={() => {

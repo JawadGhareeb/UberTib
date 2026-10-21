@@ -1,21 +1,20 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Keyboard, Pressable, ScrollView, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   DiscoveryBottomBar,
   DiscoveryHeader,
 } from '@/features/discovery/components/pen-discovery-ui';
 import { useDiscoverySession } from '@/features/discovery/state/discovery-session-provider';
+import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
+import { ProviderComparisonBar } from '@/features/discovery/components/provider-comparison-bar';
 import { AssessmentEntryCard } from '@/shared/components/assessment/assessment-entry-card';
 import { AppHeader } from '@/shared/components/navigation';
 import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-tab-metrics';
 import { AppIcon, AppText, Screen, SearchField } from '@/shared/components/ui';
-import type { PenServiceFamily } from '@/features/discovery/presentation/pen-discovery-data';
-import {
-  selectedDiscoveryAreas,
-  withSelectedDiscoveryAreas,
-  type DiscoveryFilterSelection,
-} from '../model/discover-filters';
+import { selectedDiscoveryAreas, type DiscoveryFilterSelection } from '../model/discover-filters';
 import { DiscoverFilterSheet } from '../components/discover-filter-sheet';
 import { DiscoverAppliedFilterChips } from '../components/discover-applied-filter-chips';
 import { DiscoverSearchResults } from '../components/discover-search-results';
@@ -30,7 +29,23 @@ const initialDiscoverFilters: DiscoveryFilterSelection = {
 
 /** One smart search entry and one progressive filter modal; no external category/back stack. */
 export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean } = {}) {
-  const { catalogQuery, setCatalogQuery } = useDiscoverySession();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const {
+    catalogQuery,
+    setCatalogQuery,
+    catalogComparison: comparison,
+    toggleCatalogComparisonProvider,
+  } = useDiscoverySession();
+
+  const toggleSearchComparison = (providerId: string, serviceCode: string) => {
+    toggleCatalogComparisonProvider(
+      providerId,
+      serviceCode,
+      getMockProvider(providerId)?.serviceCodes ?? [],
+    );
+  };
+
   const [filters, setFilters] = useState<DiscoveryFilterSelection>(initialDiscoverFilters);
   const [filterOpen, setFilterOpen] = useState(false);
   const activeFilters = Boolean(
@@ -39,23 +54,6 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
     filters.serviceCode ||
     filters.priceRange,
   );
-
-  const chooseFamily = (family: PenServiceFamily) => {
-    setFilters((current) => ({
-      ...current,
-      groupCode: family.groupCode,
-      serviceCode: family.id,
-      priceRange: null,
-    }));
-    setCatalogQuery('');
-    Keyboard.dismiss();
-  };
-
-  const chooseArea = (area: string) => {
-    setFilters((current) => withSelectedDiscoveryAreas(current, [area]));
-    setCatalogQuery('');
-    Keyboard.dismiss();
-  };
 
   return (
     <Screen
@@ -67,7 +65,7 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
       <ScrollView
         style={{ flex: 1 }}
         contentContainerClassName="mx-auto w-full max-w-[430px] gap-4 px-4 pt-4"
-        contentContainerStyle={{ paddingBottom: PATIENT_TAB_BAR_HEIGHT + 52 }}
+        contentContainerStyle={{ paddingBottom: PATIENT_TAB_BAR_HEIGHT + (comparison ? 152 : 52) }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -136,10 +134,29 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
         <DiscoverSearchResults
           query={catalogQuery}
           filters={filters}
-          onChooseFamily={chooseFamily}
-          onChooseArea={chooseArea}
+          comparison={comparison}
+          onToggleComparison={toggleSearchComparison}
         />
       </ScrollView>
+
+      {comparison?.providerIds.length ? (
+        <ProviderComparisonBar
+          count={comparison.providerIds.length}
+          bottom={PATIENT_TAB_BAR_HEIGHT + Math.max(insets.bottom, 8)}
+          onCompare={() => {
+            if (comparison.providerIds.length < 2) return;
+            Keyboard.dismiss();
+            router.push({
+              pathname: '/discover/providers/compare',
+              params: {
+                serviceCode: comparison.serviceCode,
+                providerIds: comparison.providerIds.join(','),
+                fromSearch: asTab ? 'tab' : 'search',
+              },
+            });
+          }}
+        />
+      ) : null}
 
       <DiscoverFilterSheet
         open={filterOpen}

@@ -146,7 +146,7 @@ export function AccountSecurityScreen() {
             </Pressable>
           ) : null}
           <AppText variant="caption" align="right" className="text-content-secondary">
-            الجلسات المعروضة تجريبية. التغييرات الفعلية تحتاج تحقق من النظام.
+            إجراءات إدارة الأجهزة تحتاج مزامنة مع حسابك حتى تُطبّق على الأجهزة الأخرى.
           </AppText>
         </View>
 
@@ -188,7 +188,7 @@ export function AccountSecurityScreen() {
       <ConfirmationDialog
         visible={pending !== null}
         title="إنهاء الجلسة؟"
-        description="هذا تغيير ضمن البيانات التجريبية، وتنفيذ الإنهاء على حساب فعلي يحتاج إعادة التحقق."
+        description="سيُحدّث سجل الجلسات في التطبيق. إنهاء الجلسات على الأجهزة الأخرى يتطلب تأكيد الحساب."
         confirmLabel="إنهاء"
         cancelLabel="إلغاء"
         destructive

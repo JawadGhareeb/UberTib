@@ -210,8 +210,7 @@ export function ProfilePhoneChangeDialogs({
           ) : (
             <>
               <AppText align="right" variant="caption" className="text-content-secondary">
-                أدخل رمز التحقق المكوّن من 6 أرقام. بالنسخة التجريبية ما في إرسال SMS حقيقي. رمز
-                التجربة: {MOCK_VERIFICATION_CODE}.
+                أدخل رمز التحقق المكوّن من 6 أرقام. رمز التحقق الحالي: {MOCK_VERIFICATION_CODE}.
               </AppText>
               <InputOTP
                 maxLength={CODE_LENGTH}

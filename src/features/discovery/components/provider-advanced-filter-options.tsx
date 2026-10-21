@@ -27,19 +27,19 @@ export const providerAdvancedOptions: readonly {
   {
     key: 'soonest',
     label: 'موعد خلال 7 أيام',
-    detail: 'حسب مواعيد البيانات التجريبية، وليست حجوزات مؤكدة',
+    detail: 'حسب المواعيد المدرجة، والحجز يحتاج تأكيداً',
     icon: { ios: 'calendar', android: 'event_available', web: 'event_available' },
   },
   {
     key: 'branch',
     label: 'جاهزية الفرع للخدمة',
-    detail: 'حسب معلومات الفروع التجريبية',
+    detail: 'حسب معلومات الخدمات المتاحة بالفرع',
     icon: { ios: 'building.2', android: 'business', web: 'business' },
   },
   {
     key: 'payment',
     label: 'الدفع عبر Sham Cash',
-    detail: 'حسب طرق الدفع التجريبية المسجّلة',
+    detail: 'حسب طرق الدفع المدرجة لدى مقدم الخدمة',
     icon: { ios: 'receipt', android: 'receipt_long', web: 'receipt_long' },
   },
 ];
@@ -87,7 +87,7 @@ export function ProviderAdvancedFilterOptions({
         ))}
       </View>
       <AppText align="right" variant="caption" className="text-content-secondary">
-        معلومات المواعيد وجاهزية الفرع وطرق الدفع تجريبية، وتحتاج تأكيداً قبل الحجز.
+        تفاصيل المواعيد وجاهزية الفروع وطرق الدفع تُراجع عند تأكيد الحجز.
       </AppText>
     </View>
   );

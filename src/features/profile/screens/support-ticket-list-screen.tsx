@@ -25,14 +25,14 @@ export function SupportTicketListScreen() {
               ما في طلبات دعم محفوظة
             </AppText>
             <AppText align="center" variant="label" className="text-content-secondary">
-              لما تحفظ طلباً تجريبياً بيظهر هون. الربط مع تذاكر الدعم الفعلية لسا غير متاح.
+              عند حفظ طلب دعم جديد، رح يظهر هون ضمن طلباتك.
             </AppText>
             <Button label="إنشاء طلب دعم" onPress={() => router.push('/support/new')} />
           </View>
         ) : (
           <>
             <AppText align="right" variant="caption" className="text-content-secondary">
-              هاي مسودات محفوظة أثناء جلسة التطبيق، وليست تذاكر مرسلة أو مقبولة من فريق الدعم.
+              الطلبات المعروضة محفوظة على الجهاز، وليست تذاكر مؤكدة لدى فريق الدعم.
             </AppText>
             {tickets.map((ticket) => (
               <Pressable
@@ -71,7 +71,7 @@ export function SupportTicketListScreen() {
                     {topicTitle[ticket.topic]}
                   </AppText>
                   <AppText align="right" variant="caption" className="text-tone-warning-text">
-                    محفوظ محلياً · غير مرسل
+                    محفوظ على الجهاز
                   </AppText>
                 </View>
                 <AppIcon

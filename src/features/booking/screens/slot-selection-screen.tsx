@@ -236,8 +236,7 @@ export function SlotSelectionScreen() {
             size={18}
           />
           <AppText align="right" variant="caption" className="min-w-0 flex-1 text-tone-info-text">
-            المواعيد المعروضة تجريبية وليست توفراً لحظياً. اختيار الساعة لا يؤكد الحجز؛ العيادة تؤكد
-            الطلب لاحقاً.
+            المواعيد المعروضة قابلة للاختيار، لكن الحجز ما بيصير مؤكداً إلا بعد موافقة العيادة.
           </AppText>
         </View>
       </ScrollView>
