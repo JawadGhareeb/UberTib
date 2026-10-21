@@ -38,8 +38,8 @@ export function FamilyRepresentationScreen() {
                 (grant) =>
                   grant.subjectPatientId === person.id &&
                   grant.statusLabel === 'فعال' &&
-                  grant.directionLabel === 'أدير نيابة عنها' &&
-                  grant.actions.includes('إدارة الحجوزات'),
+                  grant.directionLabel.startsWith('أدير نيابة') &&
+                  grant.actions.some((action) => action === 'إدارة الحجوزات'),
               );
               return (
                 <View

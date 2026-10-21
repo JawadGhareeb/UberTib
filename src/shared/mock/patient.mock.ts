@@ -76,6 +76,8 @@ export const mockPatientWorld = {
       initials: 'سخ',
       active: false,
     },
+    { id: 'patient-003', name: 'ليلى خالد', relation: 'زوجتي', initials: 'لخ', active: false },
+    { id: 'patient-004', name: 'خالد خالد', relation: 'والدي', initials: 'خخ', active: false },
   ],
 } as const;
 

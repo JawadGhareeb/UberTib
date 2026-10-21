@@ -1,6 +1,4 @@
-import {
-  getMockGrantsForScenario,
-} from '@/features/profile/mocks/representation.mock';
+import { getMockGrantsForScenario } from '@/features/profile/mocks/representation.mock';
 import type { MockScenarioDefinition } from '@/shared/mock';
 import { mockPatientWorld } from '@/shared/mock/patient.mock';
 
@@ -17,7 +15,7 @@ export function canBookForPatient(patientId: string | undefined, scenario: MockS
   return getMockGrantsForScenario(scenario).some(
     (grant) =>
       grant.subjectPatientId === patient.id &&
-      grant.directionLabel === 'أدير نيابة عنها' &&
+      grant.directionLabel.startsWith('أدير نيابة') &&
       grant.statusLabel === 'فعال' &&
       grant.actions.some((action) => action === 'إدارة الحجوزات'),
   );

@@ -30,10 +30,10 @@ export function AcceptedFinancialTermsScreen({ caseId }: { caseId: string }) {
   const { claimSubmissions, financialSubmissions, getSurfaceState, scenario } = useMockScenario();
   const careCase = getMockCareCaseForScenario(caseId, scenario);
   const readState = getSurfaceState('finance');
-  const record = getMockFinancialRecordForScenario(scenario);
+  const record = getMockFinancialRecordForScenario(scenario, caseId);
   const terms = record.acceptedTerms;
-  const events = getMockFinancialEventsForScenario(scenario);
-  const amended = terms.planVersionLabel !== 'الخطة 2';
+  const events = getMockFinancialEventsForScenario(scenario, caseId);
+  const amended = caseId === 'case-001' && terms.planVersionLabel !== 'الخطة 2';
   const submittedRefund = claimSubmissions.find(
     (claim) => claim.caseId === caseId && claim.kind === 'refund',
   );

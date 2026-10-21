@@ -1,6 +1,13 @@
 import type { ServiceGroupsResponse } from '@/features/discovery/api/catalog';
+import {
+  getMockProviders,
+  type MockProviderPriceFact,
+} from '@/features/discovery/mocks/providers.mock';
+import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { mockDelay } from '@/shared/mock/delay';
 
+// A single canonical service tree drives the public service list and its filters.
+// Do not maintain separate provider counts or invented availability labels.
 const approvedDefinition = {
   version: 1,
   audience: 'evaluation' as const,
@@ -9,85 +16,51 @@ const approvedDefinition = {
   protection: { funded: false as const },
 };
 
+function numericStartingPrice(fact?: MockProviderPriceFact): number | null {
+  if (!fact || fact.mode === 'requires-plan') return null;
+  if (fact.mode === 'free') return 0;
+  return fact.mode === 'range' ? (fact.amount_min ?? null) : (fact.amount ?? null);
+}
+
+function earliestListedDay(serviceCode: string): string {
+  const providers = getMockProviders(serviceCode);
+  const future = providers
+    .flatMap((provider) => provider.availability)
+    .filter((day) => day.dateKey >= new Date().toISOString().slice(0, 10) && day.slots.length > 0)
+    .sort((a, b) => a.dateKey.localeCompare(b.dateKey))[0];
+  return future ? `${future.dateLabel} · ${future.slots[0]}` : 'المواعيد تحتاج تحديثاً';
+}
+
 const mockServiceGroups: ServiceGroupsResponse = {
-  data: [
-    {
-      code: 'preventive-care',
-      name: { ar: 'العناية الوقائية', en: 'Preventive care' },
-      description_ar: 'فحوص وتنظيف ومتابعة دورية.',
-      services: [
-        {
-          code: 'dental-checkup',
-          slug: 'dental-checkup',
-          name: { ar: 'فحص الأسنان', en: 'Dental checkup' },
-          description_ar: 'فحص شامل وتحديد الخطوة المناسبة.',
-          price_label: 'ابتداءً من 1,150 ل.س',
-          provider_count: 12,
-          duration_label: '30–45 دقيقة',
-          next_available_label: 'متاح اليوم',
-          definition: approvedDefinition,
-        },
-        {
-          code: 'dental-cleaning',
-          slug: 'dental-cleaning',
-          name: { ar: 'تنظيف الأسنان', en: 'Dental cleaning' },
-          description_ar: 'تنظيف احترافي وإزالة الترسبات.',
-          price_label: 'ابتداءً من 1,750 ل.س',
-          provider_count: 9,
-          duration_label: '45–60 دقيقة',
-          next_available_label: 'متاح غداً',
-          definition: approvedDefinition,
-        },
-      ],
-    },
-    {
-      code: 'restorative-care',
-      name: { ar: 'العلاج والترميم', en: 'Restorative care' },
-      description_ar: 'علاجات الترميم والعصب.',
-      services: [
-        {
-          code: 'dental-filling',
-          slug: 'dental-filling',
-          name: { ar: 'حشوات الأسنان', en: 'Dental fillings' },
-          description_ar: 'ترميم السن بعد التقييم السريري.',
-          price_label: 'ابتداءً من 2,250 ل.س',
-          provider_count: 14,
-          duration_label: '45–75 دقيقة',
-          next_available_label: 'متاح اليوم',
-          definition: approvedDefinition,
-        },
-        {
-          code: 'root-canal',
-          slug: 'root-canal',
-          name: { ar: 'علاج العصب', en: 'Root canal treatment' },
-          description_ar: 'علاج متعدد المراحل بحسب حالة السن.',
-          price_label: 'ابتداءً من 600 ل.س',
-          provider_count: 7,
-          duration_label: 'حسب الخطة',
-          next_available_label: 'أقرب موعد السبت',
-          definition: approvedDefinition,
-        },
-      ],
-    },
-    {
-      code: 'cosmetic-care',
-      name: { ar: 'العناية التجميلية', en: 'Cosmetic care' },
-      description_ar: 'خيارات تجميلية بعد التقييم.',
-      services: [
-        {
-          code: 'teeth-whitening',
-          slug: 'teeth-whitening',
-          name: { ar: 'تبييض الأسنان', en: 'Teeth whitening' },
-          description_ar: 'جلسة تبييض احترافية بعد فحص ملاءمة الحالة.',
-          price_label: 'ابتداءً من 4,750 ل.س',
-          provider_count: 6,
-          duration_label: '60–90 دقيقة',
-          next_available_label: 'متاح الأحد',
-          definition: approvedDefinition,
-        },
-      ],
-    },
-  ],
+  data: penServiceGroups.map((group) => ({
+    code: group.code,
+    name: { ar: group.title, en: group.code },
+    description_ar: group.description,
+    services: group.families.map((family) => {
+      const providers = getMockProviders(family.id);
+      const numericPrices = providers.flatMap((provider) => {
+        const value = numericStartingPrice(provider.prices[family.id]);
+        return value === null ? [] : [value];
+      });
+      const cheapest = numericPrices.length ? Math.min(...numericPrices) : null;
+      return {
+        code: family.id,
+        slug: family.id,
+        name: { ar: family.title, en: family.id },
+        description_ar: family.description,
+        price_label:
+          cheapest === null
+            ? 'السعر حسب الخطة'
+            : cheapest === 0
+              ? 'يتوفر فحص مجاني'
+              : `ابتداءً من ${cheapest.toLocaleString('en-US')} ل.س`,
+        provider_count: providers.length,
+        duration_label: 'المدة حسب التقييم',
+        next_available_label: earliestListedDay(family.id),
+        definition: approvedDefinition,
+      };
+    }),
+  })),
   meta: { mode: 'evaluation' },
 };
 

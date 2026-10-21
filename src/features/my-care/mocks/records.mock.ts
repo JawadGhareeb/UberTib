@@ -1,4 +1,5 @@
 import type { MockScenarioDefinition } from '@/shared/mock';
+import { getMockCareCase } from '@/features/my-care/mocks/care.mock';
 
 export const mockFinancialRecord = {
   caseId: 'case-001',
@@ -43,7 +44,150 @@ export const mockFinancialRecord = {
   ],
 } as const;
 
-export function getMockFinancialEventsForScenario(scenario: MockScenarioDefinition) {
+/** Verified, reported and agreed money movements are distinct across cases. */
+const additionalFinancialEvents: Record<
+  string,
+  {
+    id: string;
+    title: string;
+    amountLabel: string;
+    dateLabel: string;
+    statusLabel: string;
+    state: 'confirmed' | 'agreed' | 'reported';
+    detail: string;
+  }[]
+> = {
+  'case-002': [
+    {
+      id: 'case-002-financial-1',
+      title: 'دفعة نقدية موثقة',
+      amountLabel: '2,500 ل.س',
+      dateLabel: '24 آب 2026 · 1:00 م',
+      statusLabel: 'مؤكدة من العيادة',
+      state: 'confirmed',
+      detail: 'تم توثيق استلام مبلغ الحشوة بعد إكمال الزيارة.',
+    },
+  ],
+  'case-003': [
+    {
+      id: 'case-003-financial-1',
+      title: 'دفعة مباشرة للعيادة',
+      amountLabel: '1,500 ل.س',
+      dateLabel: '18 أيلول 2026 · 3:30 م',
+      statusLabel: 'مؤكدة من العيادة',
+      state: 'confirmed',
+      detail: 'سجلت العيادة استلام الدفعة الأولى من خطة اللثة.',
+    },
+    {
+      id: 'case-003-financial-2',
+      title: 'المبلغ المتبقي حسب الخطة',
+      amountLabel: '2,000 ل.س',
+      dateLabel: 'بعد الجلسة القادمة',
+      statusLabel: 'معلومة مرجعية',
+      state: 'agreed',
+      detail: 'هذا الاستحقاق مرجعي وليس إثباتاً للدفع.',
+    },
+  ],
+  'case-004': [
+    {
+      id: 'case-004-financial-1',
+      title: 'دفعة تاج خزفي مؤكدة',
+      amountLabel: '9,000 ل.س',
+      dateLabel: '20 أيلول 2026 · 12:15 م',
+      statusLabel: 'مؤكدة من العيادة',
+      state: 'confirmed',
+      detail: 'تم توثيق استلام الدفعة من العيادة وإغلاق الحالة.',
+    },
+  ],
+  'case-005': [
+    {
+      id: 'case-005-financial-1',
+      title: 'المبلغ المتفق عليه ضمن الخطة',
+      amountLabel: '3,500 ل.س',
+      dateLabel: 'بعد جلسة تقييم الطفل',
+      statusLabel: 'معلومة مرجعية',
+      state: 'agreed',
+      detail: 'لا يوجد إيصال دفع مؤكد في السجل.',
+    },
+  ],
+  'case-007': [
+    {
+      id: 'case-007-financial-1',
+      title: 'دفعة أبلغ عنها المريض',
+      amountLabel: '1,100 ل.س',
+      dateLabel: '14 تشرين الأول 2026 · 6:00 م',
+      statusLabel: 'مبلّغ عنها · غير مؤكدة',
+      state: 'reported',
+      detail: 'إبلاغ المريض لا يُعد تأكيد استلام من العيادة.',
+    },
+    {
+      id: 'case-007-financial-2',
+      title: 'الرصيد المتفق عليه',
+      amountLabel: '2,100 ل.س',
+      dateLabel: 'حسب مراحل الخطة',
+      statusLabel: 'معلومة مرجعية',
+      state: 'agreed',
+      detail: 'القيمة لا تعني تنفيذ تحويل مالي.',
+    },
+  ],
+  'case-008': [
+    {
+      id: 'case-008-financial-1',
+      title: 'رسوم جلسة التبييض',
+      amountLabel: '4,750 ل.س',
+      dateLabel: '12 آب 2026 · 6:10 م',
+      statusLabel: 'مؤكدة من العيادة',
+      state: 'confirmed',
+      detail: 'وثقت العيادة استلام كامل الرسوم بعد الجلسة.',
+    },
+  ],
+  'case-009': [
+    {
+      id: 'case-009-financial-1',
+      title: 'دفعة تصنيع الطقم',
+      amountLabel: '4,300 ل.س',
+      dateLabel: '16 سبتمبر 2026 · 2:00 م',
+      statusLabel: 'مؤكدة من العيادة',
+      state: 'confirmed',
+      detail: 'تم توثيق الدفعة الأولى للخطة المقبولة.',
+    },
+    {
+      id: 'case-009-financial-2',
+      title: 'الرصيد المتبقي للتسليم',
+      amountLabel: '4,400 ل.س',
+      dateLabel: 'عند التسليم النهائي',
+      statusLabel: 'معلومة مرجعية',
+      state: 'agreed',
+      detail: 'يخضع السداد للشروط المقبولة عند التسليم.',
+    },
+  ],
+  'case-010': [
+    {
+      id: 'case-010-financial-1',
+      title: 'دفعة الدعامات',
+      amountLabel: '4,000 ل.س',
+      dateLabel: '15 سبتمبر 2026 · 3:00 م',
+      statusLabel: 'مؤكدة من العيادة',
+      state: 'confirmed',
+      detail: 'تم توثيق استلام الدفعة الأولى.',
+    },
+    {
+      id: 'case-010-financial-2',
+      title: 'الرصيد المتبقي للتاج',
+      amountLabel: '7,000 ل.س',
+      dateLabel: 'عند تركيب التعويض',
+      statusLabel: 'معلومة مرجعية',
+      state: 'agreed',
+      detail: 'المبلغ المتبقي ليس دفعة مؤكدة بعد.',
+    },
+  ],
+};
+
+export function getMockFinancialEventsForScenario(
+  scenario: MockScenarioDefinition,
+  caseId = 'case-001',
+) {
+  if (caseId !== 'case-001') return additionalFinancialEvents[caseId] ?? [];
   // Accepted amendment changes the due balance, not the previously confirmed payment.
   const activeEvents = scenario.flags?.carePlanAmendmentAccepted
     ? mockFinancialRecord.events.map((event) =>
@@ -98,7 +242,36 @@ export function getMockFinancialEventsForScenario(scenario: MockScenarioDefiniti
   ];
 }
 
-export function getMockFinancialRecordForScenario(scenario: MockScenarioDefinition) {
+export function getMockFinancialRecordForScenario(
+  scenario: MockScenarioDefinition,
+  caseId = 'case-001',
+) {
+  if (caseId !== 'case-001') {
+    const careCase = getMockCareCase(caseId);
+    if (!careCase || careCase.planAcceptedAtLabel === 'بانتظار موافقة المريض') {
+      // No accepted financial snapshot exists for proposed-only plans.
+      return { ...mockFinancialRecord, caseId: 'unavailable' };
+    }
+    return {
+      ...mockFinancialRecord,
+      caseId,
+      acceptedTerms: {
+        ...mockFinancialRecord.acceptedTerms,
+        snapshotReference: `FTS-${caseId.toUpperCase()}-V1`,
+        planVersionLabel: careCase.planVersionLabel,
+        service: careCase.service,
+        patient: caseId === 'case-005' ? 'سارة خالد' : 'أحمد خالد',
+        totalLabel: careCase.acceptedTotalLabel,
+        acceptedAtLabel: careCase.planAcceptedAtLabel,
+        provider: careCase.provider,
+        branch: careCase.branch,
+        stagesLabel: `${careCase.stages.length} مراحل علاجية`,
+        dueStructureLabel: 'دفعات مباشرة للعيادة حسب الخطة المقبولة',
+        protectionStateLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
+        protectionClaimEligible: false,
+      },
+    };
+  }
   if (scenario.flags?.carePlanAmendmentAccepted) {
     return {
       ...mockFinancialRecord,
@@ -258,6 +431,111 @@ export const mockClaims = [
       governingPolicyLabel: 'اللقطة المالية 2 · شروط النزاع',
     },
     appealEligible: true,
+  },
+  // Additional issue, refund and execution flows linked to actual care cases.
+  {
+    id: 'claim-003',
+    caseId: 'case-003',
+    type: 'clinical',
+    typeLabel: 'مراجعة إجراء علاجي',
+    title: 'مراجعة جلسة تنظيف عميق',
+    amountLabel: '—',
+    statusLabel: 'قيد المراجعة',
+    deadlineLabel: 'الرد المتوقع في 30 تشرين الأول',
+    evidenceProgressLabel: '2 من 3 مكتملة',
+    evidence: [
+      { id: 'claim-003-evidence-1', title: 'نسخة الخطة العلاجية', status: 'complete' as const },
+      { id: 'claim-003-evidence-2', title: 'ملخص الجلسة الأولى', status: 'complete' as const },
+      { id: 'claim-003-evidence-3', title: 'ملاحظات المريض', status: 'pending' as const },
+    ],
+    history: [
+      { id: 'claim-003-history-1', title: 'إرسال الطلب', dateLabel: '19 تشرين الأول' },
+      { id: 'claim-003-history-2', title: 'بدء المراجعة', dateLabel: '20 تشرين الأول' },
+    ],
+    appealEligible: false,
+  },
+  {
+    id: 'claim-004',
+    caseId: 'case-004',
+    type: 'refund',
+    typeLabel: 'طلب استرداد',
+    title: 'مراجعة تكلفة تاج خزفي',
+    amountLabel: '500 ل.س',
+    statusLabel: 'مغلقة',
+    deadlineLabel: 'اكتملت المراجعة في 1 تشرين الأول',
+    evidenceProgressLabel: '3 من 3 مكتملة',
+    evidence: [
+      { id: 'claim-004-evidence-1', title: 'الخطة المقبولة', status: 'complete' as const },
+      { id: 'claim-004-evidence-2', title: 'سجل التثبيت', status: 'complete' as const },
+      { id: 'claim-004-evidence-3', title: 'تفاصيل الطلب', status: 'complete' as const },
+    ],
+    history: [
+      { id: 'claim-004-history-1', title: 'إنشاء الطلب', dateLabel: '25 أيلول' },
+      { id: 'claim-004-history-2', title: 'القرار النهائي', dateLabel: '1 تشرين الأول' },
+    ],
+    appealEligible: false,
+  },
+  {
+    id: 'claim-005',
+    caseId: 'case-007',
+    type: 'appointment',
+    typeLabel: 'اعتراض على موعد',
+    title: 'تأجيل جلسة استكمال العلاج',
+    amountLabel: '—',
+    statusLabel: 'قيد المراجعة',
+    deadlineLabel: 'الرد المتوقع في 23 تشرين الأول',
+    evidenceProgressLabel: '2 من 3 مكتملة',
+    evidence: [
+      { id: 'claim-005-evidence-1', title: 'تأكيد الموعد السابق', status: 'complete' as const },
+      { id: 'claim-005-evidence-2', title: 'شرح سبب الطلب', status: 'complete' as const },
+      { id: 'claim-005-evidence-3', title: 'مرفقات إضافية', status: 'pending' as const },
+    ],
+    history: [
+      { id: 'claim-005-history-1', title: 'تسجيل المشكلة', dateLabel: '20 تشرين الأول' },
+      { id: 'claim-005-history-2', title: 'إحالة للعيادة', dateLabel: '21 تشرين الأول' },
+    ],
+    appealEligible: false,
+  },
+  {
+    id: 'claim-006',
+    caseId: 'case-009',
+    type: 'refund-execution',
+    typeLabel: 'متابعة تنفيذ استرداد',
+    title: 'طلب إثبات استرداد خارجي',
+    amountLabel: '600 ل.س',
+    statusLabel: 'بانتظار مستند',
+    deadlineLabel: 'بانتظار إثبات التحويل من العيادة',
+    evidenceProgressLabel: '1 من 3 مكتملة',
+    evidence: [
+      { id: 'claim-006-evidence-1', title: 'القرار المعتمد', status: 'complete' as const },
+      { id: 'claim-006-evidence-2', title: 'بيان التحويل الخارجي', status: 'pending' as const },
+      { id: 'claim-006-evidence-3', title: 'رقم مرجع العملية', status: 'pending' as const },
+    ],
+    history: [
+      { id: 'claim-006-history-1', title: 'تسجيل الاستحقاق', dateLabel: '13 تشرين الأول' },
+      { id: 'claim-006-history-2', title: 'طلب مرجع التحويل', dateLabel: '18 تشرين الأول' },
+    ],
+    appealEligible: false,
+  },
+  {
+    id: 'claim-007',
+    caseId: 'case-005',
+    type: 'clinical',
+    typeLabel: 'استفسار عن العلاج',
+    title: 'استفسار حول خيارات الترميم للطفل',
+    amountLabel: '—',
+    statusLabel: 'تم الرد',
+    deadlineLabel: 'تم الرد في 19 تشرين الأول',
+    evidenceProgressLabel: '2 من 2 مكتملة',
+    evidence: [
+      { id: 'claim-007-evidence-1', title: 'ملخص الحالة', status: 'complete' as const },
+      { id: 'claim-007-evidence-2', title: 'استفسار ولي الأمر', status: 'complete' as const },
+    ],
+    history: [
+      { id: 'claim-007-history-1', title: 'فتح الاستفسار', dateLabel: '17 تشرين الأول' },
+      { id: 'claim-007-history-2', title: 'إضافة رد العيادة', dateLabel: '19 تشرين الأول' },
+    ],
+    appealEligible: false,
   },
 ] as const;
 
