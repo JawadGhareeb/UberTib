@@ -1,5 +1,7 @@
 import { Tabs } from 'expo-router';
+import { useReducedMotion } from 'react-native-reanimated';
 import { useResolveClassNames } from 'uniwind';
+import { tabTransitionOptions } from '@/shared/navigation/navigation-transitions';
 
 import {
   PatientBottomBar,
@@ -10,11 +12,17 @@ export default function PatientTabsLayout() {
   // React Navigation owns a separate tab scene surface. Keep its native
   // background in sync with the same Uniwind token as the screen canvas.
   const sceneStyle = useResolveClassNames('bg-surface-canvas');
+  const reduceMotion = useReducedMotion();
 
   return (
     <Tabs
       initialRouteName="home"
-      screenOptions={{ headerShown: false, tabBarHideOnKeyboard: true, sceneStyle }}
+      screenOptions={{
+        ...tabTransitionOptions(reduceMotion),
+        headerShown: false,
+        tabBarHideOnKeyboard: true,
+        sceneStyle,
+      }}
       tabBar={({ state, navigation, insets }) => (
         <PatientBottomBar
           active={(state.routes[state.index]?.name ?? 'home') as PatientTabName}

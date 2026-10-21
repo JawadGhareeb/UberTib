@@ -1,11 +1,9 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 import { KeyboardAvoidingView as NativeKeyboardAvoidingView, Platform, View } from 'react-native';
 import { KeyboardAvoidingView as ControlledKeyboardAvoidingView } from 'react-native-keyboard-controller';
-import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useResolveClassNames } from 'uniwind';
 
-import { theme } from '@/shared/theme';
 import { cn } from '@/shared/utils/cn';
 
 interface ScreenProps extends PropsWithChildren {
@@ -51,20 +49,14 @@ export function Screen({
         behavior="padding"
         enabled={keyboardAvoiding && Platform.OS === 'ios'}
       >
-        <Animated.View
-          className={resolvedContentClassName}
-          style={{ flex: 1 }}
-          entering={FadeIn.duration(theme.motion.duration.stateChange).reduceMotion(
-            ReduceMotion.System,
-          )}
-        >
+        <View className={resolvedContentClassName} style={{ flex: 1 }}>
           {context ? (
             <View className="mb-4 mt-3">{context}</View>
           ) : !contentClassName ? (
             <View className="h-3" />
           ) : null}
           {children}
-        </Animated.View>
+        </View>
       </KeyboardContainer>
     </SafeAreaView>
   );

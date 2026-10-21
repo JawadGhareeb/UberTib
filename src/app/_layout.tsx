@@ -14,8 +14,10 @@ import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native/provider';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { AppProviders } from '@/providers/app-providers';
+import { pageTransitionOptions } from '@/shared/navigation/navigation-transitions';
 import { AuthAccessProvider } from '@/providers/auth-access-provider';
 import { RootErrorBoundary } from '@/shared/components/error-boundary/root-error-boundary';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
@@ -31,6 +33,7 @@ I18nManager.swapLeftAndRightInRTL?.(false);
 
 function RootNavigator() {
   const { colors, scheme } = useAppTheme();
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     // Expo Go may keep the native splash surface visible after JS mounts.
@@ -50,6 +53,7 @@ function RootNavigator() {
       <View style={{ flex: 1, backgroundColor: colors.surface.canvas }}>
         <Stack
           screenOptions={{
+            ...pageTransitionOptions(reduceMotion),
             contentStyle: { backgroundColor: colors.surface.canvas },
             headerShown: false,
           }}
