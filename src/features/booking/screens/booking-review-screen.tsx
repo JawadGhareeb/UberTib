@@ -26,6 +26,7 @@ import {
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
 import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthAccess } from '@/providers/auth-access-provider';
 import { AppIcon, AppText, Button, Screen, StateView, TextField } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
@@ -46,6 +47,7 @@ function canPreviewImage(file: { mimeType?: string; fileName: string }) {
 export function BookingReviewScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthSession();
+  const { requireAuth } = useAuthAccess();
   const { scenario, submitBookingRequest } = useMockScenario();
   const { members } = useFamilyMembers();
   const {
@@ -173,7 +175,10 @@ export function BookingReviewScreen() {
         patientId,
         reason: activeReason,
       });
-      router.push({ pathname: '/auth/phone', params: { returnTo } });
+      requireAuth({
+        returnTo,
+        description: 'سجّل دخولك لتأكيد طلب الحجز وحفظه ضمن حجوزاتك، أو تابع التصفح كزائر.',
+      });
       return;
     }
 

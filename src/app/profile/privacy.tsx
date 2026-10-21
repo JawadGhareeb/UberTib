@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { PrivacyConsentsScreen } from '@/features/profile';
 
-export default function PrivacyConsentsRoute() {
+function PrivacyConsentsRoute() {
   return <PrivacyConsentsScreen />;
 }
+
+export default withAuthRequired(PrivacyConsentsRoute);

@@ -16,6 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native/provider';
 
 import { AppProviders } from '@/providers/app-providers';
+import { AuthAccessProvider } from '@/providers/auth-access-provider';
 import { RootErrorBoundary } from '@/shared/components/error-boundary/root-error-boundary';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { initializePreferredTheme } from '@/shared/theme/theme-preference';
@@ -108,7 +109,9 @@ export default function RootLayout() {
           <AppProviders>
             <HeroUINativeProvider config={{ isRTL: true, devInfo: { stylingPrinciples: false } }}>
               <View style={{ direction: 'ltr', flex: 1 }}>
-                <RootNavigator />
+                <AuthAccessProvider>
+                  <RootNavigator />
+                </AuthAccessProvider>
               </View>
             </HeroUINativeProvider>
           </AppProviders>

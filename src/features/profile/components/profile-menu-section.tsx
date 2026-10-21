@@ -24,6 +24,19 @@ export function ProfileMenuSection() {
   const router = useRouter();
   const { isAuthenticated, signOut } = useAuthSession();
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const confirmLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutOpen(false);
+    try {
+      await signOut();
+      router.replace('/(tabs)/home');
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   return (
     <View className="mt-5 gap-5">
@@ -108,13 +121,10 @@ export function ProfileMenuSection() {
         confirmLabel="تسجيل الخروج"
         cancelLabel="إلغاء"
         destructive
+        loading={loggingOut}
         icon={{ ios: 'rectangle.portrait.and.arrow.right', android: 'logout', web: 'logout' }}
         onCancel={() => setLogoutOpen(false)}
-        onConfirm={() => {
-          setLogoutOpen(false);
-          signOut();
-          router.replace('/');
-        }}
+        onConfirm={() => void confirmLogout()}
       />
     </View>
   );

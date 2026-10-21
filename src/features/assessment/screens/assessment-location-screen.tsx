@@ -8,6 +8,7 @@ import { AssessmentScaffold } from '@/features/assessment/components/assessment-
 import { DentalArchSelector } from '@/features/assessment/components/dental-arch-selector';
 import { DentitionModeControl } from '@/features/assessment/components/dentition-mode-control';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
+import { useAuthSession } from '@/providers/auth-session-provider';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
@@ -30,6 +31,7 @@ export function AssessmentLocationScreen() {
   } = useAssessmentSession();
   const [showRegions, setShowRegions] = useState(false);
   const patientName = ASSESSMENT_PATIENT_FIXTURES[patient].name;
+  const { isAuthenticated } = useAuthSession();
 
   return (
     <AssessmentScaffold
@@ -51,7 +53,7 @@ export function AssessmentLocationScreen() {
             حدد السن أو المنطقة اللي بتوجعك.
           </AppText>
           <AppText variant="caption" className="text-content-link">
-            {patientName}
+            {isAuthenticated ? patientName : 'تقييم مبدئي'}
           </AppText>
         </View>
       }

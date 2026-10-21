@@ -4,9 +4,11 @@ import { Pressable, View } from 'react-native';
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 import { IntroArtwork } from '@/features/app-entry/components/intro-artwork';
+import { useAuthSession } from '@/providers/auth-session-provider';
 
 export function AssessmentStartScreen() {
   const router = useRouter();
+  const { isAuthenticated } = useAuthSession();
 
   return (
     <AssessmentScaffold phase="البدء" title="ساعدني أحدد حالتي">
@@ -45,7 +47,9 @@ export function AssessmentStartScreen() {
         className="min-h-[51px] rounded-[12px]"
         label="ابدأ التقييم"
         endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
-        onPress={() => router.push('/assessment/patient')}
+        onPress={() =>
+          router.push(isAuthenticated ? '/assessment/patient' : '/assessment/complaint')
+        }
       />
       <Button
         className="min-h-[49px] rounded-[12px]"

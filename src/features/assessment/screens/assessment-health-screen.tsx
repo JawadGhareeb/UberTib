@@ -4,6 +4,7 @@ import { View } from 'react-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
+import { useAuthSession } from '@/providers/auth-session-provider';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
@@ -40,6 +41,7 @@ export function AssessmentHealthScreen() {
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { patient, setHealthConfirmed } = useAssessmentSession();
   const person = ASSESSMENT_PATIENT_FIXTURES[patient];
+  const { isAuthenticated } = useAuthSession();
 
   return (
     <AssessmentScaffold
@@ -62,18 +64,17 @@ export function AssessmentHealthScreen() {
           </View>
           <View className="min-w-0 flex-1 items-end gap-1">
             <AppText variant="label" className="font-ui-bold">
-              {person.name}
+              {isAuthenticated ? person.name : 'تقييم مبدئي'}
             </AppText>
             <AppText variant="caption" className="text-content-secondary">
-              {person.age} سنة · المعلومات تخص المريض المختار
+              {isAuthenticated ? `${person.age} سنة · المعلومات تخص المريض المختار` : 'راجع المعلومات الصحية العامة قبل المتابعة'}
             </AppText>
           </View>
         </View>
       }
     >
       <AppText align="right" variant="label" className="text-content-secondary">
-        راجع أقسام الملف الصحي قبل المتابعة. التفاصيل الطبية ضمن هذا النموذج ليست مربوطة بعد بسجل
-        المريض الفعلي.
+        راجع المعلومات الصحية المهمة قبل المتابعة. لا يتم ربط هذا التقييم بملف صحي شخصي للزائر.
       </AppText>
       <Accordion
         selectionMode="multiple"

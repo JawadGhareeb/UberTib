@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { NotificationCentreScreen } from '@/features/platform';
 
-export default function NotificationsRoute() {
+function NotificationsRoute() {
   return <NotificationCentreScreen />;
 }
+
+export default withAuthRequired(NotificationsRoute);

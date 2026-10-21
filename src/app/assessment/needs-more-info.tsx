@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { AssessmentNeedsMoreInfoScreen } from '@/features/assessment';
 
-export default function AssessmentNeedsMoreInfoRoute() {
+function AssessmentNeedsMoreInfoRoute() {
   return <AssessmentNeedsMoreInfoScreen />;
 }
+
+export default withAuthRequired(AssessmentNeedsMoreInfoRoute);

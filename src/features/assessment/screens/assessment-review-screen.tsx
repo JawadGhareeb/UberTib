@@ -6,6 +6,7 @@ import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
+import { useAuthSession } from '@/providers/auth-session-provider';
 
 function SummaryRow({
   title,
@@ -52,6 +53,7 @@ function SummaryRow({
 
 export function AssessmentReviewScreen() {
   const router = useRouter();
+  const { isAuthenticated } = useAuthSession();
   const {
     patient,
     complaint,
@@ -87,12 +89,14 @@ export function AssessmentReviewScreen() {
       }
     >
       <View className="overflow-hidden rounded-[15px] border border-border-subtle bg-surface-default">
-        <SummaryRow
-          title="المريض"
-          value={`${who.name} · ${who.age} سنة`}
-          icon={{ ios: 'person', android: 'person', web: 'person' }}
-          onEdit={() => edit('/assessment/patient')}
-        />
+        {isAuthenticated ? (
+          <SummaryRow
+            title="المريض"
+            value={`${who.name} · ${who.age} سنة`}
+            icon={{ ios: 'person', android: 'person', web: 'person' }}
+            onEdit={() => edit('/assessment/patient')}
+          />
+        ) : null}
         <SummaryRow
           title="المشكلة الرئيسية"
           value={complaint || 'غير محددة'}

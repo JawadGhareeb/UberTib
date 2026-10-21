@@ -5,6 +5,7 @@ import { Radio } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
+import { useAuthSession } from '@/providers/auth-session-provider';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
@@ -21,6 +22,7 @@ export function AssessmentNeedsMoreInfoScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
   const { patient, location, setRegionLocation, setLocation } = useAssessmentSession();
+  const { isAuthenticated } = useAuthSession();
   const [selected, setSelected] = useState<LocationChoice | undefined>(
     isLocationChoice(location) ? location : undefined,
   );
@@ -42,7 +44,7 @@ export function AssessmentNeedsMoreInfoScreen() {
       pathname: '/discover/providers/results',
       params: {
         serviceCode: 'dental-checkup',
-        patientId: patient === 'adam' ? 'patient-002' : 'patient-001',
+        ...(isAuthenticated ? { patientId: patient === 'adam' ? 'patient-002' : 'patient-001' } : {}),
       },
     });
 

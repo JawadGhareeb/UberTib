@@ -18,7 +18,6 @@ import {
 import { DiscoverAppliedFilterChips } from './discover-applied-filter-chips';
 import {
   FilterAreaChoices,
-  FilterFamilyChoices,
   FilterGroupChoices,
   FilterNavigationRow,
 } from './discover-filter-choices';
@@ -28,7 +27,7 @@ import { ProviderSortOptions } from './provider-sort-options';
 import type { ProviderResultSort } from '../utils/provider-sort';
 import { defaultProviderFilters, type ProviderFilterFlags } from '../utils/provider-filters';
 
-type FilterStep = 'main' | 'area' | 'groups' | 'families';
+type FilterStep = 'main' | 'area' | 'groups';
 
 /**
  * A single shared HeroUI Native sheet for Discover and provider results.
@@ -94,17 +93,9 @@ export function DiscoverFilterSheet({
   const selectedAreas = selectedDiscoveryAreas(draft);
   const range = limits ? draft.priceRange : null;
 
-  const changeDraft = (next: DiscoveryFilterSelection) => {
-    setDraft(next);
-    if (step === 'families' && !next.groupCode) setStep('groups');
-  };
-  const chooseGroup = (groupCode: string) => {
-    setDraft((current) => ({ ...current, groupCode, serviceCode: null, priceRange: null }));
-    setStep('families');
-  };
-  const chooseFamily = (serviceCode: string | null) => {
-    setDraft((current) => ({ ...current, serviceCode, priceRange: null }));
-    setStep('main');
+  const changeDraft = (next: DiscoveryFilterSelection) => setDraft(next);
+  const chooseService = (groupCode: string, serviceCode: string | null) => {
+    setDraft((current) => ({ ...current, groupCode, serviceCode, priceRange: null }));
   };
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) setStep('main');
@@ -149,7 +140,7 @@ export function DiscoverFilterSheet({
                     accessibilityRole="button"
                     accessibilityLabel="رجوع داخل الفلاتر"
                     className="h-10 w-10 items-center justify-center rounded-full bg-action-subtle"
-                    onPress={() => setStep(step === 'families' ? 'groups' : 'main')}
+                    onPress={() => setStep('main')}
                   >
                     <AppIcon
                       name={{
@@ -204,7 +195,7 @@ export function DiscoverFilterSheet({
                     }}
                     title="الخدمات"
                     detail={family?.title ?? group?.title ?? 'كل الخدمات'}
-                    onPress={() => setStep(draft.groupCode ? 'families' : 'groups')}
+                    onPress={() => setStep('groups')}
                   />
                 ) : null}
                 <View className="mt-1 border-t border-border-subtle pt-3">
@@ -252,7 +243,8 @@ export function DiscoverFilterSheet({
                 <FilterGroupChoices
                   groups={penServiceGroups}
                   selected={draft.groupCode ?? null}
-                  onSelect={chooseGroup}
+                  selectedFamily={draft.serviceCode ?? null}
+                  onSelect={chooseService}
                   onAll={() => {
                     setDraft((current) => ({
                       ...current,
@@ -262,20 +254,6 @@ export function DiscoverFilterSheet({
                     }));
                     setStep('main');
                   }}
-                />
-              </View>
-            ) : null}
-
-            {step === 'families' && group ? (
-              <View className="gap-3">
-                <AppText align="right" variant="body-strong">
-                  {group.title}
-                </AppText>
-                <FilterFamilyChoices
-                  groupTitle={group.title}
-                  families={group.families}
-                  selected={draft.serviceCode ?? null}
-                  onSelect={chooseFamily}
                 />
               </View>
             ) : null}

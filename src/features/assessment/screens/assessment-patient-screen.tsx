@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Radio, RadioGroup } from 'heroui-native';
 import { View } from 'react-native';
 
@@ -9,6 +9,7 @@ import {
   type AssessmentPatient,
 } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
+import { useAuthSession } from '@/providers/auth-session-provider';
 
 const patients: { value: AssessmentPatient; status: string; disabled: boolean }[] = [
   { value: 'self', status: 'ملفي الصحي', disabled: false },
@@ -20,6 +21,10 @@ export function AssessmentPatientScreen() {
   const router = useRouter();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { patient, setPatient } = useAssessmentSession();
+  const { isAuthenticated } = useAuthSession();
+  if (!isAuthenticated) {
+    return <Redirect href={returnTo === 'review' ? '/assessment/review' : '/assessment/complaint'} />;
+  }
   return (
     <AssessmentScaffold
       onPrimary={() => {

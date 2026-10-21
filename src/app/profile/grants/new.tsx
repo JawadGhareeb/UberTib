@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { CreateGrantScreen } from '@/features/profile';
 
-export default function CreateGrantRoute() {
+function CreateGrantRoute() {
   return <CreateGrantScreen />;
 }
+
+export default withAuthRequired(CreateGrantRoute);

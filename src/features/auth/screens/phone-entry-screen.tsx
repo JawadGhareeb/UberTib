@@ -89,7 +89,7 @@ export function PhoneEntryScreen() {
               <AuthBackButton
                 onPress={() => {
                   if (returnTo && router.canGoBack()) router.back();
-                  else router.replace({ pathname: '/', params: { step: '2' } });
+                  else router.replace('/(tabs)/home');
                 }}
               />
             </View>

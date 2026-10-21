@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { AssessmentManualReviewScreen } from '@/features/assessment';
 
-export default function AssessmentManualReviewRoute() {
+function AssessmentManualReviewRoute() {
   return <AssessmentManualReviewScreen />;
 }
+
+export default withAuthRequired(AssessmentManualReviewRoute);

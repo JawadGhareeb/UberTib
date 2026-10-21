@@ -4,6 +4,7 @@ import { RadioGroup } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
+import { useAuthSession } from '@/providers/auth-session-provider';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
@@ -28,6 +29,7 @@ export function AssessmentComplaintScreen() {
   const router = useRouter();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { patient, complaint, setComplaint } = useAssessmentSession();
+  const { isAuthenticated } = useAuthSession();
   return (
     <AssessmentScaffold
       onPrimary={() => {
@@ -44,7 +46,7 @@ export function AssessmentComplaintScreen() {
             اختار المشكلة الأقرب لحالتك.
           </AppText>
           <AppText variant="caption" className="text-content-link">
-            {ASSESSMENT_PATIENT_FIXTURES[patient].name}
+            {isAuthenticated ? ASSESSMENT_PATIENT_FIXTURES[patient].name : 'تقييم مبدئي'}
           </AppText>
         </View>
       }

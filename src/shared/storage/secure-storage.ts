@@ -91,6 +91,7 @@ export const secureStorage = {
   getThemeScheme: () => getItem(THEME_SCHEME_KEY),
   setThemeScheme: (scheme: 'light' | 'dark') => setItem(THEME_SCHEME_KEY, scheme),
   getPreferredLocation: () => getItem(PREFERRED_LOCATION_KEY),
+  clearPreferredLocation: () => deleteItem(PREFERRED_LOCATION_KEY),
   setPreferredLocation: (value: string) => setItem(PREFERRED_LOCATION_KEY, value),
   getOnboardingComplete: async () => (await getItem(ONBOARDING_COMPLETE_KEY)) === '1',
   setOnboardingComplete: () => setItem(ONBOARDING_COMPLETE_KEY, '1'),

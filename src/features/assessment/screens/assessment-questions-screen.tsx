@@ -4,6 +4,7 @@ import { Checkbox, ControlField } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
+import { useAuthSession } from '@/providers/auth-session-provider';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, TextField } from '@/shared/components/ui';
 
@@ -20,6 +21,7 @@ export function AssessmentQuestionsScreen() {
     answers: selectedAnswers,
     toggleAnswer,
   } = useAssessmentSession();
+  const { isAuthenticated } = useAuthSession();
   const question =
     complaint.includes('ألم') || complaint.includes('حساسية')
       ? 'متى بيزيد الألم عادةً؟'
@@ -45,7 +47,7 @@ export function AssessmentQuestionsScreen() {
             اختر كل الإجابات اللي بتنطبق عليك.
           </AppText>
           <AppText variant="caption" className="text-content-link">
-            {ASSESSMENT_PATIENT_FIXTURES[patient].name}
+            {isAuthenticated ? ASSESSMENT_PATIENT_FIXTURES[patient].name : 'تقييم مبدئي'}
           </AppText>
         </View>
       }

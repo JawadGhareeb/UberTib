@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { RescheduleBookingScreen } from '@/features/booking';
 
-export default function RescheduleBookingRoute() {
+function RescheduleBookingRoute() {
   return <RescheduleBookingScreen />;
 }
+
+export default withAuthRequired(RescheduleBookingRoute);

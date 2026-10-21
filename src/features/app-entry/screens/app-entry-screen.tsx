@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Typography } from 'heroui-native';
 import { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -8,54 +8,43 @@ import { OnboardingScreen } from '@/features/app-entry/components/onboarding-scr
 import { BrandLogo } from '@/shared/components/brand';
 import { secureStorage } from '@/shared/storage/secure-storage';
 
-/**
- * New two-step first-use intro; guests are not forced to authenticate.
- * Development builds replay both steps for easy visual QA.
- */
+/** Intro is shown only on first launch, regardless of development/release mode. */
 export function AppEntryScreen() {
   const router = useRouter();
-  const { step: requestedStep } = useLocalSearchParams<{ step?: string }>();
-  const [checking, setChecking] = useState(!__DEV__ && requestedStep !== '2');
-  const [step, setStep] = useState<0 | 1>(requestedStep === '2' ? 1 : 0);
+  const [checking, setChecking] = useState(true);
+  const [step, setStep] = useState<0 | 1>(0);
 
   useEffect(() => {
-    if (__DEV__ || requestedStep === '2') return;
     let active = true;
-    const bootstrap = async () => {
+    void (async () => {
       try {
-        const [complete, token] = await Promise.all([
-          secureStorage.getOnboardingComplete(),
-          secureStorage.getAccessToken(),
-        ]);
+        const complete = await secureStorage.getOnboardingComplete();
         if (!active) return;
-        if (complete || token) {
+        if (complete) {
           router.replace('/(tabs)/home');
           return;
         }
       } catch {
-        // Secure storage being unavailable must not prevent guest browsing.
+        // First use is still available when storage is inaccessible.
       }
       if (active) setChecking(false);
-    };
-    void bootstrap();
+    })();
     return () => {
       active = false;
     };
-  }, [router, requestedStep]);
+  }, [router]);
 
   const finish = useCallback(
     async (destination: '/(tabs)/home' | '/auth/phone') => {
       try {
         await secureStorage.setOnboardingComplete();
       } catch {
-        // Storage failure must never block an explicit patient choice.
+        // Never block an explicit onboarding choice.
       }
       router.replace(destination);
     },
     [router],
   );
-
-  const back = useCallback(() => setStep(0), []);
 
   if (checking) {
     return (
@@ -69,12 +58,11 @@ export function AppEntryScreen() {
       </SafeAreaView>
     );
   }
-
   return (
     <OnboardingScreen
       step={step}
       onNext={() => setStep(1)}
-      onBack={back}
+      onBack={() => setStep(0)}
       onBrowse={() => void finish('/(tabs)/home')}
       onLogin={() => void finish('/auth/phone')}
     />

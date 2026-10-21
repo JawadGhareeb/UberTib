@@ -1,9 +1,12 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { RefundRequestScreen } from '@/features/my-care';
 
-export default function RefundRequestRoute() {
+function RefundRequestRoute() {
   const { caseId } = useLocalSearchParams<{ caseId: string }>();
 
   return <RefundRequestScreen caseId={caseId} />;
 }
+
+export default withAuthRequired(RefundRequestRoute);

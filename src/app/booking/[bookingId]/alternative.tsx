@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { AlternativeAppointmentScreen } from '@/features/booking';
 
-export default function AlternativeAppointmentRoute() {
+function AlternativeAppointmentRoute() {
   return <AlternativeAppointmentScreen />;
 }
+
+export default withAuthRequired(AlternativeAppointmentRoute);

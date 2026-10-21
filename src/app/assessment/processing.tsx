@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { AssessmentProcessingScreen } from '@/features/assessment';
 
-export default function AssessmentProcessingRoute() {
+function AssessmentProcessingRoute() {
   return <AssessmentProcessingScreen />;
 }
+
+export default withAuthRequired(AssessmentProcessingRoute);

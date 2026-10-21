@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { BookingDetailScreen } from '@/features/booking';
 
-export default function BookingDetailRoute() {
+function BookingDetailRoute() {
   return <BookingDetailScreen />;
 }
+
+export default withAuthRequired(BookingDetailRoute);

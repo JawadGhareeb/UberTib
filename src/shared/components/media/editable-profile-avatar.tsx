@@ -14,6 +14,7 @@ export interface EditableProfileAvatarProps {
   value: SelectedMediaFile | null;
   onChange: (value: SelectedMediaFile | null) => void;
   disabled?: boolean;
+  beforeEdit?: () => boolean;
 }
 
 /** Controlled avatar editor that reuses the same source dialog as medical attachments. */
@@ -21,6 +22,7 @@ export function EditableProfileAvatar({
   value,
   onChange,
   disabled = false,
+  beforeEdit,
 }: EditableProfileAvatarProps) {
   const { colors } = useAppTheme();
   const [open, setOpen] = useState(false);
@@ -65,7 +67,10 @@ export function EditableProfileAvatar({
         accessibilityHint="اختيار صورة من المعرض أو الكاميرا"
         accessibilityState={{ disabled: busy || disabled }}
         disabled={busy || disabled}
-        onPress={() => setOpen(true)}
+        onPress={() => {
+          if (beforeEdit && !beforeEdit()) return;
+          setOpen(true);
+        }}
         className="relative items-center justify-center"
       >
         <Avatar size="lg" color="accent" variant="soft">
@@ -90,6 +95,7 @@ export function EditableProfileAvatar({
           size="sm"
           className="rounded-form-field"
           onPress={() => {
+            if (beforeEdit && !beforeEdit()) return;
             onChange(null);
             setError(undefined);
           }}

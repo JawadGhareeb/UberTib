@@ -1,12 +1,12 @@
-import { useRouter } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { View } from 'react-native';
 
 import { AppIcon, AppText } from '@/shared/components/ui';
+import { useAssessmentEntry } from '@/features/assessment/hooks/use-assessment-entry';
 
 /** Identical assessment entry in Home and Discover; no duplicate visual/behavioral copies. */
 export function AssessmentEntryCard() {
-  const router = useRouter();
+  const startAssessment = useAssessmentEntry();
 
   return (
     <HeroCard
@@ -37,7 +37,7 @@ export function AssessmentEntryCard() {
       <HeroButton
         variant="primary"
         className="min-h-[48px] rounded-[12px] bg-action-primary"
-        onPress={() => router.push('/assessment/start')}
+        onPress={startAssessment}
       >
         <HeroButton.Label className="font-ui-semibold text-content-on-action">
           ساعدني أحدد حالتي

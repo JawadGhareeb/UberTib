@@ -1,4 +1,4 @@
-import { Chip } from 'heroui-native';
+import { Accordion, Chip } from 'heroui-native';
 import { Pressable, View } from 'react-native';
 
 import { ServiceIcon } from '@/features/discovery/components/service-icon';
@@ -104,15 +104,21 @@ export function FilterAreaChoices({
   );
 }
 
+/**
+ * Groups expand in place; service selection is no longer a second modal screen.
+ * The group icon sits directly beside its Arabic label in the accordion header.
+ */
 export function FilterGroupChoices({
   groups,
   selected,
+  selectedFamily,
   onSelect,
   onAll,
 }: {
   groups: readonly PenServiceGroup[];
   selected: string | null;
-  onSelect: (groupCode: string) => void;
+  selectedFamily: string | null;
+  onSelect: (groupCode: string, serviceCode: string | null) => void;
   onAll: () => void;
 }) {
   return (
@@ -121,7 +127,12 @@ export function FilterGroupChoices({
         accessibilityRole="button"
         accessibilityState={{ selected: selected === null }}
         onPress={onAll}
-        className="min-h-[44px] flex-row-reverse items-center justify-between rounded-[12px] bg-surface-subtle px-3"
+        className={
+          'min-h-[48px] flex-row-reverse items-center justify-between rounded-[12px] border px-3 ' +
+          (selected === null
+            ? 'border-state-selected-border bg-action-subtle'
+            : 'border-border-subtle bg-surface-subtle')
+        }
       >
         <AppText variant="label" className="font-ui-medium">
           جميع الخدمات
@@ -134,44 +145,56 @@ export function FilterGroupChoices({
           />
         ) : null}
       </Pressable>
-      <View className="flex-row-reverse flex-wrap justify-between gap-y-2.5">
-        {groups.map((group) => {
-          const active = selected === group.code;
-          return (
-            <Pressable
-              key={group.code}
-              accessibilityRole="button"
-              accessibilityState={{ selected: active }}
-              accessibilityLabel={group.title}
-              onPress={() => onSelect(group.code)}
-              className={
-                'min-h-[105px] w-[48.5%] items-end justify-between gap-2 rounded-[14px] p-3 ' +
-                (active ? 'border border-action-primary bg-action-subtle' : 'bg-surface-subtle')
-              }
-            >
-              <View className="flex-row-reverse items-center justify-between self-stretch">
-                <View className="h-[42px] w-[42px] items-center justify-center rounded-[12px] bg-action-subtle">
-                  <ServiceIcon serviceId={groupIcons[group.code]} size={28} />
-                </View>
-                {active ? (
-                  <AppIcon
-                    name={{
-                      ios: 'checkmark.circle.fill',
-                      android: 'check_circle',
-                      web: 'check_circle',
-                    }}
-                    size={20}
-                    tone="action"
-                  />
-                ) : null}
+      <Accordion
+        selectionMode="single"
+        isCollapsible
+        defaultValue={selected ?? undefined}
+        variant="default"
+        className="overflow-hidden rounded-[14px] border border-border-subtle bg-surface-default"
+      >
+        {groups.map((group) => (
+          <Accordion.Item key={group.code} value={group.code}>
+            <Accordion.Trigger className="min-h-[67px] flex-row-reverse items-center gap-2.5 px-3 py-2.5">
+              <View className="h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-action-subtle">
+                <ServiceIcon serviceId={groupIcons[group.code]} size={27} />
               </View>
-              <AppText align="right" variant="label" className="font-ui-semibold" numberOfLines={2}>
-                {group.title}
-              </AppText>
-            </Pressable>
-          );
-        })}
-      </View>
+              <View className="min-w-0 flex-1 items-end gap-0.5">
+                <AppText
+                  align="right"
+                  variant="label"
+                  className="w-full font-ui-semibold"
+                  numberOfLines={2}
+                >
+                  {group.title}
+                </AppText>
+                <AppText align="right" variant="caption" className="text-content-secondary">
+                  {group.families.length} خدمات
+                </AppText>
+              </View>
+              {selected === group.code ? (
+                <AppIcon
+                  name={{
+                    ios: 'checkmark.circle.fill',
+                    android: 'check_circle',
+                    web: 'check_circle',
+                  }}
+                  size={18}
+                  tone="action"
+                />
+              ) : null}
+              <Accordion.Indicator />
+            </Accordion.Trigger>
+            <Accordion.Content className="px-2 pb-3">
+              <FilterFamilyChoices
+                groupTitle={group.title}
+                families={group.families}
+                selected={selected === group.code ? selectedFamily : null}
+                onSelect={(serviceCode) => onSelect(group.code, serviceCode)}
+              />
+            </Accordion.Content>
+          </Accordion.Item>
+        ))}
+      </Accordion>
     </View>
   );
 }

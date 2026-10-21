@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { PatientHealthInformationScreen } from '@/features/profile/screens/patient-health-information-screen';
 
-export default function HealthInformationRoute() {
+function HealthInformationRoute() {
   return <PatientHealthInformationScreen />;
 }
+
+export default withAuthRequired(HealthInformationRoute);

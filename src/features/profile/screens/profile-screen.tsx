@@ -8,11 +8,15 @@ import { ProfileMenuSection } from '../components/profile-menu-section';
 import { EditableProfileAvatar } from '@/shared/components/media/editable-profile-avatar';
 import { useProfilePhoto } from '../state/profile-photo-provider';
 import { useAccountDetails } from '../state/account-details-provider';
+import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthAccess } from '@/providers/auth-access-provider';
 
 export function ProfileScreen() {
   const { getSurfaceState } = useMockScenario();
   const { photo, setPhoto } = useProfilePhoto();
   const { name } = useAccountDetails();
+  const { isAuthenticated } = useAuthSession();
+  const { requireAuth } = useAuthAccess();
 
   return (
     <Screen contentClassName="px-0 py-0" header={<ProfileAccountHeader />}>
@@ -28,9 +32,18 @@ export function ProfileScreen() {
           permissionTitle="بيانات الحساب غير متاحة"
         >
           <View className="items-center gap-2 pb-3">
-            <EditableProfileAvatar value={photo} onChange={setPhoto} />
+            <EditableProfileAvatar
+              value={isAuthenticated ? photo : null}
+              onChange={setPhoto}
+              beforeEdit={() =>
+                requireAuth({
+                  returnTo: '/(tabs)/profile',
+                  description: 'سجّل دخولك لإضافة أو تعديل صورة حسابك، أو تابع التصفح كزائر.',
+                })
+              }
+            />
             <AppText align="center" variant="heading-4" className="font-ui-bold">
-              {name}
+              {isAuthenticated ? name : 'حساب الزائر'}
             </AppText>
           </View>
           <ProfileShortcuts />

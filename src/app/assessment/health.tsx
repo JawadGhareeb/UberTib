@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { AssessmentHealthScreen } from '@/features/assessment';
 
-export default function AssessmentHealthRoute() {
+function AssessmentHealthRoute() {
   return <AssessmentHealthScreen />;
 }
+
+export default withAuthRequired(AssessmentHealthRoute);

@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useAssessmentEntry } from '@/features/assessment/hooks/use-assessment-entry';
 import { ScrollView, View } from 'react-native';
 
 import { DiscoveryHeader } from '@/features/discovery/components/pen-discovery-ui';
@@ -8,6 +9,7 @@ import { AppText, Button, Screen } from '@/shared/components/ui';
 
 export function ServiceFamilyDetailScreen() {
   const router = useRouter();
+  const startAssessment = useAssessmentEntry();
   const { familyCode } = useLocalSearchParams<{ familyCode?: string }>();
   const family = findPenFamily(familyCode);
   const group = findPenGroup(family?.groupCode);
@@ -38,10 +40,14 @@ export function ServiceFamilyDetailScreen() {
           >
             {family.groupCode} · {group.title}
           </AppText>
-          <AppText className="mt-1 w-full font-ui-bold text-type-heading-2"
-            align="right">{family.title}</AppText>
-          <AppText className="mt-1.5 w-full text-type-label text-content-secondary"
-            align="right" variant="caption">
+          <AppText className="mt-1 w-full font-ui-bold text-type-heading-2" align="right">
+            {family.title}
+          </AppText>
+          <AppText
+            className="mt-1.5 w-full text-type-label text-content-secondary"
+            align="right"
+            variant="caption"
+          >
             {isImplantProsthetics
               ? 'تساعد على تعويض سن أو أكثر بتركيبة ثابتة مدعومة بزرعات موجودة أو مخطط لها.'
               : family.description}
@@ -57,14 +63,15 @@ export function ServiceFamilyDetailScreen() {
           </AppText>
         </View>
 
-
         <Button
           className="mt-4 h-12 rounded-[13px]"
           label="عرض تفاصيل الخدمة"
-          onPress={() => router.push({
-            pathname: '/discover/service/[serviceCode]',
-            params: { serviceCode: family.id },
-          })}
+          onPress={() =>
+            router.push({
+              pathname: '/discover/service/[serviceCode]',
+              params: { serviceCode: family.id },
+            })
+          }
           variant="outline"
         />
         <Button
@@ -83,7 +90,7 @@ export function ServiceFamilyDetailScreen() {
         <Button
           className="mt-2 h-11 rounded-[12px]"
           label="مو متأكد؟ خلينا نحدد حالتك"
-          onPress={() => router.push('/assessment/start')}
+          onPress={startAssessment}
           variant="secondary"
         />
       </ScrollView>

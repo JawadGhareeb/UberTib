@@ -10,32 +10,44 @@ import { AccountDetailsProvider } from '@/features/profile/state/account-details
 import { SupportTicketsProvider } from '@/features/profile/state/support-tickets-provider';
 import { PreferredLocationProvider } from '@/features/location/state/preferred-location-provider';
 import { AppDirectionProvider } from '@/providers/app-direction-provider';
-import { AuthSessionProvider } from '@/providers/auth-session-provider';
+import { AuthSessionProvider, useAuthSession } from '@/providers/auth-session-provider';
 import { MockScenarioProvider } from '@/shared/mock';
 import { queryClient } from '@/shared/query/query-client';
+
+function SessionScopedProviders({ children }: PropsWithChildren) {
+  const { sessionEpoch } = useAuthSession();
+  return <SessionData key={sessionEpoch}>{children}</SessionData>;
+}
+
+/** Private in-memory state is discarded by session key rotation on sign out. */
+function SessionData({ children }: PropsWithChildren) {
+  return (
+    <PreferredLocationProvider>
+      <AccountDetailsProvider>
+        <FamilyMembersProvider>
+          <DiscoverySessionProvider>
+            <MockScenarioProvider>
+              <ProfilePrivacyProvider>
+                <ProfilePhotoProvider>
+                  <SupportTicketsProvider>
+                    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+                  </SupportTicketsProvider>
+                </ProfilePhotoProvider>
+              </ProfilePrivacyProvider>
+            </MockScenarioProvider>
+          </DiscoverySessionProvider>
+        </FamilyMembersProvider>
+      </AccountDetailsProvider>
+    </PreferredLocationProvider>
+  );
+}
 
 export function AppProviders({ children }: PropsWithChildren) {
   return (
     <KeyboardProvider statusBarTranslucent>
       <AppDirectionProvider>
         <AuthSessionProvider>
-          <PreferredLocationProvider>
-            <AccountDetailsProvider>
-              <FamilyMembersProvider>
-                <DiscoverySessionProvider>
-                  <MockScenarioProvider>
-                    <ProfilePrivacyProvider>
-                      <ProfilePhotoProvider>
-                        <SupportTicketsProvider>
-                          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-                        </SupportTicketsProvider>
-                      </ProfilePhotoProvider>
-                    </ProfilePrivacyProvider>
-                  </MockScenarioProvider>
-                </DiscoverySessionProvider>
-              </FamilyMembersProvider>
-            </AccountDetailsProvider>
-          </PreferredLocationProvider>
+          <SessionScopedProviders>{children}</SessionScopedProviders>
         </AuthSessionProvider>
       </AppDirectionProvider>
     </KeyboardProvider>

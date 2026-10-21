@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { CancelBookingScreen } from '@/features/booking';
 
-export default function CancelBookingRoute() {
+function CancelBookingRoute() {
   return <CancelBookingScreen />;
 }
+
+export default withAuthRequired(CancelBookingRoute);

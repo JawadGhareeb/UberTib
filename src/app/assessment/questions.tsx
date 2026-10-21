@@ -1,5 +1,8 @@
+import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { AssessmentQuestionsScreen } from '@/features/assessment';
 
-export default function AssessmentQuestionsRoute() {
+function AssessmentQuestionsRoute() {
   return <AssessmentQuestionsScreen />;
 }
+
+export default withAuthRequired(AssessmentQuestionsRoute);

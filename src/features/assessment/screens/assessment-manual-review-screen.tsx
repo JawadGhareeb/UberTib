@@ -4,6 +4,7 @@ import { View } from 'react-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
+import { useAuthSession } from '@/providers/auth-session-provider';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText, Button, ConfirmationDialog } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
@@ -12,13 +13,14 @@ export function AssessmentManualReviewScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
   const { patient, manualReviewDrafted, setManualReviewDrafted } = useAssessmentSession();
+  const { isAuthenticated } = useAuthSession();
   const [confirming, setConfirming] = useState(false);
   const bookDentalCheckup = () =>
     router.push({
       pathname: '/discover/providers/results',
       params: {
         serviceCode: 'dental-checkup',
-        patientId: patient === 'adam' ? 'patient-002' : 'patient-001',
+        ...(isAuthenticated ? { patientId: patient === 'adam' ? 'patient-002' : 'patient-001' } : {}),
       },
     });
 
