@@ -5,10 +5,8 @@ import { Pressable, View } from 'react-native';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { cn } from '@/shared/utils/cn';
-import { useAppDirection } from '@/providers/app-direction-provider';
-import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';
-import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
+import { AppHeader } from '@/shared/components/navigation/app-header';
 import { SectionTabs } from '@/shared/components/ui/section-tabs';
 
 type Tone = 'primary' | 'success' | 'warning' | 'info' | 'danger' | 'neutral';
@@ -36,6 +34,7 @@ const textToneClasses: Record<Tone, string> = {
  * Keep outside ScrollView: the title, back action and contextual icon stay
  * visible while the three financial flows (and the rest of care) scroll.
  */
+/** One full-width AppHeader across care, finance, claims and booking details. */
 export function CareV5Header({
   title,
   leftIcon = 'more',
@@ -59,10 +58,7 @@ export function CareV5Header({
   onLeftPress?: () => void;
 }) {
   const router = useRouter();
-  const { rowReverseClassName } = useAppDirection();
-  const { colors } = useAppTheme();
-
-  const contextualIcon: AppIconName = {
+  const actions: Record<string, AppIconName> = {
     calendar: { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' },
     more: { ios: 'ellipsis', android: 'more_horiz', web: 'more_horiz' },
     history: { ios: 'clock.arrow.circlepath', android: 'history', web: 'history' },
@@ -72,68 +68,32 @@ export function CareV5Header({
     question: { ios: 'questionmark.circle', android: 'help_outline', web: 'help_outline' },
     shield: { ios: 'exclamationmark.shield', android: 'gpp_maybe', web: 'gpp_maybe' },
     verified: { ios: 'checkmark.seal.fill', android: 'verified', web: 'verified' },
-  }[leftIcon] as AppIconName;
-
-  const badge = (
-    <View
-      className={cn('h-10 w-10 items-center justify-center rounded-full', toneClasses[leftTone])}
+  };
+  const action = onLeftPress ? (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="خيارات الصفحة"
+      className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
+      onPress={onLeftPress}
     >
       <AppIcon
-        name={contextualIcon}
+        name={actions[leftIcon]!}
         size={20}
-        tone={leftTone === 'primary' ? 'action' : leftTone === 'neutral' ? 'secondary' : leftTone}
+        tone={leftTone === 'primary' ? 'action' : leftTone}
       />
-    </View>
-  );
-
+    </Pressable>
+  ) : undefined;
   return (
-    <View className="w-full shrink-0 bg-surface-default">
-      <View
-        className={cn('mx-auto h-16 w-full max-w-[430px] items-center px-4', rowReverseClassName)}
-      >
-        {onLeftPress ? (
-          <Pressable
-            accessibilityLabel="إجراء إضافي"
-            accessibilityRole="button"
-            className="h-11 w-11 items-center justify-center"
-            onPress={onLeftPress}
-          >
-            {badge}
-          </Pressable>
-        ) : (
-          <View className="h-11 w-11 items-center justify-center">{badge}</View>
-        )}
-        <AppText
-          align="center"
-          className="min-w-0 flex-1 px-2 font-ui-bold"
-          numberOfLines={1}
-          variant="heading-3"
-        >
-          {title}
-        </AppText>
-        {right === 'bell' ? (
-          <Pressable
-            accessibilityLabel="الإشعارات"
-            accessibilityRole="button"
-            className="h-11 w-11 items-center justify-center rounded-full bg-action-subtle"
-            onPress={() => router.push('/notifications')}
-          >
-            <AppIcon
-              name={{ ios: 'bell', android: 'notifications', web: 'notifications' }}
-              size={21}
-              color={colors.action.primary}
-            />
-          </Pressable>
-        ) : (
-          <AuthBackButton
-            onPress={() => {
-              if (router.canGoBack()) router.back();
-              else router.replace('/(tabs)/care');
-            }}
-          />
-        )}
-      </View>
-    </View>
+    <AppHeader
+      title={title}
+      showBack={right !== 'bell'}
+      showNotifications={right === 'bell'}
+      endContent={action}
+      onBackPress={() => {
+        if (router.canGoBack()) router.back();
+        else router.replace('/(tabs)/care');
+      }}
+    />
   );
 }
 
@@ -247,6 +207,7 @@ export function CareFilterTabs({
         value={selected}
         onValueChange={onChange}
         stacked={iconPlacement === 'top'}
+        solidActive
         items={items.map((item) => ({
           value: item,
           label: item,

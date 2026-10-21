@@ -29,7 +29,7 @@ export function CareScreenShell({
       )}
 
       <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-[640px] px-4 pb-32 pt-5"
+        contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-32 pt-5"
         showsVerticalScrollIndicator={false}
       >
         <Animated.View
@@ -38,8 +38,14 @@ export function CareScreenShell({
             .duration(theme.motion.duration.overlay)
             .reduceMotion(ReduceMotion.System)}
         >
-          <AppText variant="heading-2">{title}</AppText>
-          {description ? <AppText className="text-content-secondary">{description}</AppText> : null}
+          <AppText align="right" variant="heading-3" className="font-ui-bold">
+            {title}
+          </AppText>
+          {description ? (
+            <AppText align="right" variant="label" className="text-content-secondary">
+              {description}
+            </AppText>
+          ) : null}
         </Animated.View>
 
         {children}

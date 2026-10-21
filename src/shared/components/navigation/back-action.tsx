@@ -9,10 +9,16 @@ interface BackActionProps {
   label?: string;
   alignToStart?: boolean;
   className?: string;
+  onPress?: () => void;
 }
 
 /** App-wide back affordance shares the exact Auth/Intro button style and RTL arrow. */
-export function BackAction({ label = 'رجوع', alignToStart = true, className }: BackActionProps) {
+export function BackAction({
+  label = 'رجوع',
+  alignToStart = true,
+  className,
+  onPress,
+}: BackActionProps) {
   const router = useRouter();
   const { startClassName } = useAppDirection();
   return (
@@ -20,6 +26,7 @@ export function BackAction({ label = 'رجوع', alignToStart = true, className 
       <AuthBackButton
         label={label}
         onPress={() => {
+          if (onPress) return onPress();
           if (router.canGoBack()) router.back();
           else router.replace('/(tabs)/home');
         }}

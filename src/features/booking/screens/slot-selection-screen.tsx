@@ -1,32 +1,23 @@
 import { Radio } from 'heroui-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, Image, ScrollView, View } from 'react-native';
+import { FlatList, ScrollView, View } from 'react-native';
 
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
-import {
-  DEMO_CLINIC_PHOTOS,
-  ProviderPortrait,
-} from '@/features/discovery/components/provider-photo-gallery';
+import { ProviderPortrait } from '@/features/discovery/components/provider-photo-gallery';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
-import { cn } from '@/shared/utils/cn';
 
-function getDayNumber(dateKey: string) {
-  return dateKey.split('-')[2]?.replace(/^0/, '') ?? '';
-}
-
-function getDayName(dateKey: string) {
-  const date = new Date(dateKey + 'T12:00:00');
+function dayName(key: string) {
+  const date = new Date(key + 'T12:00:00');
   return Number.isNaN(date.getTime())
     ? 'اليوم'
-    : date.toLocaleDateString('ar-SY', { weekday: 'long' });
+    : date.toLocaleDateString('ar-SY', { weekday: 'short' });
 }
-
-function getMonthName(dateKey: string) {
-  const date = new Date(dateKey + 'T12:00:00');
+function monthName(key: string) {
+  const date = new Date(key + 'T12:00:00');
   return Number.isNaN(date.getTime())
     ? ''
     : date.toLocaleDateString('ar-SY-u-nu-latn', { month: 'long', year: 'numeric' });
@@ -34,7 +25,7 @@ function getMonthName(dateKey: string) {
 
 export function SlotSelectionScreen() {
   const router = useRouter();
-  const { rowClassName, isRTL } = useAppDirection();
+  const { isRTL } = useAppDirection();
   const { providerId, serviceCode } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
@@ -53,240 +44,199 @@ export function SlotSelectionScreen() {
 
   if (!provider || !provider.serviceCodes.includes(serviceCode ?? '')) {
     return (
-      <Screen>
-        <StateView
-          actionLabel="العودة للأطباء"
-          onAction={() =>
-            router.replace({
-              pathname: '/discover/providers/results',
-              params: { serviceCode: serviceCode ?? 'dental-checkup' },
-            })
-          }
-          title="بيانات اختيار الموعد غير مكتملة"
-          description="اختَر طبيباً وخدمة متاحة للبدء باختيار الموعد."
-        />
+      <Screen contentClassName="px-0 py-0">
+        <BookingHeader title="اختيار الموعد" />
+        <View className="px-4 pt-6">
+          <StateView
+            actionLabel="العودة للأطباء"
+            onAction={() =>
+              router.replace({
+                pathname: '/discover/providers/results',
+                params: { serviceCode: serviceCode ?? 'dental-checkup' },
+              })
+            }
+            title="بيانات اختيار الموعد غير مكتملة"
+            description="اختَر طبيباً وخدمة متاحة للبدء باختيار الموعد."
+          />
+        </View>
       </Screen>
     );
   }
 
   return (
     <Screen contentClassName="px-0 py-0">
-      <BookingHeader leadingIcon="calendar" title="اختيار الموعد" />
-
+      <BookingHeader title="اختيار الموعد" />
       <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-[106px] pt-2"
+        contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
         showsVerticalScrollIndicator={false}
       >
-        <View
-          className={cn(
-            'mt-3 min-h-[61px] items-center gap-2 rounded-[14px] border border-action-primary/25 bg-action-subtle p-3',
-            rowClassName,
-          )}
-        >
-          <View className="h-9 w-9 items-center justify-center rounded-full bg-surface-default">
-            <AppIcon
-              name={{ ios: 'checkmark.shield', android: 'verified_user', web: 'verified_user' }}
-              size={19}
-              tone="action"
-            />
-          </View>
-          <View className="min-w-0 flex-1 items-end">
-            <AppText align="right" className="font-ui-bold text-content-primary" variant="label">
-              اختر الوقت المناسب
+        <View className="flex-row-reverse items-center justify-between gap-3">
+          <View className="min-w-0 flex-1 items-end gap-1">
+            <AppText align="right" variant="heading-3" className="font-ui-bold">
+              اختَر اليوم والوقت
             </AppText>
-            <AppText
-              align="right"
-              className="mt-0.5 text-content-secondary"
-              numberOfLines={2}
-              variant="caption"
-            >
-              {serviceName} · {provider.name} · {provider.branch}
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              الخطوة 1/3 · بعدها بتختار المريض وتراجع الحجز
             </AppText>
           </View>
-          <View className="rounded-full bg-surface-default px-2 py-1">
-            <AppText className="text-content-link" variant="badge">
-              الخطوة 1 من 3
-            </AppText>
-          </View>
-        </View>
-
-        <View
-          className={cn(
-            'mt-2 min-h-[66px] items-center gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-2',
-            rowClassName,
-          )}
-        >
-          <Image
-            accessibilityLabel="صورة توضيحية لغرفة عيادة أسنان"
-            className="h-[47px] w-[53px] rounded-[10px] bg-surface-subtle"
-            resizeMode="cover"
-            source={{ uri: DEMO_CLINIC_PHOTOS[1] }}
-          />
-          <ProviderPortrait size={48} uri={provider.imageUrl} />
-          <View className="min-w-0 flex-1 items-end">
-            <AppText
-              align="right"
-              className="font-ui-bold text-content-primary"
-              numberOfLines={1}
-              variant="label"
-            >
-              {provider.name} · {provider.area}
-            </AppText>
-            <AppText
-              align="right"
-              className="text-content-secondary"
-              numberOfLines={2}
-              variant="caption"
-            >
-              {provider.branch} · {provider.specialty}
-            </AppText>
-            <AppText align="right" className="text-content-placeholder" variant="badge">
-              صور توضيحية
-            </AppText>
-          </View>
-          <AppIcon
-            name={{ ios: 'person', android: 'person_outline', web: 'person_outline' }}
-            size={17}
-            tone="action"
-          />
-        </View>
-
-        <View className={cn('mt-3 items-center justify-between', rowClassName)}>
-          <View className={cn('items-center gap-2', rowClassName)}>
+          <View className="h-11 w-11 items-center justify-center rounded-[12px] bg-action-subtle">
             <AppIcon
               name={{ ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }}
-              size={17}
               tone="action"
+              size={23}
             />
-            <AppText className="font-ui-bold text-content-primary" variant="label">
-              اختر اليوم
-            </AppText>
           </View>
-          <View className="rounded-full bg-tone-warning-fill px-2.5 py-1">
-            <AppText className="text-tone-warning-text" variant="badge">
-              {dateKey ? getMonthName(dateKey) : 'المواعيد'}
+        </View>
+        <View className="gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3">
+          <View className="flex-row-reverse items-center gap-3">
+            <ProviderPortrait size={45} uri={provider.imageUrl} />
+            <View className="min-w-0 flex-1 items-end gap-1">
+              <AppText align="right" variant="label" className="font-ui-semibold">
+                {provider.name}
+              </AppText>
+              <AppText align="right" variant="caption" className="text-content-secondary">
+                {provider.branch} · {provider.area}
+              </AppText>
+            </View>
+          </View>
+          <View className="border-t border-border-subtle pt-2">
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              {serviceName}
             </AppText>
           </View>
         </View>
-
-        {provider.availability.length ? (
-          <FlatList
-            className="mt-2"
-            data={provider.availability}
-            horizontal
-            inverted={isRTL}
-            keyExtractor={(day) => day.dateKey}
-            ItemSeparatorComponent={() => <View className="w-2" />}
-            showsHorizontalScrollIndicator={false}
-            renderItem={({ item: day }) => {
-              const selected = day.dateKey === dateKey;
-              return (
-                <Radio
-                  isSelected={selected}
-                  onSelectedChange={() => {
-                    setDateKey(day.dateKey);
-                    setSlot('');
-                  }}
-                  accessibilityLabel={day.dateLabel}
-                  className={cn(
-                    'h-[79px] min-w-[79px] items-center justify-center gap-0.5 rounded-[12px] border px-3',
-                    selected
-                      ? 'border-action-primary bg-action-subtle'
-                      : 'border-border-subtle bg-surface-default',
-                  )}
-                >
-                  <Radio.Indicator />
-                  <AppText align="center" className="text-content-secondary" variant="caption">
-                    {getDayName(day.dateKey)}
-                  </AppText>
-                  <AppText
-                    align="center"
-                    direction="ltr"
-                    className={cn(
-                      'font-ui-bold',
-                      selected ? 'text-content-link' : 'text-content-primary',
-                    )}
-                    variant="heading-4"
+        <View className="gap-2">
+          <View className="flex-row-reverse items-center justify-between">
+            <AppText align="right" variant="heading-4" className="font-ui-bold">
+              1. اختر اليوم
+            </AppText>
+            <AppText variant="caption" className="text-content-link">
+              {dateKey ? monthName(dateKey) : 'الأيام المتاحة'}
+            </AppText>
+          </View>
+          {provider.availability.length ? (
+            <FlatList
+              horizontal
+              inverted={isRTL}
+              data={provider.availability}
+              keyExtractor={(item) => item.dateKey}
+              ItemSeparatorComponent={() => <View className="w-2" />}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 2 }}
+              renderItem={({ item }) => {
+                const selected = item.dateKey === dateKey;
+                return (
+                  <Radio
+                    isSelected={selected}
+                    onSelectedChange={() => {
+                      setDateKey(item.dateKey);
+                      setSlot('');
+                    }}
+                    accessibilityLabel={item.dateLabel}
+                    className={`min-h-[84px] min-w-[78px] items-center justify-center gap-1 rounded-[12px] border px-3 py-2 ${selected ? 'border-action-primary bg-action-primary' : 'border-border-subtle bg-surface-default'}`}
                   >
-                    {getDayNumber(day.dateKey)}
-                  </AppText>
-                </Radio>
-              );
-            }}
-          />
-        ) : (
-          <View className="mt-2 rounded-[12px] bg-surface-subtle p-4">
-            <AppText align="center" className="text-content-secondary" variant="caption">
-              ما في مواعيد معروضة لهذا الطبيب حالياً.
+                    <AppText
+                      align="center"
+                      variant="caption"
+                      className={selected ? 'text-content-on-action' : 'text-content-secondary'}
+                    >
+                      {dayName(item.dateKey)}
+                    </AppText>
+                    <AppText
+                      direction="ltr"
+                      align="center"
+                      variant="heading-4"
+                      className={selected ? 'font-ui-bold text-content-on-action' : 'font-ui-bold'}
+                    >
+                      {item.dateKey.split('-')[2]?.replace(/^0/, '')}
+                    </AppText>
+                  </Radio>
+                );
+              }}
+            />
+          ) : (
+            <View className="rounded-[12px] bg-surface-subtle p-4">
+              <AppText align="center" variant="label" className="text-content-secondary">
+                ما في أيام متاحة ضمن البيانات الحالية للطبيب.
+              </AppText>
+            </View>
+          )}
+        </View>
+        <View className="gap-2 rounded-[15px] border border-border-subtle bg-surface-default p-3">
+          <View className="flex-row-reverse items-center justify-between gap-2">
+            <AppText align="right" variant="heading-4" className="font-ui-bold">
+              2. اختر الساعة
+            </AppText>
+            <AppText variant="caption" className="text-content-secondary">
+              {selectedDay ? selectedDay.dateLabel : 'اختر يوماً أولاً'}
             </AppText>
           </View>
-        )}
-
-        <AppText align="right" className="mt-3 font-ui-bold text-content-primary" variant="label">
-          اختر الوقت
-        </AppText>
-
-        <View className={cn('mt-2 flex-wrap justify-between gap-y-2', rowClassName)}>
-          {selectedDay?.slots.map((time) => {
-            const selected = slot === time;
-            return (
-              <Radio
-                key={time}
-                isSelected={selected}
-                onSelectedChange={() => setSlot(time)}
-                accessibilityLabel={'الساعة ' + time}
-                className={cn(
-                  'min-h-[45px] w-[48.7%] flex-row-reverse items-center justify-center gap-2 rounded-[11px] border',
-                  selected
-                    ? 'border-action-primary bg-action-subtle'
-                    : 'border-border-subtle bg-surface-default',
-                )}
-              >
-                <Radio.Indicator />
-                <AppText
-                  direction="ltr"
-                  align="center"
-                  className={
-                    selected
-                      ? 'font-ui-bold text-content-link'
-                      : 'font-ui-semibold text-content-primary'
-                  }
-                  variant="label"
-                >
-                  {time}
-                </AppText>
-              </Radio>
-            );
-          })}
-        </View>
-        {selectedDay && selectedDay.slots.length === 0 ? (
-          <AppText align="right" className="mt-2 text-content-secondary" variant="caption">
-            لا توجد أوقات لهذا اليوم، اختَر يوماً آخر.
-          </AppText>
-        ) : null}
-
-        <View
-          className={cn(
-            'mt-3 items-center gap-2 rounded-[11px] bg-tone-info-fill px-3 py-2',
-            rowClassName,
+          {selectedDay?.slots.length ? (
+            <View className="flex-row-reverse flex-wrap justify-between gap-y-2">
+              {selectedDay.slots.map((time) => {
+                const selected = slot === time;
+                return (
+                  <Radio
+                    key={time}
+                    isSelected={selected}
+                    onSelectedChange={() => setSlot(time)}
+                    accessibilityLabel={'الساعة ' + time}
+                    className={`min-h-[47px] w-[48.5%] items-center justify-center rounded-[11px] border px-3 ${selected ? 'border-action-primary bg-action-primary' : 'border-border-subtle bg-surface-subtle'}`}
+                  >
+                    <AppText
+                      direction="ltr"
+                      align="center"
+                      variant="label"
+                      className={
+                        selected
+                          ? 'font-ui-bold text-content-on-action'
+                          : 'font-ui-semibold text-content-primary'
+                      }
+                    >
+                      {time}
+                    </AppText>
+                  </Radio>
+                );
+              })}
+            </View>
+          ) : (
+            <View className="rounded-[11px] bg-surface-subtle p-3">
+              <AppText align="right" variant="caption" className="text-content-secondary">
+                {selectedDay
+                  ? 'ما في ساعات متاحة بهاليوم، جرّب يوم تاني.'
+                  : 'اختَر اليوم حتى تظهر الساعات المتاحة.'}
+              </AppText>
+            </View>
           )}
-        >
+        </View>
+        {selectedDay && slot ? (
+          <View className="flex-row-reverse items-center gap-2 rounded-[12px] bg-action-subtle p-3">
+            <AppIcon
+              name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
+              tone="action"
+              size={20}
+            />
+            <AppText align="right" variant="label" className="min-w-0 flex-1 font-ui-semibold">
+              اختيارك: {selectedDay.dateLabel} · {slot}
+            </AppText>
+          </View>
+        ) : null}
+        <View className="flex-row-reverse items-start gap-2 rounded-[11px] bg-tone-info-fill p-3">
           <AppIcon
-            name={{ ios: 'arrow.clockwise', android: 'refresh', web: 'refresh' }}
-            size={16}
+            name={{ ios: 'info.circle', android: 'info_outline', web: 'info_outline' }}
             tone="info"
+            size={18}
           />
-          <AppText align="right" className="min-w-0 flex-1 text-tone-info-text" variant="caption">
-            المواعيد المعروضة بيانات تجريبية وليست توفراً مباشراً. إذا تغيّر الموعد عند الإرسال،
-            سنوضح السبب ونطلب اختياراً جديداً.
+          <AppText align="right" variant="caption" className="min-w-0 flex-1 text-tone-info-text">
+            المواعيد المعروضة تجريبية وليست توفراً لحظياً. اختيار الساعة لا يؤكد الحجز؛ العيادة تؤكد
+            الطلب لاحقاً.
           </AppText>
         </View>
       </ScrollView>
-
-      <View className="absolute bottom-0 left-0 right-0 border-t border-border-subtle bg-surface-canvas px-4 pb-3 pt-2">
+      <View className="border-t border-border-subtle bg-surface-default px-4 pb-3 pt-3">
         <View className="mx-auto w-full max-w-[430px]">
           <Button
-            className="h-[52px] rounded-[12px]"
+            className="min-h-[52px] rounded-[12px]"
             disabled={!slot || !selectedDay}
             endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
             label="متابعة لتحديد المريض"

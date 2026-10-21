@@ -1,12 +1,11 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
-import { Checkbox } from 'heroui-native';
+import { Checkbox, ControlField } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, TextField } from '@/shared/components/ui';
-import { cn } from '@/shared/utils/cn';
 
 const answers = ['مع البارد', 'مع الساخن', 'عند المضغ', 'بدون سبب واضح', 'لا أعرف'] as const;
 
@@ -73,19 +72,16 @@ export function AssessmentQuestionsScreen() {
           {answers.map((answer) => {
             const selected = selectedAnswers.includes(answer);
             return (
-              <Checkbox
+              <ControlField
                 key={answer}
                 isSelected={selected}
                 onSelectedChange={() => toggleAnswer(answer)}
                 accessibilityLabel={answer}
-                className={cn(
-                  'min-h-[52px] w-full flex-row-reverse items-center gap-3 rounded-[12px] border px-3 py-2.5',
-                  selected
-                    ? 'border-action-primary bg-action-subtle'
-                    : 'border-border-subtle bg-surface-default',
-                )}
+                className="min-h-[52px] w-full flex-row-reverse items-center gap-3 rounded-[12px] border border-border-subtle bg-surface-default px-3 py-2.5"
               >
-                <Checkbox.Indicator />
+                <ControlField.Indicator className="shrink-0">
+                  <Checkbox className="h-6 w-6" />
+                </ControlField.Indicator>
                 <AppText
                   align="right"
                   variant="label"
@@ -97,7 +93,7 @@ export function AssessmentQuestionsScreen() {
                 >
                   {answer}
                 </AppText>
-              </Checkbox>
+              </ControlField>
             );
           })}
         </View>

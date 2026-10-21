@@ -8,16 +8,15 @@ import {
 
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
-import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
+import { AppHeader } from '@/shared/components/navigation/app-header';
 import { cn } from '@/shared/utils/cn';
 
+/** Delegates to the same edge-to-edge header used everywhere in the patient app. */
 export function BookingHeader({
   title,
   subtitle,
   showBack = true,
   onBackPress,
-  leadingIcon,
-  leadingTone = 'action',
 }: {
   title: string;
   subtitle?: string;
@@ -27,69 +26,21 @@ export function BookingHeader({
   leadingTone?: 'action' | 'warning' | 'success';
 }) {
   const router = useRouter();
-  const { rowClassName } = useAppDirection();
-
+  const goBack = () => {
+    if (onBackPress) return onBackPress();
+    if (router.canGoBack()) router.back();
+    else router.replace('/booking');
+  };
   return (
-    <View
-      className={cn(
-        'mx-auto h-16 w-full max-w-[430px] items-center justify-between px-4',
-        rowClassName,
-      )}
-    >
-      {showBack ? (
-        <AuthBackButton
-          onPress={() => {
-            if (onBackPress) return onBackPress();
-            if (router.canGoBack()) return router.back();
-            return router.replace('/booking');
-          }}
-        />
-      ) : (
-        <View className="h-11 w-11" />
-      )}
-
-      <View className="min-w-0 flex-1 items-center px-2">
-        <AppText align="center" className="font-ui-bold text-type-heading-4" numberOfLines={1}>
-          {title}
-        </AppText>
-        {subtitle ? (
-          <AppText align="center" className="text-content-link" variant="caption">
+    <View className="w-full">
+      <AppHeader title={title} showBack={showBack} onBackPress={goBack} />
+      {subtitle ? (
+        <View className="w-full bg-surface-default px-4 pb-2">
+          <AppText align="center" variant="caption" className="text-content-secondary">
             {subtitle}
           </AppText>
-        ) : null}
-      </View>
-      {leadingIcon ? (
-        <View
-          className={cn(
-            'h-10 w-10 items-center justify-center rounded-full',
-            leadingTone === 'warning'
-              ? 'bg-tone-warning-fill'
-              : leadingTone === 'success'
-                ? 'bg-tone-success-fill'
-                : 'bg-action-subtle',
-          )}
-        >
-          <AppIcon
-            name={
-              leadingIcon === 'reason'
-                ? { ios: 'list.clipboard', android: 'edit_document', web: 'edit_document' }
-                : leadingIcon === 'patient'
-                  ? { ios: 'person.2', android: 'group', web: 'group' }
-                  : leadingIcon === 'calendar'
-                    ? { ios: 'calendar', android: 'calendar_month', web: 'calendar_month' }
-                    : leadingIcon === 'review'
-                      ? { ios: 'checklist', android: 'fact_check', web: 'fact_check' }
-                      : leadingIcon === 'confirmed'
-                        ? { ios: 'checkmark.seal', android: 'verified', web: 'verified' }
-                        : { ios: 'clock', android: 'schedule', web: 'schedule' }
-            }
-            size={19}
-            tone={leadingTone}
-          />
         </View>
-      ) : (
-        <View className="h-10 w-10" />
-      )}
+      ) : null}
     </View>
   );
 }

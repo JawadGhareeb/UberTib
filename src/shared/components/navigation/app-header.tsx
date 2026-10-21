@@ -20,6 +20,9 @@ interface AppHeaderProps {
   showNotifications?: boolean;
   /** Contextual action for detail headers only; main-tab positions are fixed. */
   startContent?: ReactNode;
+  /** Alternative left logo/action slot in detail header only. */
+  endContent?: ReactNode;
+  onBackPress?: () => void;
   className?: string;
   variant?: 'detail' | 'primary';
 }
@@ -40,6 +43,8 @@ export function AppHeader({
   showTheme = false,
   showNotifications,
   startContent,
+  endContent,
+  onBackPress,
   className,
   variant = 'detail',
 }: AppHeaderProps) {
@@ -47,7 +52,7 @@ export function AppHeader({
   const primary = variant === 'primary';
   const notificationsVisible = showNotifications ?? primary;
   const rightControl = showBack ? (
-    <BackAction alignToStart={false} label={backLabel} />
+    <BackAction alignToStart={false} label={backLabel} onPress={onBackPress} />
   ) : notificationsVisible ? (
     <HeaderNotificationButton />
   ) : (
@@ -86,7 +91,13 @@ export function AppHeader({
         </View>
 
         <View className="h-16 items-start justify-center" style={{ width: 112 }}>
-          {showTheme ? <ThemeToggle alignToStart={false} /> : <BrandLogo size={30} />}
+          {!primary && endContent ? (
+            endContent
+          ) : showTheme ? (
+            <ThemeToggle alignToStart={false} />
+          ) : (
+            <BrandLogo size={30} />
+          )}
         </View>
       </Animated.View>
     </View>

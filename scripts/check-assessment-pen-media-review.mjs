@@ -9,6 +9,7 @@ const assert = (condition, message) => {
 const mediaRoute = read('src/app/assessment/media.tsx');
 const reviewRoute = read('src/app/assessment/review.tsx');
 const media = read('src/features/assessment/screens/assessment-media-screen.tsx');
+const imagePreview = read('src/features/assessment/components/assessment-image-preview.tsx');
 const review = read('src/features/assessment/screens/assessment-review-screen.tsx');
 const session = read('src/features/assessment/state/assessment-session-provider.tsx');
 const questions = read('src/features/assessment/screens/assessment-questions-screen.tsx');
@@ -39,6 +40,32 @@ assert(
     media.includes('mediaAttachments.map') &&
     media.includes("router.push('/assessment/review')"),
   'Selected files must be previewable/removable and continue to review',
+);
+assert(
+  media.includes('imageAttachments = mediaAttachments.filter(isImage)') &&
+    media.includes('<AssessmentImagePreview') &&
+    media.includes('activeUri={previewUri}') &&
+    media.includes("name={{ ios: 'eye', android: 'visibility', web: 'visibility' }}") &&
+    media.includes('onPress={() => setPreviewUri(file.uri)}') &&
+    media.includes('removeMediaAttachment(file.uri)'),
+  'Selected photo row must include an eye preview next to the existing trash action',
+);
+assert(
+  imagePreview.includes('<Modal') &&
+    imagePreview.includes('resizeMode="contain"') &&
+    imagePreview.includes('onRequestClose={closePreview}') &&
+    imagePreview.includes('move(-1)') &&
+    imagePreview.includes('move(1)') &&
+    imagePreview.includes('images.findIndex') &&
+    imagePreview.includes('images.length'),
+  'Photo preview must show the local image at large size and navigate only the selected images',
+);
+assert(
+  questions.includes('<ControlField') &&
+    questions.includes('<ControlField.Indicator') &&
+    questions.includes('<Checkbox className="h-6 w-6" />') &&
+    !questions.includes('<Checkbox\n                key={answer}'),
+  'Symptom choices must render a small square HeroUI checkbox in a separate pressable field, not a full-card Checkbox',
 );
 assert(
   session.includes('mediaAttachments: AssessmentMediaAttachment[]') &&

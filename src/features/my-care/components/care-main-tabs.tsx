@@ -36,6 +36,7 @@ export function CareMainTabs({
           items={items.map((item) => ({ value: item.key, label: item.label, icon: item.icon }))}
           value={selected}
           onValueChange={onChange}
+          solidActive
         />
       </View>
       <Pressable

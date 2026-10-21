@@ -221,29 +221,6 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
             </View>
           </View>
 
-          <View className="mt-3 gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3">
-            <AppText align="right" variant="heading-4" className="font-ui-bold">
-              تفاصيل المرحلة الحالية
-            </AppText>
-            <AppText align="right" variant="label" className="font-ui-semibold">
-              {getCareStageSummary(careCase).current?.title ??
-                (careCase.progress >= 100 ? 'العلاج مكتمل' : 'تابع تفاصيل العلاج')}
-            </AppText>
-            {careCase.progress < 100 && careCase.nextAction !== 'لا يوجد إجراء مطلوب' ? (
-              <View className="gap-1 border-t border-border-subtle pt-2">
-                <AppText align="right" variant="caption" className="text-content-secondary">
-                  الإجراء التالي
-                </AppText>
-                <AppText align="right" variant="label">
-                  {careCase.nextAction}
-                </AppText>
-                <AppText align="right" variant="caption" className="text-content-secondary">
-                  {careCase.nextDateLabel}
-                </AppText>
-              </View>
-            ) : null}
-          </View>
-
           {careCase.progress >= 100 && reviewsAvailable ? (
             <View className="mt-2 rounded-[13px] border border-tone-success-border bg-tone-success-fill p-[10px]">
               <View className={cn('items-center gap-2', rowClassName)}>
@@ -293,98 +270,121 @@ export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
             selected={filter}
             onChange={(item) => setFilter(item as Filter)}
           />
-
-          {filter === 'ماليات' && hasDemoFinancialRecord ? (
-            <View className="mt-2 gap-2">
-              <Button
-                className="h-[44px] rounded-[12px]"
-                label="التحقق من حالة الدفعة"
-                onPress={() =>
-                  router.push({
-                    pathname: '/care/[caseId]/financial/timeline',
-                    params: { caseId },
-                  })
-                }
-                size="sm"
-                variant="outline"
-              />
-              <Button
-                className="h-[44px] rounded-[12px]"
-                label="متابعة طلب الاسترداد"
-                onPress={openRefundFollowUp}
-                size="sm"
-                variant="secondary"
-              />
+          <View className="mt-2 rounded-[12px] bg-surface-subtle px-3 py-2.5">
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              {filter === 'الكل'
+                ? 'كل تحديثات الحالة العلاجية والمالية والشكاوى محفوظة هون.'
+                : filter === 'علاج'
+                  ? 'المراحل والجلسات والمتابعات المرتبطة بهذه الخطة.'
+                  : filter === 'ماليات'
+                    ? 'الأحداث المالية المسجلة، بدون افتراض تأكيد الدفعات الخارجية.'
+                    : 'طلباتك المرتبطة بهذه الحالة وحالة مراجعة كل طلب.'}
+            </AppText>
+          </View>
+          {filter === 'الكل' || filter === 'علاج' ? (
+            <View className="mt-2 gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3">
+              <View className="flex-row-reverse items-center justify-between gap-2">
+                <AppText align="right" variant="label" className="font-ui-bold">
+                  المرحلة الحالية
+                </AppText>
+                <CareV5Badge
+                  label={`${getCareStageSummary(careCase).finished} / ${getCareStageSummary(careCase).total}`}
+                  tone="info"
+                />
+              </View>
+              <AppText align="right" variant="label" className="mt-2 font-ui-semibold">
+                {getCareStageSummary(careCase).current?.title ??
+                  (careCase.progress >= 100 ? 'العلاج مكتمل' : 'بانتظار تحديث المرحلة')}
+              </AppText>
+              {careCase.progress < 100 && careCase.nextAction !== 'لا يوجد إجراء مطلوب' ? (
+                <View className="mt-2 gap-1 rounded-[10px] bg-action-subtle p-2.5">
+                  <AppText align="right" variant="caption" className="text-content-secondary">
+                    الإجراء التالي
+                  </AppText>
+                  <AppText align="right" variant="label" className="font-ui-semibold">
+                    {careCase.nextAction}
+                  </AppText>
+                  <AppText align="right" variant="caption" className="text-content-secondary">
+                    {careCase.nextDateLabel}
+                  </AppText>
+                </View>
+              ) : null}
+              {filter === 'علاج' ? (
+                <Button
+                  className="mt-3"
+                  label="عرض المراحل والخطة"
+                  size="sm"
+                  variant="outline"
+                  onPress={() =>
+                    router.push({ pathname: '/care/[caseId]/plan', params: { caseId } })
+                  }
+                />
+              ) : null}
             </View>
           ) : null}
-
+          {filter === 'ماليات' ? (
+            <View className="mt-2 gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3">
+              <AppText align="right" variant="label" className="font-ui-bold">
+                الملخص المالي
+              </AppText>
+              <View className="flex-row-reverse items-center justify-between gap-2 rounded-[10px] bg-action-subtle px-3 py-2">
+                <AppText align="right" variant="caption" className="text-content-secondary">
+                  قيمة الخطة المقبولة
+                </AppText>
+                <AppText direction="ltr" variant="label" className="font-ui-bold text-content-link">
+                  {careCase.acceptedTotalLabel}
+                </AppText>
+              </View>
+              <AppText align="right" variant="caption" className="text-content-secondary">
+                {hasDemoFinancialRecord
+                  ? 'راجع حالة كل دفعة في السجل المالي؛ المبلغ غير المؤكد ليس مبلغاً مدفوعاً.'
+                  : 'ما في سجل دفعات مفصّل موثّق ضمن بيانات هذه الحالة التجريبية.'}
+              </AppText>
+              {hasDemoFinancialRecord ? (
+                <Button
+                  label="عرض السجل المالي"
+                  size="sm"
+                  variant="outline"
+                  onPress={openFinance}
+                />
+              ) : null}
+            </View>
+          ) : null}
           {filter === 'مشكلات' ? (
-            <View className="mt-2 gap-1.5">
+            <View className="mt-2 rounded-[14px] border border-border-subtle bg-surface-default p-3">
+              <View className="flex-row-reverse items-center justify-between gap-2">
+                <AppText align="right" variant="label" className="font-ui-bold">
+                  الشكاوى والطلبات
+                </AppText>
+                <CareV5Badge
+                  label={`${events.filter((item) => item.category === 'مشكلات').length} طلب`}
+                  tone="info"
+                />
+              </View>
+              <AppText align="right" variant="caption" className="mt-1 text-content-secondary">
+                افتح أي طلب من السجل لمعرفة حالته. إرسال شكوى لا يعني صدور قرار أو استحقاق استرداد.
+              </AppText>
               <Button
-                className="h-[46px] rounded-[12px]"
+                className="mt-3"
                 disabled={claimsReadState !== 'success'}
-                endIcon={{ ios: 'plus.bubble', android: 'add_comment', web: 'add_comment' }}
-                label="إنشاء شكوى"
-                onPress={() =>
-                  router.push({
-                    pathname: '/care/[caseId]/claims',
-                    params: { caseId },
-                  })
-                }
+                label="الإبلاغ عن مشكلة"
                 size="sm"
+                onPress={() =>
+                  router.push({ pathname: '/care/[caseId]/claims', params: { caseId } })
+                }
               />
-              {hasDemoFinancialRecord ? (
+              {submittedRefund ? (
                 <Button
-                  className="h-[44px] rounded-[12px]"
-                  disabled={claimsReadState !== 'success'}
-                  endIcon={{
-                    ios: 'exclamationmark.bubble',
-                    android: 'report_problem',
-                    web: 'report_problem',
-                  }}
-                  label="فتح نزاع على دفعة"
-                  onPress={() =>
-                    router.push({
-                      pathname: '/care/[caseId]/claims',
-                      params: { caseId, issue: 'payment' },
-                    })
-                  }
-                  size="sm"
-                  variant="outline"
-                />
-              ) : null}
-              {hasDemoFinancialRecord ? (
-                <Button
-                  className="h-[44px] rounded-[12px]"
-                  disabled={claimsReadState !== 'success'}
-                  endIcon={{
-                    ios: 'arrow.uturn.backward.circle',
-                    android: 'undo',
-                    web: 'undo',
-                  }}
-                  label="طلب استرداد"
-                  onPress={() =>
-                    router.push({
-                      pathname: '/care/[caseId]/claims',
-                      params: { caseId, issue: 'refund' },
-                    })
-                  }
-                  size="sm"
-                  variant="outline"
-                />
-              ) : null}
-              {hasDemoFinancialRecord ? (
-                <Button
-                  className="h-[44px] rounded-[12px]"
+                  className="mt-2"
                   label="متابعة طلب الاسترداد"
                   onPress={openRefundFollowUp}
                   size="sm"
-                  variant="secondary"
+                  variant="outline"
                 />
               ) : null}
-              {claimsReadState !== 'success' ? (
-                <AppText align="right" className="text-content-secondary" variant="caption">
-                  إرسال شكوى أو طلب جديد غير متاح حالياً. الطلبات السابقة بتظل ظاهرة ضمن الحالة.
+              {hasDemoFinancialRecord ? (
+                <AppText align="right" variant="caption" className="mt-2 text-content-secondary">
+                  للاعتراض على دفعة أو مراجعة استرداد، افتح السجل المالي واختر العملية المرتبطة.
                 </AppText>
               ) : null}
             </View>

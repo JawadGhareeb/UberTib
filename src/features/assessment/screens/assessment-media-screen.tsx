@@ -6,6 +6,7 @@ import { Image, Pressable, View } from 'react-native';
 
 import { IntroArtwork } from '@/features/app-entry/components/intro-artwork';
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
+import { AssessmentImagePreview } from '@/features/assessment/components/assessment-image-preview';
 import {
   MediaSourceDialog,
   type MediaSource,
@@ -106,6 +107,7 @@ export function AssessmentMediaScreen() {
   const [pickerError, setPickerError] = useState('');
   const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
   const [sourceLaunching, setSourceLaunching] = useState(false);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
   const pickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(
@@ -237,7 +239,8 @@ export function AssessmentMediaScreen() {
     }, 280);
   };
 
-  const firstImage = mediaAttachments.find(isImage);
+  const imageAttachments = mediaAttachments.filter(isImage);
+  const firstImage = imageAttachments[0];
 
   return (
     <AssessmentScaffold
@@ -379,6 +382,20 @@ export function AssessmentMediaScreen() {
                   على هذا الجهاز فقط{file.size ? ' · ' + readableSize(file.size) : ''}
                 </AppText>
               </View>
+              {isImage(file) ? (
+                <Pressable
+                  accessibilityLabel={'عرض صورة ' + file.fileName}
+                  accessibilityRole="button"
+                  className="h-10 w-10 items-center justify-center rounded-[9px] bg-action-subtle"
+                  onPress={() => setPreviewUri(file.uri)}
+                >
+                  <AppIcon
+                    name={{ ios: 'eye', android: 'visibility', web: 'visibility' }}
+                    size={18}
+                    tone="action"
+                  />
+                </Pressable>
+              ) : null}
               <Pressable
                 accessibilityLabel={'إزالة ' + file.fileName}
                 accessibilityRole="button"
@@ -472,6 +489,12 @@ export function AssessmentMediaScreen() {
           لا نطلب منك إجراء أشعة جديدة بنفسك.
         </AppText>
       </View>
+      <AssessmentImagePreview
+        images={imageAttachments}
+        activeUri={previewUri}
+        onChange={setPreviewUri}
+        onClose={() => setPreviewUri(null)}
+      />
       <MediaSourceDialog
         visible={sourceDialogOpen}
         onClose={() => setSourceDialogOpen(false)}
