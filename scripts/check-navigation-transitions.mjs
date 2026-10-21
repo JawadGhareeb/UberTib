@@ -39,7 +39,11 @@ for (const path of [
 
 const tabs = read('src/app/(tabs)/_layout.tsx');
 const screen = read('src/shared/components/ui/screen.tsx');
-assert.ok(screen.includes('<View className={resolvedContentClassName}') && !screen.includes('entering={FadeIn.'), 'Shared Screen must not apply a second page-enter fade on top of Stack animations');
+assert.ok(
+  screen.includes('<View className={resolvedContentClassName}') &&
+    !screen.includes('entering={FadeIn.'),
+  'Shared Screen must not apply a second page-enter fade on top of Stack animations',
+);
 assert.ok(
   tabs.includes('...tabTransitionOptions(reduceMotion)'),
   'Tabs should animate scene changes',
