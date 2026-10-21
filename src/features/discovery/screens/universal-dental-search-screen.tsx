@@ -36,9 +36,10 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
     setCatalogQuery,
     catalogComparison: comparison,
     toggleCatalogComparisonProvider,
+    setCatalogComparison,
   } = useDiscoverySession();
 
-  const toggleSearchComparison = (providerId: string, serviceCode: string) => {
+  const toggleSearchComparison = (providerId: string, serviceCode: string | null) => {
     toggleCatalogComparisonProvider(
       providerId,
       serviceCode,
@@ -48,6 +49,12 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
 
   const [filters, setFilters] = useState<DiscoveryFilterSelection>(initialDiscoverFilters);
   const [filterOpen, setFilterOpen] = useState(false);
+  const applySearchFilters = (next: DiscoveryFilterSelection) => {
+    if ((next.serviceCode ?? null) !== (filters.serviceCode ?? null)) {
+      setCatalogComparison(null);
+    }
+    setFilters(next);
+  };
   const activeFilters = Boolean(
     selectedDiscoveryAreas(filters).length > 0 ||
     filters.groupCode ||
@@ -74,7 +81,7 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
             كيف فينا نساعدك؟
           </AppText>
           <AppText align="right" variant="label" className="text-content-secondary">
-            ابحث عن طبيب أو خدمة، أو استخدم الفلاتر للاختيار.
+            ابحث باسم الطبيب، أو استخدم الفلاتر لتحديد الخدمة والمنطقة.
           </AppText>
         </View>
 
@@ -84,8 +91,8 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
               value={catalogQuery}
               onChangeText={setCatalogQuery}
               onSubmitEditing={() => Keyboard.dismiss()}
-              accessibilityLabel="ابحث عن طبيب أو خدمة"
-              placeholder="اسم طبيب، خدمة، أو منطقة..."
+              accessibilityLabel="البحث باسم الطبيب"
+              placeholder="ابحث باسم الطبيب..."
             />
           </View>
           {catalogQuery.length ? (
@@ -128,7 +135,7 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
           </Pressable>
         </View>
 
-        <DiscoverAppliedFilterChips selection={filters} onChange={setFilters} />
+        <DiscoverAppliedFilterChips selection={filters} onChange={applySearchFilters} />
 
         <AssessmentEntryCard />
         <DiscoverSearchResults
@@ -149,7 +156,7 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
             router.push({
               pathname: '/discover/providers/compare',
               params: {
-                serviceCode: comparison.serviceCode,
+                ...(comparison.serviceCode ? { serviceCode: comparison.serviceCode } : {}),
                 providerIds: comparison.providerIds.join(','),
                 fromSearch: asTab ? 'tab' : 'search',
               },
@@ -162,7 +169,7 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
         open={filterOpen}
         onOpenChange={setFilterOpen}
         selection={filters}
-        onApply={setFilters}
+        onApply={applySearchFilters}
         serviceSelectionEnabled
       />
       {asTab ? null : <DiscoveryBottomBar activeTab="اكتشف" />}

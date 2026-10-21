@@ -177,7 +177,7 @@ export function ProviderComparisonDoctorRows({
   width,
 }: {
   doctor: ComparisonDoctor;
-  serviceCode: string;
+  serviceCode: string | null;
   width: number;
 }) {
   const facts = getComparisonFacts(doctor, serviceCode);

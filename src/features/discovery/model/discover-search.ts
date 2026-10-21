@@ -1,11 +1,10 @@
-import { mockAreas, mockProviders } from '@/features/discovery/mocks/providers.mock';
+import { mockProviders } from '@/features/discovery/mocks/providers.mock';
 import {
   matchesDiscoveryFilters,
   matchesSelectedCatalogService,
   selectedDiscoveryAreas,
   type DiscoveryFilterSelection,
 } from './discover-filters';
-import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 
 /** Normalize common Arabic spelling variations without altering displayed names. */
 export function normalizeDiscoverQuery(input: string): string {
@@ -30,64 +29,23 @@ export function matchesDiscoverQuery(query: string, ...values: (string | undefin
 }
 
 /**
- * Search from one source of truth across available service families and doctors.
- * A selected domain narrows both service choices and the associated providers.
+ * Text search matches a doctor's name only.
+ * Services, specialties, areas and prices are controlled by DiscoverFilterSheet,
+ * never by the free-text query.
  */
 export function selectDiscoverMatches(query: string, filters: DiscoveryFilterSelection) {
   const term = query.trim();
-  const chosenGroup = filters.groupCode
-    ? penServiceGroups.find((group) => group.code === filters.groupCode)
-    : undefined;
-  // Area-only filter should show matching doctors, not all 26 unrelated service families.
-  const matchingFamilies = (
-    term || filters.groupCode || filters.serviceCode ? penServiceGroups : []
-  )
-    .filter((group) => !filters.groupCode || group.code === filters.groupCode)
-    .flatMap((group) => group.families)
-    .filter(
-      (family) =>
-        (!filters.serviceCode || family.id === filters.serviceCode) &&
-        matchesDiscoverQuery(
-          term,
-          family.title,
-          family.description,
-          penServiceGroups.find((group) => group.code === family.groupCode)?.title,
-        ),
-    );
-
-  const matchingProviders = mockProviders.filter((provider) => {
-    if (!matchesDiscoveryFilters(provider, filters, filters.serviceCode ?? undefined)) return false;
-    if (!matchesSelectedCatalogService(provider.serviceCodes, filters)) return false;
-    if (!term) return true;
-    const serviceNames = provider.serviceCodes.flatMap((code) => {
-      const service = penServiceGroups
-        .flatMap((group) => group.families)
-        .find((family) => family.id === code);
-      return service ? [service.title, service.description] : [];
-    });
-    const groupNames = penServiceGroups
-      .filter((group) => group.families.some((family) => provider.serviceCodes.includes(family.id)))
-      .map((group) => group.title);
-    return matchesDiscoverQuery(
-      term,
-      provider.name,
-      provider.specialty,
-      provider.branch,
-      provider.area,
-      ...serviceNames,
-      ...groupNames,
-    );
-  });
-
-  const areas =
-    term && !filters.groupCode && !filters.serviceCode
-      ? mockAreas.filter((area) => area !== 'كل المناطق' && matchesDiscoverQuery(term, area))
-      : [];
+  const matchingProviders = mockProviders.filter(
+    (provider) =>
+      matchesDiscoveryFilters(provider, filters, filters.serviceCode ?? undefined) &&
+      matchesSelectedCatalogService(provider.serviceCodes, filters) &&
+      (!term || matchesDiscoverQuery(term, provider.name)),
+  );
 
   return {
-    families: matchingFamilies,
+    families: [],
     providers: matchingProviders,
-    areas,
+    areas: [],
     hasCriteria: Boolean(
       term ||
       filters.groupCode ||
@@ -95,6 +53,5 @@ export function selectDiscoverMatches(query: string, filters: DiscoveryFilterSel
       selectedDiscoveryAreas(filters).length > 0 ||
       filters.priceRange,
     ),
-    groupTitle: chosenGroup?.title,
   };
 }

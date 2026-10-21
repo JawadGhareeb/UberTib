@@ -2,7 +2,10 @@ import {
   getMockProvider,
   getMockProviderPriceFact,
 } from '@/features/discovery/mocks/providers.mock';
-import type { getPenDoctorsForService } from '@/features/discovery/presentation/pen-discovery-data';
+import {
+  findPenFamily,
+  type getPenDoctorsForService,
+} from '@/features/discovery/presentation/pen-discovery-data';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 
 export type ComparisonDoctor = ReturnType<typeof getPenDoctorsForService>[number];
@@ -57,30 +60,41 @@ export const comparisonRowDefinitions: readonly {
 ] as const;
 
 /** Use only service-scoped provider facts, never generated or generic prices. */
-export function getComparisonFacts(doctor: ComparisonDoctor, serviceCode: string) {
+export function getComparisonFacts(doctor: ComparisonDoctor, serviceCode: string | null) {
   const provider = getMockProvider(doctor.id);
-  const price = provider ? getMockProviderPriceFact(provider, serviceCode) : undefined;
+  const price = provider
+    ? serviceCode
+      ? getMockProviderPriceFact(provider, serviceCode)
+      : undefined
+    : undefined;
 
-  const priceType = !price
-    ? 'السعر غير متاح'
-    : price.mode === 'range'
-      ? 'نطاق تقريبي'
-      : price.mode === 'requires-plan'
-        ? 'يتحدد بعد الفحص'
-        : price.mode === 'free'
-          ? 'خدمة مجانية حسب البيانات'
-          : 'سعر معلن ضمن النموذج';
+  const priceType = !serviceCode
+    ? 'حدد الخدمة لعرض السعر'
+    : !price
+      ? 'السعر غير متاح'
+      : price.mode === 'range'
+        ? 'نطاق تقريبي'
+        : price.mode === 'requires-plan'
+          ? 'يتحدد بعد الفحص'
+          : price.mode === 'free'
+            ? 'خدمة مجانية حسب البيانات'
+            : 'سعر معلن ضمن النموذج';
 
   return {
     initials: provider?.initials ?? 'د',
     rating: provider?.reviews ? provider.rating.toFixed(1) : '—',
     reviews: provider?.reviews ? `${provider.reviews} تقييم` : 'لا توجد تقييمات',
-    price: doctor.price,
+    price: serviceCode ? doctor.price : 'حسب الخدمة المختارة',
     priceType,
-    appointment: doctor.next,
+    appointment: serviceCode ? doctor.next : (provider?.nextAvailable ?? doctor.next),
     clinic: doctor.branch,
     area: doctor.area,
-    included: price?.includesSummary ?? 'التفاصيل تُراجع مع الطبيب بعد الفحص.',
-    conditions: price?.extraCostSummary ?? 'الشروط والتكلفة النهائية تُراجع عند الحجز.',
+    included: serviceCode
+      ? (price?.includesSummary ?? 'التفاصيل تُراجع مع الطبيب بعد الفحص.')
+      : (provider?.serviceCodes.map((code) => findPenFamily(code)?.title ?? code).join('، ') ??
+        'الخدمات حسب الطبيب'),
+    conditions: serviceCode
+      ? (price?.extraCostSummary ?? 'الشروط والتكلفة النهائية تُراجع عند الحجز.')
+      : 'حدد الخدمة من الفلاتر لمقارنة الأسعار وبنود العلاج بدقة.',
   };
 }

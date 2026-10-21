@@ -9,7 +9,7 @@ import { AuthModeSwitch } from '@/features/auth/components/auth-mode-switch';
 import { CountryDialCodeSelect } from '@/shared/components/ui/country-dial-code-select';
 import { normalizeDigits } from '@/features/auth/utils/phone-input';
 import { requestMockVerification } from '@/features/auth/mocks/auth.mock';
-import { BrandMark } from '@/shared/components/brand/brand-mark';
+import { BrandLogo } from '@/shared/components/brand';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { phoneCountries, type CountryOption } from '@/shared/components/ui/country-select';
 import { toE164 } from '@/shared/components/ui/phone-number-field';
@@ -85,12 +85,7 @@ export function PhoneEntryScreen() {
         >
           <View className="mx-auto w-full max-w-[430px] px-6 pb-8 pt-6" style={{ flexGrow: 1 }}>
             <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
-              <View className="flex-row items-center gap-2">
-                <BrandMark size={42} />
-                <Typography.Heading type="h3" className="font-ui-bold text-text-primary">
-                  UberTib
-                </Typography.Heading>
-              </View>
+              <BrandLogo size={32} />
               <AuthBackButton
                 onPress={() => {
                   if (returnTo && router.canGoBack()) router.back();

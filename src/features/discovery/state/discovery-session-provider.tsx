@@ -28,7 +28,7 @@ interface DiscoverySessionContextValue {
   catalogComparison: CatalogComparisonSelection | null;
   toggleCatalogComparisonProvider: (
     providerId: string,
-    serviceCode: string,
+    serviceCode: string | null,
     services: readonly string[],
   ) => void;
   setCatalogComparison: (selection: CatalogComparisonSelection | null) => void;
@@ -65,7 +65,7 @@ export function DiscoverySessionProvider({ children }: PropsWithChildren) {
     null,
   );
   const toggleCatalogComparisonProvider = useCallback(
-    (providerId: string, serviceCode: string, services: readonly string[]) => {
+    (providerId: string, serviceCode: string | null, services: readonly string[]) => {
       setCatalogComparison((current) =>
         toggleCatalogComparison(current, providerId, serviceCode, services),
       );

@@ -1,6 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
 
+import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
+
 import { ProviderComparisonGrid } from '@/features/discovery/components/provider-comparison-grid';
 import { ProviderSelectedServiceSummary } from '@/features/discovery/components/provider-selected-service-summary';
 import { DiscoveryHeader } from '@/features/discovery/components/pen-discovery-ui';
@@ -15,7 +17,7 @@ export function ProviderComparisonScreen() {
   const router = useRouter();
   const {
     providerIds,
-    serviceCode = 'root-canal',
+    serviceCode: requestedServiceCode,
     patientId,
     fromSearch,
   } = useLocalSearchParams<{
@@ -24,15 +26,21 @@ export function ProviderComparisonScreen() {
     patientId?: string;
     fromSearch?: 'tab' | 'search';
   }>();
+  const serviceCode = requestedServiceCode?.trim() || null;
   const { getServiceState, setComparisonProviders, setCatalogComparison } = useDiscoverySession();
   const routeIds = providerIds?.split(',').filter(Boolean) ?? [];
   const ids = [
-    ...new Set(routeIds.length ? routeIds : getServiceState(serviceCode).comparisonProviderIds),
+    ...new Set(
+      routeIds.length ? routeIds : getServiceState(serviceCode ?? undefined).comparisonProviderIds,
+    ),
   ].slice(0, 3);
-  const serviceDoctors = getPenDoctorsForService(serviceCode);
-  const doctors = ids
-    .map((id) => serviceDoctors.find((doctor) => doctor.id === id))
-    .filter((doctor): doctor is (typeof serviceDoctors)[number] => Boolean(doctor));
+  const doctors = ids.flatMap((id) => {
+    const provider = getMockProvider(id);
+    const relevantService = serviceCode ?? provider?.serviceCodes[0];
+    if (!provider || !relevantService) return [];
+    const doctor = getPenDoctorsForService(relevantService).find((item) => item.id === id);
+    return doctor ? [doctor] : [];
+  });
 
   const returnToSelection = (selectedIds: string[]) => {
     if (fromSearch === 'tab' || fromSearch === 'search') {
@@ -42,20 +50,20 @@ export function ProviderComparisonScreen() {
     }
     router.replace({
       pathname: '/discover/providers/results',
-      params: { serviceCode, ...(patientId ? { patientId } : {}) },
+      params: { ...(serviceCode ? { serviceCode } : {}), ...(patientId ? { patientId } : {}) },
     });
   };
 
   const editComparison = () => {
     const selectedIds = doctors.map((doctor) => doctor.id);
-    setComparisonProviders(serviceCode, selectedIds);
+    if (serviceCode) setComparisonProviders(serviceCode, selectedIds);
     returnToSelection(selectedIds);
   };
   const removeDoctor = (providerId: string) => {
     const remaining = doctors
       .filter((doctor) => doctor.id !== providerId)
       .map((doctor) => doctor.id);
-    setComparisonProviders(serviceCode, remaining);
+    if (serviceCode) setComparisonProviders(serviceCode, remaining);
     if (fromSearch) {
       setCatalogComparison(remaining.length ? { serviceCode, providerIds: remaining } : null);
     }
@@ -66,7 +74,7 @@ export function ProviderComparisonScreen() {
     router.replace({
       pathname: '/discover/providers/compare',
       params: {
-        serviceCode,
+        ...(serviceCode ? { serviceCode } : {}),
         providerIds: remaining.join(','),
         ...(patientId ? { patientId } : {}),
         ...(fromSearch ? { fromSearch } : {}),
@@ -94,12 +102,20 @@ export function ProviderComparisonScreen() {
     <Screen contentClassName="px-0 py-0">
       <DiscoveryHeader subtitle={doctors.length + ' أطباء للمقارنة'} title="مقارنة الأطباء" />
       <View className="mx-auto w-full max-w-[430px] min-h-0 flex-1 px-4">
-        <View className="pb-3 pt-2">
-          <ProviderSelectedServiceSummary
-            serviceCode={serviceCode}
-            title={findPenFamily(serviceCode)?.title ?? 'الخدمة المختارة'}
-          />
-        </View>
+        {serviceCode ? (
+          <View className="pb-3 pt-2">
+            <ProviderSelectedServiceSummary
+              serviceCode={serviceCode}
+              title={findPenFamily(serviceCode)?.title ?? 'الخدمة المختارة'}
+            />
+          </View>
+        ) : (
+          <View className="pb-3 pt-2">
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              المقارنة عامة بين الأطباء. لا تظهر أسعار الخدمات قبل اختيار خدمة من الفلاتر.
+            </AppText>
+          </View>
+        )}
 
         <ProviderComparisonGrid
           doctors={doctors}
@@ -108,13 +124,23 @@ export function ProviderComparisonScreen() {
           onViewProfile={(providerId) =>
             router.push({
               pathname: '/discover/provider/[providerId]',
-              params: { providerId, serviceCode, ...(patientId ? { patientId } : {}) },
+              params: {
+                providerId,
+                serviceCode:
+                  serviceCode ?? getMockProvider(providerId)?.serviceCodes[0] ?? 'dental-checkup',
+                ...(patientId ? { patientId } : {}),
+              },
             })
           }
           onChoose={(providerId) =>
             router.push({
-              pathname: '/booking/slots',
-              params: { providerId, serviceCode, ...(patientId ? { patientId } : {}) },
+              pathname: serviceCode ? '/booking/slots' : '/discover/provider/[providerId]',
+              params: {
+                providerId,
+                serviceCode:
+                  serviceCode ?? getMockProvider(providerId)?.serviceCodes[0] ?? 'dental-checkup',
+                ...(patientId ? { patientId } : {}),
+              },
             })
           }
         />

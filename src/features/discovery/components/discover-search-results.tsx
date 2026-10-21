@@ -2,29 +2,15 @@ import { View } from 'react-native';
 
 import { DiscoverDoctorResultCard } from '@/features/discovery/components/discover-doctor-result-card';
 import { type MockProvider } from '@/features/discovery/mocks/providers.mock';
-import {
-  findPenFamily,
-  getPenDoctorsForService,
-} from '@/features/discovery/presentation/pen-discovery-data';
+import { getPenDoctorsForService } from '@/features/discovery/presentation/pen-discovery-data';
 import { AppText } from '@/shared/components/ui';
 import { matchingPricedServices, type DiscoveryFilterSelection } from '../model/discover-filters';
-import { matchesDiscoverQuery, selectDiscoverMatches } from '../model/discover-search';
+import { selectDiscoverMatches } from '../model/discover-search';
 import { DiscoverSearchIllustration } from './discover-search-illustration';
 
 /** Reuse the exact doctor/comparison card from the service and assessment results. */
-function matchingService(provider: MockProvider, query: string, filters: DiscoveryFilterSelection) {
-  if (filters.serviceCode && provider.serviceCodes.includes(filters.serviceCode)) {
-    return filters.serviceCode;
-  }
-  const candidates = matchingPricedServices(provider, filters);
-  return (
-    candidates.find((code) => {
-      const family = findPenFamily(code);
-      return family && matchesDiscoverQuery(query, family.title, family.description);
-    }) ??
-    candidates[0] ??
-    provider.serviceCodes[0]
-  );
+function matchingService(provider: MockProvider, filters: DiscoveryFilterSelection) {
+  return matchingPricedServices(provider, filters)[0] ?? provider.serviceCodes[0];
 }
 
 export function DiscoverSearchResults({
@@ -35,15 +21,15 @@ export function DiscoverSearchResults({
 }: {
   query: string;
   filters: DiscoveryFilterSelection;
-  comparison: { serviceCode: string; providerIds: string[] } | null;
-  onToggleComparison: (providerId: string, serviceCode: string) => void;
+  comparison: { serviceCode: string | null; providerIds: string[] } | null;
+  onToggleComparison: (providerId: string, serviceCode: string | null) => void;
 }) {
   const matches = selectDiscoverMatches(query, filters);
 
   if (!matches.hasCriteria) return <DiscoverSearchIllustration />;
 
   const doctors = matches.providers.flatMap((provider) => {
-    const serviceCode = matchingService(provider, query, filters);
+    const serviceCode = matchingService(provider, filters);
     if (!serviceCode) return [];
     const doctor = getPenDoctorsForService(serviceCode).find((item) => item.id === provider.id);
     return doctor ? [{ doctor, serviceCode }] : [];
@@ -56,7 +42,9 @@ export function DiscoverSearchResults({
       </AppText>
       {comparison?.providerIds.length ? (
         <AppText align="right" variant="caption" className="text-content-secondary">
-          المقارنة بين أطباء نفس الخدمة. يمكنك اختيار 3 أطباء كحد أقصى.
+          {comparison.serviceCode
+            ? 'المقارنة بحسب الخدمة المختارة من الفلاتر، وبحد أقصى 3 أطباء.'
+            : 'المقارنة بين معلومات الأطباء، وبحد أقصى 3 أطباء. الأسعار حسب الخدمة.'}
         </AppText>
       ) : null}
       {doctors.length ? (
@@ -64,24 +52,15 @@ export function DiscoverSearchResults({
           {doctors.map(({ doctor, serviceCode }) => {
             const selection = comparison?.providerIds ?? [];
             const selected = selection.includes(doctor.id);
-            const sameService =
-              !comparison ||
-              Boolean(
-                matches.providers.find(
-                  (provider) =>
-                    provider.id === doctor.id &&
-                    provider.serviceCodes.includes(comparison.serviceCode),
-                ),
-              );
             return (
               <DiscoverDoctorResultCard
                 key={doctor.id}
                 doctor={doctor}
                 serviceCode={serviceCode}
                 selected={selected}
-                disabled={!selected && (!sameService || selection.length >= 3)}
-                disabledReason={!sameService ? 'خدمة مختلفة' : undefined}
-                onToggle={() => onToggleComparison(doctor.id, serviceCode)}
+                disabled={!selected && selection.length >= 3}
+                showServicePrice={Boolean(filters.serviceCode)}
+                onToggle={() => onToggleComparison(doctor.id, filters.serviceCode ?? null)}
               />
             );
           })}

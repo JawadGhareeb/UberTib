@@ -21,7 +21,7 @@ import { EditableProfileAvatar } from '@/shared/components/media/editable-profil
 import { OutlineIcon } from '@/shared/components/media/outline-icon';
 import { resolveSafeReturnTo } from '@/features/auth/navigation/auth-intent';
 import { usePreferredLocation } from '@/features/location/state/preferred-location-provider';
-import { BrandMark } from '@/shared/components/brand/brand-mark';
+import { BrandLogo } from '@/shared/components/brand';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 
@@ -68,12 +68,7 @@ export function ProfileSetupScreen() {
         >
           <View className="mx-auto w-full max-w-[430px] px-6 pb-8 pt-6" style={{ flexGrow: 1 }}>
             <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
-              <View className="flex-row items-center gap-2">
-                <BrandMark size={42} />
-                <Typography.Heading type="h3" className="font-ui-bold text-text-primary">
-                  UberTib
-                </Typography.Heading>
-              </View>
+              <BrandLogo size={32} />
               <AuthBackButton
                 onPress={() => {
                   if (router.canGoBack()) router.back();

@@ -16,6 +16,7 @@ export function DiscoverDoctorResultCard({
   selected,
   disabled,
   disabledReason,
+  showServicePrice = true,
   onToggle,
 }: {
   doctor: Doctor;
@@ -24,6 +25,7 @@ export function DiscoverDoctorResultCard({
   selected: boolean;
   disabled: boolean;
   disabledReason?: string;
+  showServicePrice?: boolean;
   onToggle: () => void;
 }) {
   const router = useRouter();
@@ -95,7 +97,7 @@ export function DiscoverDoctorResultCard({
             className="w-full font-ui-semibold"
             numberOfLines={2}
           >
-            {doctor.price}
+            {showServicePrice ? doctor.price : 'السعر حسب الخدمة'}
           </AppText>
         </View>
         <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">

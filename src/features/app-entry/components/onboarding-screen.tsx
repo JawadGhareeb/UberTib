@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { BackHandler, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BrandMark } from '@/shared/components/brand/brand-mark';
+import { BrandLogo } from '@/shared/components/brand';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { IntroArtwork } from './intro-artwork';
 
@@ -49,12 +49,7 @@ export function OnboardingScreen({
           style={{ flexGrow: 1 }}
         >
           <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
-            <View className="flex-row items-center gap-2">
-              <BrandMark size={40} />
-              <Typography.Heading type="h3" className="font-ui-bold text-text-primary">
-                UberTib
-              </Typography.Heading>
-            </View>
+            <BrandLogo size={32} />
             <View className="flex-row items-center gap-2">
               <Typography.Paragraph type="body-sm" className="font-ui-medium text-text-secondary">
                 {step + 1} / 2

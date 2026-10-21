@@ -137,14 +137,13 @@ const serviceOnly = search.selectDiscoverMatches('', {
   groupCode: 'G03',
   serviceCode: 'root-canal',
 });
-assert.equal(serviceOnly.families.length, 1);
-assert.equal(serviceOnly.families[0].id, 'root-canal');
+assert.equal(serviceOnly.families.length, 0); // Services are selected in filters, never search results.
 assert.ok(serviceOnly.providers.length > 0);
 assert.ok(serviceOnly.providers.every((doctor) => doctor.serviceCodes.includes('root-canal')));
 
 const domainOnly = search.selectDiscoverMatches('', { ...unfiltered, groupCode: 'G03' });
 const rootGroup = catalog.findPenGroup('G03');
-assert.equal(domainOnly.families.length, rootGroup.families.length);
+assert.equal(domainOnly.families.length, 0);
 assert.ok(
   domainOnly.providers.every((doctor) =>
     rootGroup.families.some((family) => doctor.serviceCodes.includes(family.id)),
@@ -177,7 +176,23 @@ assert.ok(
     .selectDiscoverMatches('ليان', unfiltered)
     .providers.some((doctor) => doctor.id === 'provider-layan'),
 );
-assert.ok(search.selectDiscoverMatches('الاعظمية', unfiltered).areas.includes('الأعظمية'));
+assert.equal(search.selectDiscoverMatches('الاعظمية', unfiltered).providers.length, 0);
+assert.deepEqual(search.selectDiscoverMatches('الاعظمية', unfiltered).areas, []);
+assert.equal(search.selectDiscoverMatches('علاج الجذور', unfiltered).providers.length, 0);
+assert.equal(search.selectDiscoverMatches('الفحص والوقاية', unfiltered).providers.length, 0);
+assert.equal(search.selectDiscoverMatches('مركز نور الأسنان', unfiltered).providers.length, 0);
+assert.equal(search.selectDiscoverMatches('الجميلية', unfiltered).providers.length, 0);
+assert.equal(search.selectDiscoverMatches('ليان', unfiltered).providers.length, 1);
+assert.ok(
+  search
+    .selectDiscoverMatches('', { ...unfiltered, serviceCode: 'root-canal' })
+    .providers.every((doctor) => doctor.serviceCodes.includes('root-canal')),
+);
+assert.equal(
+  search.selectDiscoverMatches('ليان', { ...unfiltered, serviceCode: 'teeth-whitening' }).providers
+    .length,
+  0,
+);
 
 // Region selection is a multi-select: regions are OR'd; All Areas clears the choice.
 const selectedTwo = filters.withSelectedDiscoveryAreas(unfiltered, [

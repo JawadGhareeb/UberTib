@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { OnboardingScreen } from '@/features/app-entry/components/onboarding-screen';
-import { BrandMark } from '@/shared/components/brand/brand-mark';
+import { BrandLogo } from '@/shared/components/brand';
 import { secureStorage } from '@/shared/storage/secure-storage';
 
 /**
@@ -61,7 +61,7 @@ export function AppEntryScreen() {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-surface-canvas">
         <View className="items-center gap-3">
-          <BrandMark size={92} />
+          <BrandLogo size={68} />
           <Typography.Paragraph className="font-ui-medium text-text-secondary">
             جارٍ تهيئة التطبيق…
           </Typography.Paragraph>

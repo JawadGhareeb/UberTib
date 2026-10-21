@@ -1,6 +1,6 @@
 /** Search-page comparison stays local until the user explicitly opens the table. */
 export interface CatalogComparisonSelection {
-  serviceCode: string;
+  serviceCode: string | null;
   providerIds: string[];
 }
 
@@ -11,7 +11,7 @@ export interface CatalogComparisonSelection {
 export function toggleCatalogComparison(
   current: CatalogComparisonSelection | null,
   providerId: string,
-  serviceCode: string,
+  serviceCode: string | null,
   providerServices: readonly string[],
 ): CatalogComparisonSelection | null {
   if (current?.providerIds.includes(providerId)) {
@@ -19,8 +19,9 @@ export function toggleCatalogComparison(
     return remaining.length ? { ...current, providerIds: remaining } : null;
   }
   if (current && current.providerIds.length >= 3) return current;
-  const targetService = current?.serviceCode ?? serviceCode;
-  if (!providerServices.includes(targetService)) return current;
+  if (current && current.serviceCode !== serviceCode) return current;
+  const targetService = current ? current.serviceCode : serviceCode;
+  if (targetService && !providerServices.includes(targetService)) return current;
 
   return {
     serviceCode: targetService,

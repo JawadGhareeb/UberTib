@@ -23,7 +23,7 @@ export function ProviderComparisonGrid({
   onChoose,
 }: {
   doctors: readonly ComparisonDoctor[];
-  serviceCode: string;
+  serviceCode: string | null;
   onRemove: (providerId: string) => void;
   onViewProfile: (providerId: string) => void;
   onChoose: (providerId: string) => void;
