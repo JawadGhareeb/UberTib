@@ -83,4 +83,23 @@ assert.ok(
     !screen.includes('entering={FadeIn.'),
   'Avoid duplicate content-enter animations over slide',
 );
+// Screen-entry fades duplicate the router's slide. Interactive overlays and
+// confirmation dialogs intentionally keep their own independent effects.
+for (const path of [
+  'src/shared/components/ui/empty-state.tsx',
+  'src/features/discovery/components/discover-search-illustration.tsx',
+  'src/shared/components/navigation/patient-tab-item.tsx',
+]) {
+  const code = read(path);
+  assert.ok(
+    !code.includes('FadeIn') && !code.includes('entering='),
+    path + ': route-mounted content must not fade in on top of the slide',
+  );
+}
+assert.ok(
+  read('src/shared/components/ui/confirmation-dialog.tsx').includes('FadeInDown') &&
+    read('src/features/discovery/components/provider-comparison-bar.tsx').includes('FadeInUp'),
+  'Contextual overlays retain separate interactive animations',
+);
+
 console.log('Smooth navigation and logo rendering contract checks passed.');

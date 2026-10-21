@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
-import { Image, useWindowDimensions } from 'react-native';
+import { Image, View, useWindowDimensions } from 'react-native';
 import Animated, {
   Easing,
-  FadeInDown,
   ReduceMotion,
   cancelAnimation,
   useAnimatedStyle,
@@ -36,8 +35,7 @@ export function DiscoverSearchIllustration({ empty = false }: { empty?: boolean 
   const imageWidth = Math.min(width - 80, 280);
 
   return (
-    <Animated.View
-      entering={FadeInDown.duration(380).reduceMotion(ReduceMotion.System)}
+    <View
       className="items-center gap-1 pb-5 pt-2"
       accessible
       accessibilityLabel={empty ? 'ما لقينا نتائج' : 'ابدأ البحث عن طبيب أو خدمة'}
@@ -56,6 +54,6 @@ export function DiscoverSearchIllustration({ empty = false }: { empty?: boolean 
       <AppText align="center" variant="label" className="text-content-secondary">
         {empty ? 'جرّب كلمة تانية أو غيّر الفلاتر.' : 'ابحث عن طبيب أو خدمة بكل سهولة.'}
       </AppText>
-    </Animated.View>
+    </View>
   );
 }

@@ -1,5 +1,4 @@
-import { Pressable, Text } from 'react-native';
-import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated';
+import { Pressable, Text, View } from 'react-native';
 import { TabMark } from './tab-mark';
 import type { PatientTabName } from './patient-tab-configuration';
 import { theme } from '@/shared/theme';
@@ -41,12 +40,7 @@ export function PatientTabItem({
         inactiveTintColor={colors.text.secondary}
       />
       {focused ? (
-        <Animated.View
-          entering={FadeIn.duration(theme.motion.duration.tabSelection).reduceMotion(
-            ReduceMotion.System,
-          )}
-          className="min-w-0 items-center justify-center"
-        >
+        <View className="min-w-0 items-center justify-center">
           <Text
             numberOfLines={1}
             style={{
@@ -61,7 +55,7 @@ export function PatientTabItem({
           >
             {label}
           </Text>
-        </Animated.View>
+        </View>
       ) : null}
     </Pressable>
   );
