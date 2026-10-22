@@ -145,7 +145,7 @@ export function MyCasesOverviewScreen() {
         ) : null}
         {showCases && caseQuick === 'مسودة' && hydrated && drafts.length === 0 ? (
           <AppText align="right" variant="label" className="px-4 text-content-secondary">
-            ما عندك حجوزات محفوظة لإكمالها لاحقاً.
+            ما عندك خطوات محفوظة لإكمالها لاحقاً.
           </AppText>
         ) : null}
         {showCases && (caseQuick === 'الكل' || caseQuick === 'مسودة') && drafts.length > 0 ? (
@@ -171,7 +171,18 @@ export function MyCasesOverviewScreen() {
                       accessibilityRole="button"
                       className="flex-1 items-center rounded-[10px] bg-action-primary p-3"
                       onPress={() =>
-                        router.push({ pathname: draft.route, params: draft.params ?? {} })
+                        router.push({
+                          pathname:
+                            draft.kind === 'assessment' && !draft.assessment
+                              ? '/assessment/start'
+                              : draft.route,
+                          params: {
+                            ...(draft.params ?? {}),
+                            ...(draft.kind === 'assessment' && draft.assessment
+                              ? { resumeDraftId: draft.id }
+                              : {}),
+                          },
+                        })
                       }
                     >
                       <AppText variant="label" className="text-content-on-action">

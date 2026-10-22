@@ -9,6 +9,8 @@ import {
   useState,
 } from 'react';
 import { secureStorage } from '@/shared/storage/secure-storage';
+import type { AssessmentSnapshot } from '@/features/assessment/state/assessment-session-provider';
+import type { HealthNote } from '@/features/profile/state/health-notes-provider';
 
 export type BookingSavedFields = {
   providerId: string;
@@ -25,6 +27,7 @@ export type BookingSavedFields = {
   origin?: 'assessment';
   assessmentDraftId?: string;
 };
+export type AssessmentSavedFields = AssessmentSnapshot & { healthNotes?: HealthNote[] };
 export type LocalCareDraft = {
   id: string;
   kind: 'booking' | 'assessment';
@@ -35,9 +38,19 @@ export type LocalCareDraft = {
     | '/booking/patient'
     | '/booking/review'
     | '/discover/providers/results'
-    | '/assessment/review';
+    | '/assessment/start'
+    | '/assessment/patient'
+    | '/assessment/complaint'
+    | '/assessment/location'
+    | '/assessment/questions'
+    | '/assessment/health'
+    | '/assessment/media'
+    | '/assessment/review'
+    | '/assessment/needs-more-info'
+    | '/assessment/manual-review';
   params?: Record<string, string>;
   booking?: BookingSavedFields;
+  assessment?: AssessmentSavedFields;
   updatedAt: number;
 };
 type DraftInput = Omit<LocalCareDraft, 'updatedAt'>;
@@ -64,9 +77,33 @@ function isValidDraft(value: unknown): value is LocalCareDraft {
       'booking/patient',
       'booking/review',
       'discover/providers/results',
+      'assessment/start',
+      'assessment/patient',
+      'assessment/complaint',
+      'assessment/location',
+      'assessment/questions',
+      'assessment/health',
+      'assessment/media',
       'assessment/review',
+      'assessment/needs-more-info',
+      'assessment/manual-review',
     ].some((route) => draft.route === '/' + route) &&
     typeof draft.updatedAt === 'number' &&
+    (!draft.assessment ||
+      (typeof draft.assessment === 'object' &&
+        ['self', 'adam', 'nour'].includes(draft.assessment.patient) &&
+        typeof draft.assessment.complaint === 'string' &&
+        typeof draft.assessment.details === 'string' &&
+        typeof draft.assessment.location === 'string' &&
+        ['permanent', 'primary', 'mixed', 'uncertain'].includes(draft.assessment.dentitionMode) &&
+        Array.isArray(draft.assessment.selectedTeeth) &&
+        draft.assessment.selectedTeeth.every((item) => typeof item === 'string') &&
+        Array.isArray(draft.assessment.answers) &&
+        draft.assessment.answers.every((item) => typeof item === 'string') &&
+        typeof draft.assessment.healthConfirmed === 'boolean' &&
+        typeof draft.assessment.manualReviewDrafted === 'boolean' &&
+        Array.isArray(draft.assessment.attachmentNames) &&
+        draft.assessment.attachmentNames.every((item) => typeof item === 'string'))) &&
     (!draft.params ||
       (typeof draft.params === 'object' &&
         Object.values(draft.params).every((value) => typeof value === 'string')))

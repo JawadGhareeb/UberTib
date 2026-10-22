@@ -17,6 +17,7 @@ export type HealthNote = {
   type: HealthNoteType;
   description: string;
 };
+const EMPTY_NOTES: HealthNote[] = [];
 type HealthNotesContextValue = {
   getNotes: (patientId: string) => HealthNote[];
   saveNote: (patientId: string, note: Omit<HealthNote, 'id'> & { id?: string }) => void;
@@ -28,12 +29,15 @@ const Context = createContext<HealthNotesContextValue | null>(null);
 export function HealthNotesProvider({ children }: PropsWithChildren) {
   const [byPatient, setByPatient] = useState<Record<string, HealthNote[]>>({});
   const nextId = useRef(0);
-  const getNotes = useCallback((patientId: string) => byPatient[patientId] ?? [], [byPatient]);
+  const getNotes = useCallback(
+    (patientId: string) => byPatient[patientId] ?? EMPTY_NOTES,
+    [byPatient],
+  );
   const saveNote = useCallback(
     (patientId: string, note: Omit<HealthNote, 'id'> & { id?: string }) => {
       const description = note.description.trim();
       if (!description) return;
-      const id = note.id ?? 'health-note-' + ++nextId.current;
+      const id = note.id ?? 'health-note-' + Date.now() + '-' + ++nextId.current;
       setByPatient((current) => {
         const existing = current[patientId] ?? [];
         const next = { id, type: note.type, description };

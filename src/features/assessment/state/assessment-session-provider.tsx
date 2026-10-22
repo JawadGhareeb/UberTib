@@ -14,7 +14,30 @@ export interface AssessmentMediaAttachment {
   height?: number;
 }
 
+export interface AssessmentSnapshot {
+  patient: AssessmentPatient;
+  complaint: string;
+  details: string;
+  location: string;
+  dentitionMode: DentitionMode;
+  selectedTeeth: string[];
+  answers: string[];
+  healthConfirmed: boolean;
+  manualReviewDrafted: boolean;
+  // Temporary camera/picker file URIs aren't durable after app restart.
+  attachmentNames: string[];
+  selectedMediaType?: string | null;
+  needsMoreInfoChoice?: string;
+}
+
 interface AssessmentSessionContextValue {
+  snapshot: AssessmentSnapshot;
+  restoreSnapshot: (snapshot: AssessmentSnapshot) => void;
+  unavailableAttachmentNames: string[];
+  selectedMediaType: string | null;
+  setSelectedMediaType: (type: string | null) => void;
+  needsMoreInfoChoice: string;
+  setNeedsMoreInfoChoice: (choice: string) => void;
   patient: AssessmentPatient;
   complaint: string;
   details: string;
@@ -62,8 +85,23 @@ export function readableToothId(value: string): string {
     const position = number % 10;
     const jaw = [1, 2, 5, 6].includes(quadrant) ? 'علوي' : 'سفلي';
     const side = [1, 4, 5, 8].includes(quadrant) ? 'أيمن' : 'أيسر';
-    const permanentNames = ['الثنية المركزية', 'الثنية الجانبية', 'الناب', 'الضاحك الأول', 'الضاحك الثاني', 'الطاحن الأول', 'الطاحن الثاني', 'ضرس العقل'];
-    const primaryNames = ['الثنية المركزية', 'الثنية الجانبية', 'الناب', 'الطاحن اللبني الأول', 'الطاحن اللبني الثاني'];
+    const permanentNames = [
+      'الثنية المركزية',
+      'الثنية الجانبية',
+      'الناب',
+      'الضاحك الأول',
+      'الضاحك الثاني',
+      'الطاحن الأول',
+      'الطاحن الثاني',
+      'ضرس العقل',
+    ];
+    const primaryNames = [
+      'الثنية المركزية',
+      'الثنية الجانبية',
+      'الناب',
+      'الطاحن اللبني الأول',
+      'الطاحن اللبني الثاني',
+    ];
     const toothName = (quadrant <= 4 ? permanentNames : primaryNames)[position - 1];
     return toothName ? `${toothName} ${jaw} ${side}` : value;
   }
@@ -89,6 +127,42 @@ export function AssessmentSessionProvider({ children }: PropsWithChildren) {
   const [healthConfirmed, setHealthConfirmed] = useState(false);
   const [manualReviewDrafted, setManualReviewDrafted] = useState(false);
   const [mediaAttachments, setMediaAttachments] = useState<AssessmentMediaAttachment[]>([]);
+  const [unavailableAttachmentNames, setUnavailableAttachmentNames] = useState<string[]>([]);
+  const [selectedMediaType, setSelectedMediaType] = useState<string | null>(null);
+  const [needsMoreInfoChoice, setNeedsMoreInfoChoice] = useState('');
+  const snapshot = useMemo<AssessmentSnapshot>(
+    () => ({
+      patient,
+      complaint,
+      details,
+      location,
+      dentitionMode,
+      selectedTeeth,
+      answers,
+      healthConfirmed,
+      manualReviewDrafted,
+      selectedMediaType,
+      needsMoreInfoChoice,
+      attachmentNames: Array.from(
+        new Set([...unavailableAttachmentNames, ...mediaAttachments.map((file) => file.fileName)]),
+      ),
+    }),
+    [
+      patient,
+      complaint,
+      details,
+      location,
+      dentitionMode,
+      selectedTeeth,
+      answers,
+      healthConfirmed,
+      manualReviewDrafted,
+      selectedMediaType,
+      needsMoreInfoChoice,
+      unavailableAttachmentNames,
+      mediaAttachments,
+    ],
+  );
 
   const clearDentalSelection = () => {
     setSelectedTeeth([]);
@@ -97,6 +171,30 @@ export function AssessmentSessionProvider({ children }: PropsWithChildren) {
 
   const value = useMemo<AssessmentSessionContextValue>(
     () => ({
+      snapshot,
+      unavailableAttachmentNames,
+      selectedMediaType,
+      setSelectedMediaType,
+      needsMoreInfoChoice,
+      setNeedsMoreInfoChoice,
+      restoreSnapshot: (saved) => {
+        setPatientState(saved.patient);
+        setComplaint(saved.complaint);
+        setDetails(saved.details);
+        setLocationState(saved.location);
+        setDentitionModeState(saved.dentitionMode);
+        setSelectedTeeth([...saved.selectedTeeth]);
+        setAnswers([...saved.answers]);
+        setHealthConfirmed(saved.healthConfirmed);
+        setManualReviewDrafted(saved.manualReviewDrafted);
+        setUnavailableAttachmentNames([...saved.attachmentNames]);
+        setSelectedMediaType(saved.selectedMediaType ?? null);
+        setNeedsMoreInfoChoice(saved.needsMoreInfoChoice ?? '');
+        setMediaAttachments([]);
+        setUnavailableAttachmentNames([]);
+        setSelectedMediaType(null);
+        setNeedsMoreInfoChoice('');
+      },
       patient,
       complaint,
       details,
@@ -120,6 +218,9 @@ export function AssessmentSessionProvider({ children }: PropsWithChildren) {
         setSelectedTeeth([]);
         setLocationState('');
         setMediaAttachments([]);
+        setUnavailableAttachmentNames([]);
+        setSelectedMediaType(null);
+        setNeedsMoreInfoChoice('');
         setHealthConfirmed(false);
       },
       setComplaint: (value) => {
@@ -170,8 +271,15 @@ export function AssessmentSessionProvider({ children }: PropsWithChildren) {
       },
       setHealthConfirmed,
       setManualReviewDrafted,
-      setMediaAttachment: (file) => setMediaAttachments(file ? [file] : []),
-      addMediaAttachments: (files) =>
+      setMediaAttachment: (file) => {
+        setMediaAttachments(file ? [file] : []);
+        if (file)
+          setUnavailableAttachmentNames((names) => names.filter((name) => name !== file.fileName));
+      },
+      addMediaAttachments: (files) => {
+        setUnavailableAttachmentNames((names) =>
+          names.filter((name) => !files.some((file) => file.fileName === name)),
+        );
         setMediaAttachments((current) => {
           const knownUris = new Set(current.map((file) => file.uri));
           const unique = files.filter((file) => {
@@ -180,7 +288,8 @@ export function AssessmentSessionProvider({ children }: PropsWithChildren) {
             return true;
           });
           return [...current, ...unique].slice(0, 6);
-        }),
+        });
+      },
       removeMediaAttachment: (uri) =>
         setMediaAttachments((current) => current.filter((file) => file.uri !== uri)),
       reset: () => {
@@ -194,9 +303,16 @@ export function AssessmentSessionProvider({ children }: PropsWithChildren) {
         setHealthConfirmed(false);
         setManualReviewDrafted(false);
         setMediaAttachments([]);
+        setUnavailableAttachmentNames([]);
+        setSelectedMediaType(null);
+        setNeedsMoreInfoChoice('');
       },
     }),
     [
+      snapshot,
+      unavailableAttachmentNames,
+      selectedMediaType,
+      needsMoreInfoChoice,
       answers,
       complaint,
       dentitionMode,

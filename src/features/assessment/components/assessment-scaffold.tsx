@@ -2,6 +2,7 @@ import type { PropsWithChildren, ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 
 import { AssessmentJourneyProgress } from '@/features/assessment/components/assessment-journey-progress';
+import { AssessmentSaveLaterAction } from '@/features/assessment/components/assessment-save-later-action';
 import { AppHeader } from '@/shared/components/navigation/app-header';
 import { AppText, Button, Screen } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
@@ -14,6 +15,7 @@ interface AssessmentScaffoldProps extends PropsWithChildren {
   primaryLoading?: boolean;
   onPrimary?: () => void;
   footerNote?: string;
+  hideSaveLater?: boolean;
   topContent?: ReactNode;
   scroll?: boolean;
   hideBack?: boolean;
@@ -28,6 +30,7 @@ export function AssessmentScaffold({
   primaryLoading = false,
   onPrimary,
   footerNote,
+  hideSaveLater = false,
   topContent,
   scroll = true,
   hideBack = false,
@@ -65,18 +68,25 @@ export function AssessmentScaffold({
         ) : (
           <View className="min-h-0 flex-1">{body}</View>
         )}
-        {primaryLabel && onPrimary ? (
+        {(primaryLabel && onPrimary) || !hideSaveLater ? (
           <View className="border-t border-border-subtle bg-surface-default px-4 pb-3 pt-3">
             <View className="mx-auto w-full max-w-[398px]">
-              <Button
-                className="min-h-[50px] rounded-[12px]"
-                disabled={primaryDisabled}
-                endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
-                label={primaryLabel}
-                loading={primaryLoading}
-                loadingLabel="جاري المتابعة"
-                onPress={onPrimary}
-              />
+              {primaryLabel && onPrimary ? (
+                <Button
+                  className="min-h-[50px] rounded-[12px]"
+                  disabled={primaryDisabled}
+                  endIcon={{ ios: 'arrow.left', android: 'arrow_back', web: 'arrow_back' }}
+                  label={primaryLabel}
+                  loading={primaryLoading}
+                  loadingLabel="جاري المتابعة"
+                  onPress={onPrimary}
+                />
+              ) : null}
+              {!hideSaveLater ? (
+                <View className="mt-2">
+                  <AssessmentSaveLaterAction />
+                </View>
+              ) : null}
               {footerNote ? (
                 <AppText align="center" className="mt-2 text-content-secondary" variant="caption">
                   {footerNote}

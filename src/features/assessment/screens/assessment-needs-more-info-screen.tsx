@@ -1,5 +1,4 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { View } from 'react-native';
 import { Radio } from 'heroui-native';
 
@@ -21,11 +20,22 @@ function isLocationChoice(value: string): value is (typeof locations)[number] {
 export function AssessmentNeedsMoreInfoScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
-  const { patient, location, setRegionLocation, setLocation } = useAssessmentSession();
+  const {
+    patient,
+    location,
+    setRegionLocation,
+    setLocation,
+    needsMoreInfoChoice,
+    setNeedsMoreInfoChoice,
+  } = useAssessmentSession();
   const { isAuthenticated } = useAuthSession();
-  const [selected, setSelected] = useState<LocationChoice | undefined>(
-    isLocationChoice(location) ? location : undefined,
-  );
+  const selected: LocationChoice | undefined =
+    needsMoreInfoChoice === unsureOption || isLocationChoice(needsMoreInfoChoice)
+      ? (needsMoreInfoChoice as LocationChoice)
+      : isLocationChoice(location)
+        ? location
+        : undefined;
+  const setSelected = (choice: LocationChoice) => setNeedsMoreInfoChoice(choice);
 
   const continueAssessment = () => {
     if (!selected) return;
@@ -44,7 +54,9 @@ export function AssessmentNeedsMoreInfoScreen() {
       pathname: '/discover/providers/results',
       params: {
         serviceCode: 'dental-checkup',
-        ...(isAuthenticated ? { patientId: patient === 'adam' ? 'patient-002' : 'patient-001' } : {}),
+        ...(isAuthenticated
+          ? { patientId: patient === 'adam' ? 'patient-002' : 'patient-001' }
+          : {}),
       },
     });
 

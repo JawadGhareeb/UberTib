@@ -1,6 +1,4 @@
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 import { Pressable, View } from 'react-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
@@ -60,7 +58,6 @@ function SummaryRow({
 
 export function AssessmentReviewScreen() {
   const router = useRouter();
-  const { saveDraft, removeDraft } = useCareDrafts();
   const { isAuthenticated } = useAuthSession();
   const {
     patient,
@@ -73,16 +70,6 @@ export function AssessmentReviewScreen() {
     mediaAttachments,
   } = useAssessmentSession();
   const who = ASSESSMENT_PATIENT_FIXTURES[patient];
-  useEffect(() => {
-    if (!complaint) return;
-    saveDraft({
-      id: 'assessment-' + patient,
-      kind: 'assessment',
-      title: complaint,
-      detail: location || 'تحديد الحالة',
-      route: '/assessment/review',
-    });
-  }, [patient, complaint, location, saveDraft]);
   const edit = (
     pathname:
       | '/assessment/patient'
@@ -100,7 +87,6 @@ export function AssessmentReviewScreen() {
       primaryLabel="إرسال للتوجيه الأولي"
       primaryDisabled={!complaint || !location || !healthConfirmed}
       onPrimary={() => {
-        removeDraft('assessment-' + patient);
         router.push('/assessment/processing');
       }}
       topContent={

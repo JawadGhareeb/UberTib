@@ -5,13 +5,54 @@ import { AssessmentScaffold } from '@/features/assessment/components/assessment-
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 import { IntroArtwork } from '@/features/app-entry/components/intro-artwork';
 import { useAuthSession } from '@/providers/auth-session-provider';
+import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 
 export function AssessmentStartScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthSession();
+  const { drafts } = useCareDrafts();
+  const previous = drafts.find(
+    (draft) =>
+      draft.kind === 'assessment' &&
+      !!draft.assessment &&
+      draft.route.startsWith('/assessment/') &&
+      draft.route !== '/assessment/start',
+  );
 
   return (
     <AssessmentScaffold phase="البدء" title="ساعدني أحدد حالتي">
+      {previous ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={'متابعة مسودة: ' + previous.detail}
+          className="flex-row-reverse items-center gap-3 rounded-[13px] border border-action-primary bg-action-subtle p-3"
+          onPress={() =>
+            router.push({
+              pathname: previous.route,
+              params: { ...(previous.params ?? {}), resumeDraftId: previous.id },
+            })
+          }
+        >
+          <AppIcon
+            name={{ ios: 'bookmark.fill', android: 'bookmark', web: 'bookmark' }}
+            size={20}
+            tone="action"
+          />
+          <View className="min-w-0 flex-1 gap-1">
+            <AppText align="right" variant="label" className="font-ui-bold text-content-link">
+              عندك مسودة سابقة
+            </AppText>
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              {previous.detail} · اضغط لتكمل من وين وقفت
+            </AppText>
+          </View>
+          <AppIcon
+            name={{ ios: 'chevron.left', android: 'chevron_left', web: 'chevron_left' }}
+            size={17}
+            tone="action"
+          />
+        </Pressable>
+      ) : null}
       <View className="items-center gap-3 rounded-[19px] bg-surface-subtle px-4 pb-5 pt-6">
         <View className="w-full max-w-[260px] items-center justify-center">
           <IntroArtwork step={0} height={165} />

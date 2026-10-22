@@ -37,6 +37,7 @@ export function AssessmentResultScreen() {
   return (
     <AssessmentScaffold
       phase="النتيجة"
+      hideSaveLater
       title="التوجيه الأولي جاهز"
       primaryLabel="عرض أطباء الفحص الأولي"
       onPrimary={() =>

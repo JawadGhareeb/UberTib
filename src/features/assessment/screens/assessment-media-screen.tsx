@@ -121,9 +121,15 @@ function readableSize(size?: number): string {
 export function AssessmentMediaScreen() {
   const router = useRouter();
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
-  const { mediaAttachments, addMediaAttachments, removeMediaAttachment } = useAssessmentSession();
+  const {
+    mediaAttachments,
+    addMediaAttachments,
+    removeMediaAttachment,
+    unavailableAttachmentNames,
+    selectedMediaType,
+    setSelectedMediaType,
+  } = useAssessmentSession();
   const [picking, setPicking] = useState(false);
-  const [selectedMediaType, setSelectedMediaType] = useState<string | null>(null);
   const [pickerError, setPickerError] = useState('');
   const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
   const [sourceLaunching, setSourceLaunching] = useState(false);
@@ -534,6 +540,22 @@ export function AssessmentMediaScreen() {
           لا نطلب منك إجراء أشعة جديدة بنفسك.
         </AppText>
       </View>
+      {unavailableAttachmentNames.length > 0 ? (
+        <View className="gap-1.5 rounded-[12px] bg-tone-warning-fill p-3">
+          <AppText
+            variant="label"
+            align="right"
+            className="font-ui-semibold text-tone-warning-text"
+          >
+            ملفات المسودة تحتاج إعادة اختيار
+          </AppText>
+          <AppText variant="caption" align="right" className="text-tone-warning-text">
+            حفظنا أسماء الملفات لكن النسخ المؤقتة قد لا تبقى بعد إغلاق التطبيق. أضفها من جهازك من
+            جديد:
+            {unavailableAttachmentNames.join('، ')}
+          </AppText>
+        </View>
+      ) : null}
       <AssessmentImagePreview
         images={imageAttachments}
         activeUri={previewUri}
