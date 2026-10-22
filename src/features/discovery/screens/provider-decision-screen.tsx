@@ -77,10 +77,14 @@ export function ProviderDecisionScreen() {
     providerId = 'provider-layan',
     serviceCode = 'root-canal',
     patientId,
+    origin,
+    assessmentDraftId,
   } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
     patientId?: string;
+    origin?: string;
+    assessmentDraftId?: string;
   }>();
   const doctor = getPenDoctorsForService(serviceCode).find((item) => item.id === providerId);
   const provider = getMockProvider(providerId);
@@ -118,12 +122,18 @@ export function ProviderDecisionScreen() {
         serviceCode,
         fromProfile: '1',
         ...(patientId ? { patientId } : {}),
+        ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
       },
     });
   const book = () =>
     router.push({
       pathname: '/booking/slots',
-      params: { providerId: doctor.id, serviceCode, ...(patientId ? { patientId } : {}) },
+      params: {
+        providerId: doctor.id,
+        serviceCode,
+        ...(patientId ? { patientId } : {}),
+        ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
+      },
     });
 
   return (

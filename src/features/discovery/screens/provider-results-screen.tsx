@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -14,6 +14,7 @@ import { ProviderComparisonBar } from '@/features/discovery/components/provider-
 import { ProviderSelectedServiceSummary } from '@/features/discovery/components/provider-selected-service-summary';
 import { providerAdvancedOptions } from '@/features/discovery/components/provider-advanced-filter-options';
 import { ProviderResultsEmptyState } from '@/features/discovery/components/provider-results-empty-state';
+import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 import { getMockProviders } from '@/features/discovery/mocks/providers.mock';
 import {
   getPenDoctorsForService,
@@ -32,7 +33,7 @@ import {
   defaultProviderFilters,
   type ProviderFilterFlags,
 } from '@/features/discovery/utils/provider-filters';
-import { AppIcon, AppText, Screen } from '@/shared/components/ui';
+import { AppIcon, AppText, Button, Screen } from '@/shared/components/ui';
 import type { AppliedFilterItem } from '@/shared/components/filters/applied-filter-chips';
 import {
   providerSortChoices,
@@ -55,6 +56,8 @@ const emptySelection: DiscoveryFilterSelection = {
 type ProviderResultParams = {
   serviceCode?: string;
   patientId?: string;
+  origin?: string;
+  assessmentDraftId?: string;
   area?: string;
   areas?: string;
   minPrice?: string;
@@ -92,6 +95,7 @@ function ProviderResultsContent({
   params: ProviderResultParams;
 }) {
   const router = useRouter();
+  const { saveDraft, hydrated } = useCareDrafts();
   const insets = useSafeAreaInsets();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [showAllDoctors, setShowAllDoctors] = useState(false);
@@ -128,6 +132,23 @@ function ProviderResultsContent({
   const selection = serviceState.comparisonProviderIds;
   const maxReached = selection.length >= 3;
   const serviceTitle = findPenFamily(serviceCode)?.title ?? 'الخدمة المطلوبة';
+  useEffect(() => {
+    if (hydrated && params.origin === 'assessment' && params.assessmentDraftId) {
+      void saveDraft({
+        id: params.assessmentDraftId,
+        kind: 'assessment',
+        title: 'اختيار طبيب للفحص الأولي',
+        detail: 'باقي تختار الطبيب والموعد المناسب',
+        route: '/discover/providers/results',
+        params: {
+          serviceCode,
+          origin: 'assessment',
+          assessmentDraftId: params.assessmentDraftId,
+          ...(params.patientId ? { patientId: params.patientId } : {}),
+        },
+      });
+    }
+  }, [hydrated, params.origin, params.assessmentDraftId, params.patientId, serviceCode, saveDraft]);
 
   const resetFilters = () => {
     setApplied({
@@ -196,6 +217,30 @@ function ProviderResultsContent({
           onClearAll={resetFilters}
         />
 
+        {params.origin === 'assessment' && params.assessmentDraftId ? (
+          <View className="px-1">
+            <Button
+              label="إكمال اختيار الطبيب لاحقاً"
+              variant="outline"
+              onPress={async () => {
+                const saved = await saveDraft({
+                  id: params.assessmentDraftId!,
+                  kind: 'assessment',
+                  title: 'اختيار طبيب للفحص الأولي',
+                  detail: 'بانتظار اختيار الطبيب والموعد',
+                  route: '/discover/providers/results',
+                  params: {
+                    serviceCode,
+                    origin: 'assessment',
+                    assessmentDraftId: params.assessmentDraftId!,
+                    ...(params.patientId ? { patientId: params.patientId } : {}),
+                  },
+                });
+                if (saved) router.replace({ pathname: '/(tabs)/care', params: { tab: 'cases' } });
+              }}
+            />
+          </View>
+        ) : null}
         <View className="flex-row-reverse items-center justify-between gap-2">
           <AppText align="right" variant="heading-4" className="font-ui-bold">
             النتائج ({doctors.length})
@@ -210,15 +255,25 @@ function ProviderResultsContent({
                 doctor={doctor}
                 serviceCode={serviceCode}
                 patientId={params.patientId}
+                origin={params.origin}
+                assessmentDraftId={params.assessmentDraftId}
                 selected={selection.includes(doctor.id)}
                 disabled={maxReached && !selection.includes(doctor.id)}
                 onToggle={() => toggleComparisonProvider(serviceCode, doctor.id)}
               />
             ))}
             {doctors.length > 4 && !showAllDoctors && !selectionActive ? (
-              <Pressable accessibilityRole="button" className="min-h-[52px] items-center justify-center rounded-[13px] border border-action-primary bg-action-subtle px-3" onPress={() => setShowAllDoctors(true)}>
-                <AppText variant="label" className="font-ui-bold text-content-link">إظهار المزيد من الأطباء</AppText>
-                <AppText variant="caption" className="text-content-secondary">لنتائج أنسب إلك، فيك تستخدم التصفية حسب المنطقة والسعر.</AppText>
+              <Pressable
+                accessibilityRole="button"
+                className="min-h-[52px] items-center justify-center rounded-[13px] border border-action-primary bg-action-subtle px-3"
+                onPress={() => setShowAllDoctors(true)}
+              >
+                <AppText variant="label" className="font-ui-bold text-content-link">
+                  إظهار المزيد من الأطباء
+                </AppText>
+                <AppText variant="caption" className="text-content-secondary">
+                  لنتائج أنسب إلك، فيك تستخدم التصفية حسب المنطقة والسعر.
+                </AppText>
               </Pressable>
             ) : null}
           </View>
@@ -250,6 +305,9 @@ function ProviderResultsContent({
                 providerIds: selection.join(','),
                 serviceCode,
                 ...(params.patientId ? { patientId: params.patientId } : {}),
+                ...(params.origin === 'assessment'
+                  ? { origin: params.origin, assessmentDraftId: params.assessmentDraftId }
+                  : {}),
               },
             })
           }

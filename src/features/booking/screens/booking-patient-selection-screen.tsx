@@ -1,8 +1,11 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Radio, RadioGroup } from 'heroui-native';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
+import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
+import { createBookingCareDraft } from '@/features/booking/utils/booking-care-draft';
+import { BookingSaveLaterAction } from '@/features/booking/components/booking-save-later-action';
 import { BookingJourneyProgress } from '@/features/booking/components/booking-journey-progress';
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
 import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
@@ -13,17 +16,28 @@ import { useMockScenario } from '@/shared/mock';
 
 export function BookingPatientSelectionScreen() {
   const router = useRouter();
+  const { saveDraft, hydrated } = useCareDrafts();
   const { scenario } = useMockScenario();
   const { members } = useFamilyMembers();
-  const { providerId, serviceCode, dateKey, dateLabel, timeLabel, patientId } =
-    useLocalSearchParams<{
-      providerId?: string;
-      serviceCode?: string;
-      dateKey?: string;
-      dateLabel?: string;
-      timeLabel?: string;
-      patientId?: string;
-    }>();
+  const {
+    providerId,
+    serviceCode,
+    dateKey,
+    dateLabel,
+    timeLabel,
+    patientId,
+    origin,
+    assessmentDraftId,
+  } = useLocalSearchParams<{
+    providerId?: string;
+    serviceCode?: string;
+    dateKey?: string;
+    dateLabel?: string;
+    timeLabel?: string;
+    patientId?: string;
+    origin?: string;
+    assessmentDraftId?: string;
+  }>();
   const provider = getMockProvider(providerId);
   const chosenDay = provider?.availability.find((day) => day.dateKey === dateKey);
   const validSlot = Boolean(
@@ -34,6 +48,23 @@ export function BookingPatientSelectionScreen() {
   const [selectedId, setSelectedId] = useState(
     patientId && members.some((member) => member.id === patientId) ? patientId : 'patient-001',
   );
+  const bookingFields = useMemo(
+    () => ({
+      providerId: providerId ?? '',
+      serviceCode: serviceCode ?? '',
+      dateKey,
+      dateLabel,
+      timeLabel,
+      patientId: selectedId,
+      ...(origin === 'assessment' ? { origin: 'assessment' as const, assessmentDraftId } : {}),
+    }),
+    [providerId, serviceCode, dateKey, dateLabel, timeLabel, selectedId, origin, assessmentDraftId],
+  );
+  useEffect(() => {
+    if (hydrated && validSlot && providerId && serviceCode) {
+      void saveDraft(createBookingCareDraft(bookingFields, 'patient'));
+    }
+  }, [hydrated, validSlot, providerId, serviceCode, bookingFields, saveDraft]);
   const canContinue =
     canBookForPatient(selectedId, scenario) && members.some((p) => p.id === selectedId);
 
@@ -188,7 +219,7 @@ export function BookingPatientSelectionScreen() {
         </View>
       </ScrollView>
       <View className="border-t border-border-subtle bg-surface-canvas px-4 pb-3 pt-3">
-        <View className="mx-auto w-full max-w-[430px]">
+        <View className="mx-auto w-full max-w-[430px] gap-2">
           <Button
             className="min-h-[52px] rounded-[12px]"
             disabled={!canContinue}
@@ -205,10 +236,12 @@ export function BookingPatientSelectionScreen() {
                   dateLabel: dateLabel ?? '',
                   timeLabel: timeLabel ?? '',
                   patientId: selectedId,
+                  ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
                 },
               });
             }}
           />
+          <BookingSaveLaterAction data={bookingFields} step="patient" />
         </View>
       </View>
     </Screen>

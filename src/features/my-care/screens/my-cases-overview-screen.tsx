@@ -33,7 +33,7 @@ const unique = (items: string[]) => [...new Set(items)].sort((a, b) => a.localeC
 export function MyCasesOverviewScreen() {
   const { tab: requestedTab } = useLocalSearchParams<{ tab?: string }>();
   const router = useRouter();
-  const { drafts, removeDraft } = useCareDrafts();
+  const { drafts, removeDraft, hydrated, persistError } = useCareDrafts();
   const { records, bookingState, careState } = useCareOverviewRecords();
   const { cases, bookings } = partitionCareRecords(records);
 
@@ -60,7 +60,8 @@ export function MyCasesOverviewScreen() {
   const [bookingQuickDraft, setBookingQuickDraft] = useState<CareBookingQuickFilter>('الكل');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const filteredCases = caseQuick === 'مسودة' ? [] : filterCaseRecords(cases, caseQuick, caseAdvanced);
+  const filteredCases =
+    caseQuick === 'مسودة' ? [] : filterCaseRecords(cases, caseQuick, caseAdvanced);
   const filteredBookings = filterBookingRecords(bookings, bookingQuick, bookingAdvanced);
   const casesActive = caseQuick !== 'الكل' || caseAdvancedLabels(caseAdvanced).length > 0;
   const bookingsActive =
@@ -132,23 +133,61 @@ export function MyCasesOverviewScreen() {
             }
           }}
         />
+        {showCases && !hydrated ? (
+          <AppText align="right" variant="caption" className="px-4 text-content-secondary">
+            عم نسترجع مسوداتك المحفوظة...
+          </AppText>
+        ) : null}
+        {showCases && persistError ? (
+          <AppText align="right" variant="caption" className="px-4 text-tone-danger-text">
+            تعذّر مزامنة المسودات مع تخزين الجهاز. تأكد من مساحة التخزين وحاول مرة ثانية.
+          </AppText>
+        ) : null}
+        {showCases && caseQuick === 'مسودة' && hydrated && drafts.length === 0 ? (
+          <AppText align="right" variant="label" className="px-4 text-content-secondary">
+            ما عندك حجوزات محفوظة لإكمالها لاحقاً.
+          </AppText>
+        ) : null}
         {showCases && (caseQuick === 'الكل' || caseQuick === 'مسودة') && drafts.length > 0 ? (
           <View className="gap-2 px-4">
-            <AppText variant="heading-4" className="font-ui-bold">مسوداتك ({drafts.length})</AppText>
-            {drafts.map(draft => (
-              <View key={draft.id} className="gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3">
-                <AppText variant="label" className="font-ui-bold">{draft.title}</AppText>
-                <AppText variant="caption" className="text-content-secondary">{draft.detail} · مسودة</AppText>
-                <View className="flex-row-reverse gap-2">
-                  <Pressable accessibilityRole="button" className="flex-1 items-center rounded-[10px] bg-action-primary p-3" onPress={() => router.push({ pathname: draft.route, params: draft.params ?? {} })}>
-                    <AppText variant="label" className="text-content-on-action">متابعة من حيث توقفت</AppText>
-                  </Pressable>
-                  <Pressable accessibilityRole="button" className="items-center rounded-[10px] border border-border-subtle p-3" onPress={() => removeDraft(draft.id)}>
-                    <AppText variant="label">حذف</AppText>
-                  </Pressable>
+            <AppText variant="heading-4" className="font-ui-bold">
+              مسوداتك ({drafts.length})
+            </AppText>
+            {[...drafts]
+              .sort((a, b) => b.updatedAt - a.updatedAt)
+              .map((draft) => (
+                <View
+                  key={draft.id}
+                  className="gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3"
+                >
+                  <AppText variant="label" className="font-ui-bold">
+                    {draft.title}
+                  </AppText>
+                  <AppText variant="caption" className="text-content-secondary">
+                    {draft.detail} · مسودة
+                  </AppText>
+                  <View className="flex-row-reverse gap-2">
+                    <Pressable
+                      accessibilityRole="button"
+                      className="flex-1 items-center rounded-[10px] bg-action-primary p-3"
+                      onPress={() =>
+                        router.push({ pathname: draft.route, params: draft.params ?? {} })
+                      }
+                    >
+                      <AppText variant="label" className="text-content-on-action">
+                        متابعة من حيث توقفت
+                      </AppText>
+                    </Pressable>
+                    <Pressable
+                      accessibilityRole="button"
+                      className="items-center rounded-[10px] border border-border-subtle p-3"
+                      onPress={() => removeDraft(draft.id)}
+                    >
+                      <AppText variant="label">حذف</AppText>
+                    </Pressable>
+                  </View>
                 </View>
-              </View>
-            ))}
+              ))}
           </View>
         ) : null}
         {showCases && caseQuick === 'مسودة' ? null : showCases ? (

@@ -19,11 +19,15 @@ export function ProviderComparisonScreen() {
     providerIds,
     serviceCode: requestedServiceCode,
     patientId,
+    origin,
+    assessmentDraftId,
     fromSearch,
   } = useLocalSearchParams<{
     providerIds?: string;
     serviceCode?: string;
     patientId?: string;
+    origin?: string;
+    assessmentDraftId?: string;
     fromSearch?: 'tab' | 'search';
   }>();
   const serviceCode = requestedServiceCode?.trim() || null;
@@ -50,7 +54,11 @@ export function ProviderComparisonScreen() {
     }
     router.replace({
       pathname: '/discover/providers/results',
-      params: { ...(serviceCode ? { serviceCode } : {}), ...(patientId ? { patientId } : {}) },
+      params: {
+        ...(serviceCode ? { serviceCode } : {}),
+        ...(patientId ? { patientId } : {}),
+        ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
+      },
     });
   };
 

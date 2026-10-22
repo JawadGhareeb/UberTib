@@ -5,8 +5,13 @@ const ACCESS_TOKEN_KEY = 'auth.access-token';
 const THEME_SCHEME_KEY = 'preferences.theme-scheme';
 const ONBOARDING_COMPLETE_KEY = 'experience.onboarding-complete';
 const PREFERRED_LOCATION_KEY = 'preferences.preferred-location';
+const CARE_DRAFT_INDEX = 'patient.care-drafts.v2.index';
+const careDraftKey = (id: string) => 'patient.care-drafts.v2.' + id;
 
 const webMemory = new Map<string, string>();
+let careDraftStorageQueue: Promise<void> = Promise.resolve();
+let cachedDraftIndex: string | null = null;
+const cachedDraftPayloads = new Map<string, string>();
 
 function getWebPersistentItem(key: string): string | null {
   if (typeof window === 'undefined') {
@@ -85,6 +90,91 @@ async function deleteItem(key: string): Promise<void> {
 }
 
 export const secureStorage = {
+  getCareDrafts: async (): Promise<unknown[]> => {
+    const raw = await getItem(CARE_DRAFT_INDEX);
+    if (!raw) {
+      cachedDraftIndex = null;
+      cachedDraftPayloads.clear();
+      return [];
+    }
+    let ids: unknown;
+    try {
+      ids = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+    if (!Array.isArray(ids)) return [];
+    const entries = await Promise.all(
+      ids.slice(0, 30).map(async (id) => {
+        if (typeof id !== 'string' || !/^[a-zA-Z0-9_-]{1,100}$/.test(id)) return null;
+        const stored = await getItem(careDraftKey(id));
+        if (!stored) return null;
+        cachedDraftPayloads.set(id, stored);
+        try {
+          return JSON.parse(stored) as unknown;
+        } catch {
+          return null;
+        }
+      }),
+    );
+    cachedDraftIndex = raw;
+    return entries.filter((item): item is object => item !== null) as unknown[];
+  },
+  setCareDrafts: (drafts: readonly { id: string }[]): Promise<void> => {
+    const task = careDraftStorageQueue
+      .catch(() => undefined)
+      .then(async () => {
+        const existing = cachedDraftIndex ?? (await getItem(CARE_DRAFT_INDEX));
+        let oldIds: string[] = [];
+        try {
+          oldIds = existing ? (JSON.parse(existing) as string[]) : [];
+        } catch {
+          /* stale index */
+        }
+        const fresh = drafts.slice(0, 20);
+        for (const draft of fresh) {
+          if (!/^[a-zA-Z0-9_-]{1,100}$/.test(draft.id)) throw new Error('Invalid draft id');
+          const payload = JSON.stringify(draft);
+          if (cachedDraftPayloads.get(draft.id) !== payload) {
+            await setItem(careDraftKey(draft.id), payload);
+            cachedDraftPayloads.set(draft.id, payload);
+          }
+        }
+        const nextIndex = JSON.stringify(fresh.map((item) => item.id));
+        if (nextIndex !== existing) {
+          await setItem(CARE_DRAFT_INDEX, nextIndex);
+        }
+        cachedDraftIndex = nextIndex;
+        const removed = oldIds.filter((id) => !fresh.some((draft) => draft.id === id));
+        await Promise.all(removed.map((id) => deleteItem(careDraftKey(id))));
+        removed.forEach((id) => cachedDraftPayloads.delete(id));
+      });
+    careDraftStorageQueue = task.catch(() => undefined);
+    return task;
+  },
+  clearCareDrafts: (): Promise<void> => {
+    const task = careDraftStorageQueue
+      .catch(() => undefined)
+      .then(async () => {
+        const raw = cachedDraftIndex ?? (await getItem(CARE_DRAFT_INDEX));
+        let ids: string[] = [];
+        try {
+          ids = raw ? (JSON.parse(raw) as string[]) : [];
+        } catch {
+          /* stale index */
+        }
+        await deleteItem(CARE_DRAFT_INDEX);
+        await Promise.all(
+          ids
+            .filter((id) => /^[a-zA-Z0-9_-]{1,100}$/.test(id))
+            .map((id) => deleteItem(careDraftKey(id))),
+        );
+        cachedDraftIndex = null;
+        cachedDraftPayloads.clear();
+      });
+    careDraftStorageQueue = task.catch(() => undefined);
+    return task;
+  },
   getAccessToken: () => getItem(ACCESS_TOKEN_KEY),
   setAccessToken: (token: string) => setItem(ACCESS_TOKEN_KEY, token),
   clearAccessToken: () => deleteItem(ACCESS_TOKEN_KEY),

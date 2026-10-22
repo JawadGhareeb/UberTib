@@ -13,6 +13,8 @@ export function DiscoverDoctorResultCard({
   doctor,
   serviceCode,
   patientId,
+  origin,
+  assessmentDraftId,
   selected,
   disabled,
   disabledReason,
@@ -22,6 +24,8 @@ export function DiscoverDoctorResultCard({
   doctor: Doctor;
   serviceCode: string;
   patientId?: string;
+  origin?: string;
+  assessmentDraftId?: string;
   selected: boolean;
   disabled: boolean;
   disabledReason?: string;
@@ -123,7 +127,12 @@ export function DiscoverDoctorResultCard({
           onPress={() =>
             router.push({
               pathname: '/discover/provider/[providerId]',
-              params: { providerId: doctor.id, serviceCode, ...(patientId ? { patientId } : {}) },
+              params: {
+                providerId: doctor.id,
+                serviceCode,
+                ...(patientId ? { patientId } : {}),
+                ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
+              },
             })
           }
         >

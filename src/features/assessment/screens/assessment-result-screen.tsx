@@ -1,15 +1,38 @@
 import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
+import { useEffect, useMemo } from 'react';
+import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { useAuthSession } from '@/providers/auth-session-provider';
-import { AppIcon, AppText } from '@/shared/components/ui';
+import { AppIcon, AppText, Button } from '@/shared/components/ui';
 
 export function AssessmentResultScreen() {
   const router = useRouter();
+  const { hydrated, saveDraft } = useCareDrafts();
   const { patient, complaint, answers, location, mediaAttachments } = useAssessmentSession();
   const { isAuthenticated } = useAuthSession();
+  const searchParams = useMemo(
+    () => ({
+      serviceCode: 'dental-checkup',
+      origin: 'assessment',
+      assessmentDraftId: 'assessment-' + patient,
+      ...(isAuthenticated ? { patientId: patient === 'adam' ? 'patient-002' : 'patient-001' } : {}),
+    }),
+    [patient, isAuthenticated],
+  );
+  useEffect(() => {
+    if (!hydrated) return;
+    void saveDraft({
+      id: 'assessment-' + patient,
+      kind: 'assessment',
+      title: 'اختيار طبيب للفحص الأولي',
+      detail: complaint + (location ? ' · ' + location : ''),
+      route: '/discover/providers/results',
+      params: searchParams,
+    });
+  }, [hydrated, patient, complaint, location, searchParams, saveDraft]);
 
   return (
     <AssessmentScaffold
@@ -20,8 +43,7 @@ export function AssessmentResultScreen() {
         router.push({
           pathname: '/discover/providers/results',
           params: {
-            serviceCode: 'dental-checkup',
-            ...(isAuthenticated ? { patientId: patient === 'adam' ? 'patient-002' : 'patient-001' } : {}),
+            ...searchParams,
           },
         })
       }
@@ -136,6 +158,21 @@ export function AssessmentResultScreen() {
           تقدر تبدأ بفحص أسنان عام. بعد التقييم السريري الطبيب بيحدد إذا بتحتاج إجراء تاني.
         </AppText>
       </View>
+      <Button
+        label="إكمال اختيار الطبيب لاحقاً"
+        variant="outline"
+        onPress={async () => {
+          const saved = await saveDraft({
+            id: 'assessment-' + patient,
+            kind: 'assessment',
+            title: 'اختيار طبيب للفحص الأولي',
+            detail: complaint + (location ? ' · ' + location : ''),
+            route: '/discover/providers/results',
+            params: searchParams,
+          });
+          if (saved) router.replace({ pathname: '/(tabs)/care', params: { tab: 'cases' } });
+        }}
+      />
       <Pressable
         accessibilityRole="button"
         className="min-h-[46px] items-center justify-center rounded-[12px] border border-border-subtle bg-surface-default"

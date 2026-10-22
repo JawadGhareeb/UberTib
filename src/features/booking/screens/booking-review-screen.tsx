@@ -1,7 +1,7 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Accordion, Radio, RadioGroup } from 'heroui-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Switch, View } from 'react-native';
 import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
@@ -26,7 +26,9 @@ import {
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
 import { useAuthSession } from '@/providers/auth-session-provider';
-import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
+import { bookingCareDraftId, useCareDrafts } from '@/features/my-care/state/care-draft-provider';
+import { createBookingCareDraft } from '@/features/booking/utils/booking-care-draft';
+import { BookingSaveLaterAction } from '@/features/booking/components/booking-save-later-action';
 import { useAuthAccess } from '@/providers/auth-access-provider';
 import { AppIcon, AppText, Button, Screen, StateView, TextField } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
@@ -49,7 +51,7 @@ export function BookingReviewScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthSession();
   const { requireAuth } = useAuthAccess();
-  const { removeDraft } = useCareDrafts();
+  const { removeDraft, saveDraft, getDraft, hydrated } = useCareDrafts();
   const { scenario, submitBookingRequest } = useMockScenario();
   const { members } = useFamilyMembers();
   const {
@@ -70,6 +72,8 @@ export function BookingReviewScreen() {
     timeLabel,
     patientId,
     reason: legacyReason,
+    origin,
+    assessmentDraftId,
   } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
@@ -78,8 +82,11 @@ export function BookingReviewScreen() {
     timeLabel?: string;
     patientId?: string;
     reason?: string;
+    origin?: string;
+    assessmentDraftId?: string;
   }>();
   const [submitted, setSubmitted] = useState(false);
+  const [restored, setRestored] = useState(false);
   const [shareVisitSummary, setShareVisitSummary] = useState(true);
   const [reasonSelection, setReasonSelection] = useState<BookingVisitReason | null>(null);
   const [selectingFile, setSelectingFile] = useState(false);
@@ -115,6 +122,81 @@ export function BookingReviewScreen() {
   const serviceName =
     penServiceGroups.flatMap((group) => group.families).find((family) => family.id === serviceCode)
       ?.title ?? 'الخدمة المختارة';
+  // Restore the persisted text and preferences after async hydration.
+  useEffect(() => {
+    if (!hydrated || restored || !providerId || !serviceCode) return;
+    const saved = getDraft(bookingCareDraftId(providerId, serviceCode))?.booking;
+    let canceled = false;
+    void Promise.resolve().then(() => {
+      if (canceled) return;
+      if (saved) {
+        setReasonSelection(saved.visitReason ?? 'new');
+        setNote(saved.note ?? '');
+        setShareVisitSummary(saved.shareVisitSummary ?? true);
+        if (saved.attachmentName) {
+          setAttachmentError(
+            'المرفق السابق يحتاج إعادة اختيار قبل إرسال الطلب: ' + saved.attachmentName,
+          );
+        }
+      }
+      setRestored(true);
+    });
+    return () => {
+      canceled = true;
+    };
+  }, [hydrated, restored, providerId, serviceCode, getDraft, setNote]);
+  const bookingFields = useMemo(
+    () => ({
+      providerId: providerId ?? '',
+      serviceCode: serviceCode ?? '',
+      dateKey,
+      dateLabel,
+      timeLabel,
+      patientId,
+      visitReason: activeReason,
+      note,
+      shareVisitSummary,
+      ...(attachment ? { attachmentName: attachment.fileName } : {}),
+      ...(origin === 'assessment' ? { origin: 'assessment' as const, assessmentDraftId } : {}),
+    }),
+    [
+      providerId,
+      serviceCode,
+      dateKey,
+      dateLabel,
+      timeLabel,
+      patientId,
+      activeReason,
+      note,
+      shareVisitSummary,
+      attachment,
+      origin,
+      assessmentDraftId,
+    ],
+  );
+  useEffect(() => {
+    if (
+      !hydrated ||
+      !restored ||
+      submitted ||
+      !provider ||
+      !serviceCode ||
+      !slotStillInSnapshot ||
+      !chosenPatient
+    )
+      return;
+    void saveDraft(createBookingCareDraft(bookingFields, 'review'));
+  }, [
+    hydrated,
+    restored,
+    submitted,
+    provider,
+    serviceCode,
+    slotStillInSnapshot,
+    chosenPatient,
+    bookingFields,
+    saveDraft,
+  ]);
 
   const pickAttachment = async () => {
     if (selectingFile) return;
@@ -157,9 +239,28 @@ export function BookingReviewScreen() {
     return (
       <Screen>
         <StateView
-          actionLabel="العودة"
-          onAction={() => router.back()}
-          title={!patientCanBook ? 'التفويض لا يسمح بالحجز لهذا المريض' : 'بيانات الحجز غير مكتملة'}
+          actionLabel={provider && serviceCode && patientCanBook ? 'اختيار موعد جديد' : 'العودة'}
+          onAction={() => {
+            if (provider && serviceCode && patientCanBook) {
+              router.replace({
+                pathname: '/booking/slots',
+                params: {
+                  providerId: provider.id,
+                  serviceCode,
+                  ...(patientId ? { patientId } : {}),
+                  ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
+                },
+              });
+            } else {
+              router.back();
+            }
+          }}
+          title={
+            !patientCanBook
+              ? 'التفويض لا يسمح بالحجز لهذا المريض'
+              : 'الوقت المحفوظ لم يعد متاحاً أو بيانات الحجز غير مكتملة'
+          }
+          description="المسودة محفوظة، لكن لازم نتأكد من توفر الموعد وصلاحية الحجز قبل الإرسال."
         />
       </Screen>
     );
@@ -227,7 +328,8 @@ export function BookingReviewScreen() {
       },
     });
     clearDraft();
-    removeDraft('booking-' + provider.id + '-' + serviceCode);
+    void removeDraft(bookingCareDraftId(provider.id, serviceCode ?? ''));
+    if (assessmentDraftId) void removeDraft(assessmentDraftId);
     setSubmitted(true);
   };
 
@@ -588,7 +690,7 @@ export function BookingReviewScreen() {
         ) : null}
       </KeyboardResponsiveScrollView>
       <View className="border-t border-border-subtle bg-surface-canvas px-4 pb-3 pt-3">
-        <View className="mx-auto w-full max-w-[430px]">
+        <View className="mx-auto w-full max-w-[430px] gap-2">
           <Button
             className="min-h-[52px] rounded-[12px]"
             disabled={Boolean(revalidationFailure)}
@@ -596,6 +698,7 @@ export function BookingReviewScreen() {
             label="إرسال طلب الحجز"
             onPress={submitBooking}
           />
+          <BookingSaveLaterAction data={bookingFields} step="review" />
         </View>
       </View>
       <AssessmentImagePreview

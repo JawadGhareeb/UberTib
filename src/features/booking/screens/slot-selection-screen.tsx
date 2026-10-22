@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 
 import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
+import { createBookingCareDraft } from '@/features/booking/utils/booking-care-draft';
+import { BookingSaveLaterAction } from '@/features/booking/components/booking-save-later-action';
 import { BookingJourneyProgress } from '@/features/booking/components/booking-journey-progress';
 import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
 import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
@@ -30,18 +32,37 @@ function monthName(key: string) {
 
 export function SlotSelectionScreen() {
   const router = useRouter();
-  const { saveDraft } = useCareDrafts();
+  const { saveDraft, hydrated, removeDraft } = useCareDrafts();
   const { isRTL } = useAppDirection();
   const { scenario } = useMockScenario();
   const { members } = useFamilyMembers();
-  const { providerId, serviceCode, patientId } = useLocalSearchParams<{
+  const {
+    providerId,
+    serviceCode,
+    patientId,
+    dateKey: savedDateKey,
+    timeLabel: savedTime,
+    origin,
+    assessmentDraftId,
+  } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
     patientId?: string;
+    dateKey?: string;
+    timeLabel?: string;
+    origin?: string;
+    assessmentDraftId?: string;
   }>();
   const provider = useMemo(() => getMockProvider(providerId), [providerId]);
-  const [dateKey, setDateKey] = useState(provider?.availability[0]?.dateKey ?? '');
-  const [slot, setSlot] = useState('');
+  const [dateKey, setDateKey] = useState(savedDateKey ?? provider?.availability[0]?.dateKey ?? '');
+  const [slot, setSlot] = useState(
+    savedTime &&
+      provider?.availability.some(
+        (day) => day.dateKey === savedDateKey && day.slots.includes(savedTime),
+      )
+      ? savedTime
+      : '',
+  );
 
   const selectedDay = useMemo(
     () => provider?.availability.find((day) => day.dateKey === dateKey),
@@ -50,17 +71,30 @@ export function SlotSelectionScreen() {
   const serviceName =
     penServiceGroups.flatMap((group) => group.families).find((family) => family.id === serviceCode)
       ?.title ?? 'الخدمة المختارة';
+  const bookingFields = useMemo(
+    () =>
+      provider && serviceCode
+        ? {
+            providerId: provider.id,
+            serviceCode,
+            ...(dateKey ? { dateKey, dateLabel: selectedDay?.dateLabel } : {}),
+            ...(slot && selectedDay ? { timeLabel: slot } : {}),
+            ...(patientId ? { patientId } : {}),
+            ...(origin === 'assessment'
+              ? { origin: 'assessment' as const, assessmentDraftId }
+              : {}),
+          }
+        : null,
+    [provider, serviceCode, dateKey, selectedDay, slot, patientId, origin, assessmentDraftId],
+  );
   useEffect(() => {
-    if (!provider || !serviceCode) return;
-    saveDraft({
-      id: 'booking-' + provider.id + '-' + serviceCode,
-      kind: 'booking',
-      title: serviceName,
-      detail: provider.name + (slot ? ' · ' + dateKey + ' · ' + slot : ' · اختيار موعد'),
-      route: '/booking/slots',
-      params: { providerId: provider.id, serviceCode, ...(patientId ? { patientId } : {}) },
-    });
-  }, [provider, serviceCode, dateKey, slot, patientId, saveDraft, serviceName]);
+    if (!hydrated || !bookingFields) return;
+    void saveDraft(createBookingCareDraft(bookingFields, 'slots'));
+    if (origin === 'assessment') {
+      // The single assisted journey now continues as this appointment draft.
+      if (assessmentDraftId) void removeDraft(assessmentDraftId);
+    }
+  }, [hydrated, bookingFields, origin, assessmentDraftId, saveDraft, removeDraft]);
 
   if (!provider || !provider.serviceCodes.includes(serviceCode ?? '')) {
     return (
@@ -254,7 +288,7 @@ export function SlotSelectionScreen() {
         </View>
       </ScrollView>
       <View className="border-t border-border-subtle bg-surface-default px-4 pb-3 pt-3">
-        <View className="mx-auto w-full max-w-[430px]">
+        <View className="mx-auto w-full max-w-[430px] gap-2">
           <Button
             className="min-h-[52px] rounded-[12px]"
             disabled={!slot || !selectedDay}
@@ -282,10 +316,12 @@ export function SlotSelectionScreen() {
                   serviceCode: serviceCode ?? '',
                   timeLabel: slot,
                   ...(patientId ? { patientId } : {}),
+                  ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
                 },
               });
             }}
           />
+          {bookingFields ? <BookingSaveLaterAction data={bookingFields} step="slots" /> : null}
         </View>
       </View>
     </Screen>

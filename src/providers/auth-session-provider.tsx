@@ -24,6 +24,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
     await Promise.allSettled([
       secureStorage.clearAccessToken(),
       secureStorage.clearPreferredLocation(),
+      secureStorage.clearCareDrafts(),
     ]);
     queryClient.clear();
     setIsAuthenticated(false);

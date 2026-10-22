@@ -20,11 +20,15 @@ export function ProviderBranchScreen() {
     providerId = 'provider-layan',
     serviceCode = 'root-canal',
     patientId,
+    origin,
+    assessmentDraftId,
   } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
     fromProfile?: string;
     patientId?: string;
+    origin?: string;
+    assessmentDraftId?: string;
   }>();
 
   const branch = getBranchView(providerId);
@@ -61,7 +65,12 @@ export function ProviderBranchScreen() {
   const openDoctor = (id: string, fallbackService: string) => {
     router.push({
       pathname: '/discover/provider/[providerId]',
-      params: { providerId: id, serviceCode: fallbackService, ...(patientId ? { patientId } : {}) },
+      params: {
+        providerId: id,
+        serviceCode: fallbackService,
+        ...(patientId ? { patientId } : {}),
+        ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
+      },
     });
   };
   const selectedDoctorName = doctor.name;
@@ -271,6 +280,7 @@ export function ProviderBranchScreen() {
                     providerId: doctor.id,
                     serviceCode,
                     ...(patientId ? { patientId } : {}),
+                    ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
                   },
                 })
               }
