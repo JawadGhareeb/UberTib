@@ -67,7 +67,7 @@ assert.ok(
   assessmentResult.includes("origin: 'assessment'") && assessmentResult.includes('saveDraft('),
 );
 assert.ok(
-  care.includes("caseQuick === 'مسودة'") &&
+  care.includes('filterDraftCaseRecords(drafts, caseQuick, caseAdvanced)') &&
     care.includes('draft.route') &&
     care.includes('removeDraft(draft.id)'),
 );

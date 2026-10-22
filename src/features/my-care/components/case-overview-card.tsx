@@ -5,6 +5,8 @@ import { View } from 'react-native';
 import { CenteredActionIcon } from '@/shared/components/ui/centered-action-icon';
 import { AppText } from '@/shared/components/ui';
 import type { MockCareCase } from '../mocks/care.mock';
+import type { LocalCareDraft } from '@/features/my-care/state/care-draft-provider';
+import { getDraftCaseDisplay } from '../model/care-draft-display';
 import { getCareStageSummary } from '../model/care-overview-view';
 import { CareCaseStatusBadge } from './care-case-status-badge';
 import { CareRecordTitle } from './care-record-title';
@@ -28,16 +30,40 @@ function CareProgressTrack({ progress }: { progress: number }) {
   );
 }
 
-/** The single card style for every treatment case, with two explicit actions. */
-export function CaseRow({ item }: { item: MockCareCase }) {
+/** One HeroUI case card for actual treatment and not-yet-submitted drafts. */
+export function CaseRow({
+  item,
+  onContinueDraft,
+  onRemoveDraft,
+}: {
+  item: MockCareCase | LocalCareDraft;
+  onContinueDraft?: (draft: LocalCareDraft) => void;
+  onRemoveDraft?: (draft: LocalCareDraft) => void;
+}) {
   const router = useRouter();
-  const { finished, total } = getCareStageSummary(item);
-  const progress = Math.min(100, Math.max(0, item.progress));
+  const careCase = 'progress' in item ? item : null;
+  const draft = careCase ? null : (item as LocalCareDraft);
+  const summary = careCase ? getCareStageSummary(careCase) : null;
+  const progress = careCase ? Math.min(100, Math.max(0, careCase.progress)) : 0;
+  const display = draft
+    ? getDraftCaseDisplay(draft)
+    : {
+        title: careCase!.title,
+        provider: careCase!.provider,
+        branch: careCase!.branch,
+        detail: '',
+      };
 
-  const openDetails = () =>
-    router.push({ pathname: '/care/[caseId]/timeline', params: { caseId: item.id } });
-  const openPlan = () =>
-    router.push({ pathname: '/care/[caseId]/plan', params: { caseId: item.id } });
+  const openDetails = () => {
+    if (draft) onContinueDraft?.(draft);
+    else if (careCase)
+      router.push({ pathname: '/care/[caseId]/timeline', params: { caseId: careCase.id } });
+  };
+  const openPlanOrDelete = () => {
+    if (draft) onRemoveDraft?.(draft);
+    else if (careCase)
+      router.push({ pathname: '/care/[caseId]/plan', params: { caseId: careCase.id } });
+  };
 
   return (
     <HeroCard
@@ -49,9 +75,9 @@ export function CaseRow({ item }: { item: MockCareCase }) {
         <View className="min-w-0 flex-1 items-end gap-1">
           <View className="w-full flex-row-reverse items-center justify-between gap-2">
             <View className="min-w-0 flex-1">
-              <CareRecordTitle title={item.title} provider={item.provider} />
+              <CareRecordTitle title={display.title} provider={display.provider} />
             </View>
-            <CareCaseStatusBadge careCase={item} />
+            <CareCaseStatusBadge careCase={careCase ?? undefined} draft={!!draft} />
           </View>
           <AppText
             align="right"
@@ -59,16 +85,25 @@ export function CaseRow({ item }: { item: MockCareCase }) {
             className="text-content-secondary"
             numberOfLines={1}
           >
-            {item.branch}
+            {display.branch}
           </AppText>
         </View>
       </View>
 
-      {total > 0 ? (
+      {draft ? (
+        <View className="gap-1 rounded-[11px] bg-surface-subtle px-3 py-2.5">
+          <AppText align="right" variant="caption" className="text-content-secondary">
+            آخر خطوة محفوظة
+          </AppText>
+          <AppText align="right" variant="label" className="font-ui-medium text-content-primary">
+            {display.detail}
+          </AppText>
+        </View>
+      ) : summary && summary.total > 0 ? (
         <View className="gap-2" style={{ flexShrink: 0 }}>
           <View className="flex-row-reverse items-center justify-between gap-2">
             <AppText align="right" variant="caption" className="text-content-secondary">
-              {finished} من {total} مراحل مكتملة
+              {summary.finished} من {summary.total} مراحل مكتملة
             </AppText>
             <AppText variant="caption" className="font-ui-medium text-content-link">
               {progress}%
@@ -85,16 +120,16 @@ export function CaseRow({ item }: { item: MockCareCase }) {
           onPress={openDetails}
         >
           <HeroButton.Label className="font-ui-semibold text-content-on-action">
-            تفاصيل الحالة
+            {draft ? 'متابعة المسودة' : 'تفاصيل الحالة'}
           </HeroButton.Label>
         </HeroButton>
         <HeroButton
           variant="outline"
           className="min-h-[46px] min-w-0 flex-1 rounded-[12px] border-action-primary"
-          onPress={openPlan}
+          onPress={openPlanOrDelete}
         >
           <HeroButton.Label className="font-ui-semibold text-content-link">
-            خطة العلاج
+            {draft ? 'حذف المسودة' : 'خطة العلاج'}
           </HeroButton.Label>
         </HeroButton>
       </View>

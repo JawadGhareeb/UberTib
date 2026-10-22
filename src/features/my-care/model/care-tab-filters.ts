@@ -1,11 +1,18 @@
 import { isUpcomingMockBooking } from '@/features/booking/mocks/bookings.mock';
 import type { BookingItem } from './overview-items';
 import type { MockCareCase } from '../mocks/care.mock';
+import type { LocalCareDraft } from '@/features/my-care/state/care-draft-provider';
+import { getDraftCaseDisplay } from './care-draft-display';
 
 export type CareMainTab = 'cases' | 'bookings';
 export type CareCaseQuickFilter = 'الكل' | 'قيد العلاج' | 'مكتملة' | 'مسودة';
 export type CareBookingQuickFilter = 'الكل' | 'القادمة' | 'بانتظار التأكيد';
-export const caseQuickFilters: readonly CareCaseQuickFilter[] = ['الكل', 'قيد العلاج', 'مكتملة', 'مسودة'];
+export const caseQuickFilters: readonly CareCaseQuickFilter[] = [
+  'الكل',
+  'قيد العلاج',
+  'مكتملة',
+  'مسودة',
+];
 export const bookingQuickFilters: readonly CareBookingQuickFilter[] = [
   'الكل',
   'القادمة',
@@ -68,7 +75,11 @@ export function filterCaseRecords(
     .filter(
       (careCase) =>
         (quick === 'الكل' ||
-          (quick === 'مكتملة' ? careCase.progress >= 100 : quick === 'مسودة' ? false : careCase.progress < 100)) &&
+          (quick === 'مكتملة'
+            ? careCase.progress >= 100
+            : quick === 'مسودة'
+              ? false
+              : careCase.progress < 100)) &&
         (!advanced.actionRequired || isCaseActionRequired(careCase)) &&
         (!advanced.provider || careCase.provider === advanced.provider) &&
         (!advanced.clinic || careCase.branch === advanced.clinic),
@@ -79,6 +90,25 @@ export function filterCaseRecords(
         Number(a.progress >= 100) - Number(b.progress >= 100) ||
         a.id.localeCompare(b.id),
     );
+}
+
+/** A draft is a case-list status, not a separate treatment section. */
+export function filterDraftCaseRecords(
+  drafts: readonly LocalCareDraft[],
+  quick: CareCaseQuickFilter,
+  advanced: CaseAdvancedFilters,
+): LocalCareDraft[] {
+  if (quick !== 'الكل' && quick !== 'مسودة') return [];
+  return drafts
+    .filter((draft) => {
+      const { provider, branch } = getDraftCaseDisplay(draft);
+      return (
+        (!advanced.provider || provider === advanced.provider) &&
+        (!advanced.clinic || branch === advanced.clinic)
+      );
+      // Every unfinished draft has a user action: resume the interrupted flow.
+    })
+    .sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
 export function filterBookingRecords(

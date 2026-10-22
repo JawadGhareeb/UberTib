@@ -5,6 +5,7 @@ import { ReadStateNotice } from '@/shared/components/ui';
 import type { StructuralReadState } from '@/shared/types/structural-read-state';
 import type { BookingItem } from '../model/overview-items';
 import type { MockCareCase } from '../mocks/care.mock';
+import type { LocalCareDraft } from '@/features/my-care/state/care-draft-provider';
 import { CaseRow } from './case-overview-card';
 import { BookingRow } from './booking-overview-card';
 import { CareTabEmpty } from './care-tab-empty';
@@ -18,14 +19,23 @@ function StateNotice({ state }: { state: StructuralReadState }) {
 
 export function CareCasesContent({
   cases,
+  drafts = [],
   state,
   filterActive,
+  onDraftContinue,
+  onDraftRemove,
 }: {
   cases: MockCareCase[];
+  drafts?: LocalCareDraft[];
   state: StructuralReadState;
   filterActive: boolean;
+  onDraftContinue?: (draft: LocalCareDraft) => void;
+  onDraftRemove?: (draft: LocalCareDraft) => void;
 }) {
-  if (!canShowRecords(state) || cases.length === 0) {
+  if (
+    (!canShowRecords(state) && drafts.length === 0) ||
+    (cases.length === 0 && drafts.length === 0)
+  ) {
     return (
       <View className="gap-3 px-4">
         <CareTabEmpty tab="cases" state={state} filterActive={filterActive} />
@@ -36,9 +46,15 @@ export function CareCasesContent({
   return (
     <View className="gap-3 px-4">
       <StateNotice state={state} />
-      {cases.map((item) => (
-        <CaseRow key={item.id} item={item} />
+      {drafts.map((draft) => (
+        <CaseRow
+          key={draft.id}
+          item={draft}
+          onContinueDraft={onDraftContinue}
+          onRemoveDraft={onDraftRemove}
+        />
       ))}
+      {canShowRecords(state) ? cases.map((item) => <CaseRow key={item.id} item={item} />) : null}
     </View>
   );
 }

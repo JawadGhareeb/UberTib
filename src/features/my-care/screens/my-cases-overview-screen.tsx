@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Pressable, ScrollView, View } from 'react-native';
-import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
+import { ScrollView } from 'react-native';
+import { useCareDrafts, type LocalCareDraft } from '@/features/my-care/state/care-draft-provider';
+import { getDraftCaseDisplay } from '../model/care-draft-display';
 
 import { AppHeader } from '@/shared/components/navigation';
 import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-tab-metrics';
@@ -21,6 +22,7 @@ import {
   defaultCaseAdvanced,
   filterBookingRecords,
   filterCaseRecords,
+  filterDraftCaseRecords,
   type BookingAdvancedFilters,
   type CaseAdvancedFilters,
   type CareBookingQuickFilter,
@@ -60,17 +62,26 @@ export function MyCasesOverviewScreen() {
   const [bookingQuickDraft, setBookingQuickDraft] = useState<CareBookingQuickFilter>('الكل');
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const filteredCases =
-    caseQuick === 'مسودة' ? [] : filterCaseRecords(cases, caseQuick, caseAdvanced);
+  const filteredCases = filterCaseRecords(cases, caseQuick, caseAdvanced);
+  const filteredDrafts = hydrated ? filterDraftCaseRecords(drafts, caseQuick, caseAdvanced) : [];
   const filteredBookings = filterBookingRecords(bookings, bookingQuick, bookingAdvanced);
   const casesActive = caseQuick !== 'الكل' || caseAdvancedLabels(caseAdvanced).length > 0;
   const bookingsActive =
     bookingQuick !== 'الكل' || bookingAdvancedLabels(bookingAdvanced).length > 0;
   const showCases = tab === 'cases';
+  const draftDoctors = drafts
+    .map(getDraftCaseDisplay)
+    .filter((item) => item.provider !== 'لم يتم اختيار الطبيب بعد');
   const options = showCases
     ? {
-        providers: unique(cases.map((item) => item.provider)),
-        clinics: unique(cases.map((item) => item.branch)),
+        providers: unique([
+          ...cases.map((item) => item.provider),
+          ...draftDoctors.map((item) => item.provider),
+        ]),
+        clinics: unique([
+          ...cases.map((item) => item.branch),
+          ...draftDoctors.map((item) => item.branch),
+        ]),
         patients: [] as string[],
       }
     : {
@@ -78,6 +89,20 @@ export function MyCasesOverviewScreen() {
         clinics: unique(bookings.map((item) => item.branch)),
         patients: unique(bookings.map((item) => item.patientName)),
       };
+
+  const resumeDraft = (draft: LocalCareDraft) => {
+    router.push({
+      pathname:
+        draft.kind === 'assessment' && !draft.assessment ? '/assessment/start' : draft.route,
+      params: {
+        ...(draft.params ?? {}),
+        ...(draft.kind === 'assessment' && draft.assessment ? { resumeDraftId: draft.id } : {}),
+      },
+    });
+  };
+  const deleteDraft = (draft: LocalCareDraft) => {
+    void removeDraft(draft.id);
+  };
 
   const openFilters = () => {
     setCaseQuickDraft(caseQuick);
@@ -143,66 +168,15 @@ export function MyCasesOverviewScreen() {
             تعذّر مزامنة المسودات مع تخزين الجهاز. تأكد من مساحة التخزين وحاول مرة ثانية.
           </AppText>
         ) : null}
-        {showCases && caseQuick === 'مسودة' && hydrated && drafts.length === 0 ? (
-          <AppText align="right" variant="label" className="px-4 text-content-secondary">
-            ما عندك خطوات محفوظة لإكمالها لاحقاً.
-          </AppText>
-        ) : null}
-        {showCases && (caseQuick === 'الكل' || caseQuick === 'مسودة') && drafts.length > 0 ? (
-          <View className="gap-2 px-4">
-            <AppText variant="heading-4" className="font-ui-bold">
-              مسوداتك ({drafts.length})
-            </AppText>
-            {[...drafts]
-              .sort((a, b) => b.updatedAt - a.updatedAt)
-              .map((draft) => (
-                <View
-                  key={draft.id}
-                  className="gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3"
-                >
-                  <AppText variant="label" className="font-ui-bold">
-                    {draft.title}
-                  </AppText>
-                  <AppText variant="caption" className="text-content-secondary">
-                    {draft.detail} · مسودة
-                  </AppText>
-                  <View className="flex-row-reverse gap-2">
-                    <Pressable
-                      accessibilityRole="button"
-                      className="flex-1 items-center rounded-[10px] bg-action-primary p-3"
-                      onPress={() =>
-                        router.push({
-                          pathname:
-                            draft.kind === 'assessment' && !draft.assessment
-                              ? '/assessment/start'
-                              : draft.route,
-                          params: {
-                            ...(draft.params ?? {}),
-                            ...(draft.kind === 'assessment' && draft.assessment
-                              ? { resumeDraftId: draft.id }
-                              : {}),
-                          },
-                        })
-                      }
-                    >
-                      <AppText variant="label" className="text-content-on-action">
-                        متابعة من حيث توقفت
-                      </AppText>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      className="items-center rounded-[10px] border border-border-subtle p-3"
-                      onPress={() => removeDraft(draft.id)}
-                    >
-                      <AppText variant="label">حذف</AppText>
-                    </Pressable>
-                  </View>
-                </View>
-              ))}
-          </View>
-        ) : null}
-        {showCases && caseQuick === 'مسودة' ? null : showCases ? (
-          <CareCasesContent cases={filteredCases} state={careState} filterActive={casesActive} />
+        {showCases ? (
+          <CareCasesContent
+            cases={filteredCases}
+            drafts={filteredDrafts}
+            state={careState}
+            filterActive={casesActive}
+            onDraftContinue={resumeDraft}
+            onDraftRemove={deleteDraft}
+          />
         ) : (
           <CareBookingsContent
             bookings={filteredBookings}
