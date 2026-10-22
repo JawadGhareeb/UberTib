@@ -11,6 +11,8 @@ type MediaSourceDialogProps = {
   onClose: () => void;
   onSelect: (source: MediaSource) => void;
   allowFiles?: boolean;
+  allowedSources?: readonly MediaSource[];
+  videoMode?: boolean;
   title?: string;
   description?: string;
   busy?: boolean;
@@ -41,6 +43,8 @@ export function MediaSourceDialog({
   onClose,
   onSelect,
   allowFiles = true,
+  allowedSources,
+  videoMode = false,
   title = 'إضافة صورة أو ملف',
   description = 'اختر المصدر الذي يناسبك',
   busy = false,
@@ -84,7 +88,11 @@ export function MediaSourceDialog({
           </View>
           <View className="mt-5 gap-2">
             {options
-              .filter((option) => allowFiles || option.key !== 'files')
+              .filter(
+                (option) =>
+                  (allowFiles || option.key !== 'files') &&
+                  (!allowedSources || allowedSources.includes(option.key)),
+              )
               .map((option) => (
                 <Button
                   key={option.key}
@@ -93,7 +101,9 @@ export function MediaSourceDialog({
                   isDisabled={busy}
                   className="min-h-[72px] rounded-form-field border-border-subtle bg-surface-default"
                   onPress={() => onSelect(option.key)}
-                  accessibilityLabel={option.label}
+                  accessibilityLabel={
+                    videoMode && option.key === 'camera' ? 'تسجيل فيديو' : option.label
+                  }
                 >
                   <View className="w-full flex-row items-center gap-3 px-1">
                     <View className="h-11 w-11 items-center justify-center rounded-form-field bg-action-subtle">

@@ -17,55 +17,18 @@ import {
 } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
+import {
+  categoryMediaSource,
+  documentPickerMimes,
+  getCategoryExtensions,
+  isAttachmentCategory,
+  isPreviewableImage,
+  validateAttachmentCategory,
+  type AttachmentCategory,
+} from '@/features/assessment/utils/assessment-media-file-policy';
 
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
 const MAX_ATTACHMENTS = 6;
-const acceptedExtensions = new Set([
-  'jpg',
-  'jpeg',
-  'png',
-  'webp',
-  'heic',
-  'heif',
-  'bmp',
-  'tif',
-  'tiff',
-  'pdf',
-  'doc',
-  'docx',
-  'dcm',
-  'dicom',
-  'stl',
-  'ply',
-  'obj',
-  'zip',
-]);
-const imageExtensions = new Set([
-  'jpg',
-  'jpeg',
-  'png',
-  'webp',
-  'heic',
-  'heif',
-  'bmp',
-  'tif',
-  'tiff',
-]);
-const acceptedMimes = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/heic',
-  'image/heif',
-  'image/bmp',
-  'image/tiff',
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/dicom',
-  'application/zip',
-  'application/x-zip-compressed',
-]);
 /** Clinical attachment categories, independent of file extension. */
 const mediaTypes: { label: string; icon: AppIconName }[] = [
   { label: 'صورة خارج الفم', icon: { ios: 'person.crop.square', android: 'face', web: 'face' } },
@@ -98,17 +61,30 @@ const mediaTypes: { label: string; icon: AppIconName }[] = [
     icon: { ios: 'doc.text.fill', android: 'description', web: 'description' },
   },
   { label: 'إحالة طبية', icon: { ios: 'doc.text', android: 'assignment', web: 'assignment' } },
+  { label: 'فيديو للحالة', icon: { ios: 'video.fill', android: 'videocam', web: 'videocam' } },
   { label: 'ملف طبي آخر', icon: { ios: 'doc', android: 'attach_file', web: 'attach_file' } },
 ];
 
-function extensionOf(name: string): string {
-  return name.split('.').pop()?.toLowerCase() ?? '';
+function isImage(file: AssessmentMediaAttachment): boolean {
+  return isPreviewableImage(file);
 }
 
-function isImage(file: AssessmentMediaAttachment): boolean {
-  return Boolean(
-    file.mimeType?.startsWith('image/') || imageExtensions.has(extensionOf(file.fileName)),
-  );
+function pickerAssetName(
+  fileName: string | null | undefined,
+  mimeType: string | null | undefined,
+  video: boolean,
+) {
+  if (fileName) return fileName;
+  const ext = video
+    ? mimeType === 'video/quicktime'
+      ? 'mov'
+      : 'mp4'
+    : mimeType === 'image/png'
+      ? 'png'
+      : mimeType === 'image/heic'
+        ? 'heic'
+        : 'jpg';
+  return video ? 'فيديو للحالة.' + ext : 'صورة الأسنان.' + ext;
 }
 
 function readableSize(size?: number): string {
@@ -143,37 +119,39 @@ export function AssessmentMediaScreen() {
     [],
   );
 
-  const validateAndAdd = (files: AssessmentMediaAttachment[]) => {
-    if (!selectedMediaType) {
-      setPickerError('حدّد نوع الملف قبل إضافته.');
-      return;
-    }
-    files = files.map((file) => ({ ...file, category: selectedMediaType }));
+  const validateAndAdd = (files: AssessmentMediaAttachment[], category: AttachmentCategory) => {
     const accepted: AssessmentMediaAttachment[] = [];
+    let rejectedFormat = 0;
+    let rejectedSize = 0;
     for (const file of files) {
-      const mimeType = file.mimeType?.toLowerCase();
-      if (
-        !acceptedExtensions.has(extensionOf(file.fileName)) &&
-        !(mimeType && acceptedMimes.has(mimeType))
-      ) {
-        setPickerError('نوع الملف غير مدعوم. اختر صورة أو PDF أو ملف أشعة أو تقرير طبي.');
+      if (!validateAttachmentCategory(file, category)) {
+        rejectedFormat++;
         continue;
       }
       if (file.size && file.size > MAX_FILE_BYTES) {
-        setPickerError('حجم الملف كبير. الحد الأقصى لكل ملف 25 ميغابايت.');
+        rejectedSize++;
         continue;
       }
-      accepted.push(file);
+      accepted.push({ ...file, category });
     }
     const slotsLeft = MAX_ATTACHMENTS - mediaAttachments.length;
-    if (accepted.length > slotsLeft) {
+    if (rejectedFormat > 0) {
+      setPickerError(
+        `لم تتم إضافة ${rejectedFormat} من الملفات: الصيغة لا تطابق «${category}». الصيغ المسموحة: ${getCategoryExtensions(category)}.`,
+      );
+    } else if (rejectedSize > 0) {
+      setPickerError(`لم تتم إضافة ${rejectedSize} من الملفات: الحد الأقصى 25 ميغابايت للملف.`);
+    } else if (accepted.length > slotsLeft) {
       setPickerError('يمكنك إضافة حتى 6 ملفات فقط في هذا التقييم.');
+    } else {
+      setPickerError('');
     }
-    if (slotsLeft > 0) addMediaAttachments(accepted.slice(0, slotsLeft));
+    if (slotsLeft > 0 && accepted.length > 0) addMediaAttachments(accepted.slice(0, slotsLeft));
   };
 
-  const pickImage = async (camera = false) => {
+  const pickImageOrVideo = async (category: AttachmentCategory, camera = false) => {
     if (picking) return;
+    const video = categoryMediaSource(category) === 'video';
     setPickerError('');
     if (mediaAttachments.length >= MAX_ATTACHMENTS) {
       setPickerError('وصلت إلى الحد الأقصى للمرفقات (6).');
@@ -184,14 +162,22 @@ export function AssessmentMediaScreen() {
       if (camera) {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
         if (!permission.granted) {
-          setPickerError('اسمح للتطبيق باستخدام الكاميرا لالتقاط صورة.');
+          setPickerError(
+            video
+              ? 'اسمح للتطبيق باستخدام الكاميرا لتسجيل فيديو.'
+              : 'اسمح للتطبيق باستخدام الكاميرا لالتقاط صورة.',
+          );
           return;
         }
       }
       const result = camera
-        ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 })
+        ? await ImagePicker.launchCameraAsync({
+            mediaTypes: video ? ['videos'] : ['images'],
+            quality: 0.85,
+            ...(video ? { videoMaxDuration: 45 } : {}),
+          })
         : await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
+            mediaTypes: video ? ['videos'] : ['images'],
             allowsMultipleSelection: true,
             quality: 0.85,
           });
@@ -199,23 +185,28 @@ export function AssessmentMediaScreen() {
       validateAndAdd(
         result.assets.map((asset) => ({
           uri: asset.uri,
-          fileName: asset.fileName ?? 'صورة الأسنان.jpg',
-          mimeType: asset.mimeType ?? 'image/jpeg',
+          fileName: pickerAssetName(asset.fileName, asset.mimeType, video),
+          mimeType: asset.mimeType ?? undefined,
           size: asset.fileSize,
           width: asset.width,
           height: asset.height,
         })),
+        category,
       );
     } catch {
       setPickerError(
-        camera ? 'تعذر تشغيل الكاميرا. يمكنك الاختيار من المعرض.' : 'تعذر فتح الصور. حاول مجدداً.',
+        camera
+          ? 'تعذر فتح الكاميرا. يمكنك الاختيار من المعرض.'
+          : video
+            ? 'تعذر فتح الفيديوهات. حاول مجدداً.'
+            : 'تعذر فتح الصور. حاول مجدداً.',
       );
     } finally {
       setPicking(false);
     }
   };
 
-  const pickDocument = async () => {
+  const pickDocument = async (category: AttachmentCategory) => {
     if (picking) return;
     setPickerError('');
     if (mediaAttachments.length >= MAX_ATTACHMENTS) {
@@ -225,7 +216,7 @@ export function AssessmentMediaScreen() {
     setPicking(true);
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
+        type: documentPickerMimes(category),
         copyToCacheDirectory: true,
         multiple: true,
       });
@@ -237,6 +228,7 @@ export function AssessmentMediaScreen() {
           mimeType: asset.mimeType,
           size: asset.size,
         })),
+        category,
       );
     } catch {
       setPickerError('تعذر فتح ملفات الجهاز. حاول مجدداً.');
@@ -247,6 +239,10 @@ export function AssessmentMediaScreen() {
 
   const openMediaSource = () => {
     if (picking || sourceLaunching) return;
+    if (!selectedMediaType || !isAttachmentCategory(selectedMediaType)) {
+      setPickerError('اختَر نوع الملف من البطاقات بالأسفل قبل الإضافة.');
+      return;
+    }
     if (mediaAttachments.length >= MAX_ATTACHMENTS) {
       setPickerError('وصلت إلى الحد الأقصى للمرفقات (6).');
       return;
@@ -256,7 +252,15 @@ export function AssessmentMediaScreen() {
   };
 
   const selectMediaSource = (source: MediaSource) => {
-    if (sourceLaunching || picking) return;
+    if (
+      sourceLaunching ||
+      picking ||
+      !selectedMediaType ||
+      !isAttachmentCategory(selectedMediaType)
+    )
+      return;
+    const category = selectedMediaType;
+    if (categoryMediaSource(category) === 'document' && source !== 'files') return;
     setSourceDialogOpen(false);
     setSourceLaunching(true);
 
@@ -265,8 +269,8 @@ export function AssessmentMediaScreen() {
     pickerTimerRef.current = setTimeout(() => {
       pickerTimerRef.current = null;
       setSourceLaunching(false);
-      if (source === 'files') void pickDocument();
-      else void pickImage(source === 'camera');
+      if (source === 'files') void pickDocument(category);
+      else void pickImageOrVideo(category, source === 'camera');
     }, 280);
   };
 
@@ -314,7 +318,7 @@ export function AssessmentMediaScreen() {
             />
           </Pressable>
           <AppText className="min-w-0 flex-1 font-ui-bold" variant="label">
-            أرفق صورة للأسنان أو الأشعة
+            أرفق الملف المناسب لنوعه
           </AppText>
           <View className="rounded-full bg-surface-default px-2.5 py-1">
             <AppText style={{ fontSize: 10 }} variant="caption">
@@ -341,7 +345,7 @@ export function AssessmentMediaScreen() {
             <View className="w-full items-center gap-1">
               <IntroArtwork step={0} height={115} />
               <AppText variant="label" className="font-ui-semibold text-content-link">
-                اضغط لإضافة صورة أو ملف
+                اختَر النوع ثم اضغط لإضافة الملف
               </AppText>
               <AppText align="center" variant="caption" className="text-content-secondary">
                 من الكاميرا أو المعرض أو ملفات الجهاز
@@ -484,6 +488,7 @@ export function AssessmentMediaScreen() {
             <Pressable
               accessibilityRole="radio"
               accessibilityState={{ selected: selectedMediaType === type.label }}
+              disabled={picking || sourceLaunching || sourceDialogOpen}
               onPress={() => {
                 setSelectedMediaType(type.label);
                 setPickerError('');
@@ -508,8 +513,8 @@ export function AssessmentMediaScreen() {
               <AppText
                 align="center"
                 className="font-ui-semibold"
-                numberOfLines={1}
-                style={{ fontSize: 11, lineHeight: 17 }}
+                numberOfLines={2}
+                style={{ fontSize: 10.5, lineHeight: 16 }}
                 variant="caption"
               >
                 {type.label}
@@ -517,14 +522,6 @@ export function AssessmentMediaScreen() {
             </Pressable>
           ))}
         </View>
-        <AppText
-          align="right"
-          className="mt-1 text-content-secondary"
-          style={{ fontSize: 9.5, lineHeight: 15 }}
-          variant="caption"
-        >
-          JPG، PNG، PDF، Word، DICOM، 3D · حتى 25 ميغابايت للملف
-        </AppText>
       </View>
       <View className="mt-2 flex-row-reverse items-center gap-2 rounded-[11px] bg-tone-warning-fill px-3 py-2.5">
         <AppIcon
@@ -563,6 +560,20 @@ export function AssessmentMediaScreen() {
         onClose={() => setPreviewUri(null)}
       />
       <MediaSourceDialog
+        title={selectedMediaType ? `إضافة: ${selectedMediaType}` : 'إضافة مرفق'}
+        description={
+          selectedMediaType && isAttachmentCategory(selectedMediaType)
+            ? `الصيغ المسموحة: ${getCategoryExtensions(selectedMediaType)}`
+            : 'اختَر نوع الملف قبل الإضافة'
+        }
+        allowedSources={
+          selectedMediaType &&
+          isAttachmentCategory(selectedMediaType) &&
+          categoryMediaSource(selectedMediaType) === 'document'
+            ? ['files']
+            : ['camera', 'gallery', 'files']
+        }
+        videoMode={selectedMediaType === 'فيديو للحالة'}
         visible={sourceDialogOpen}
         onClose={() => setSourceDialogOpen(false)}
         onSelect={selectMediaSource}

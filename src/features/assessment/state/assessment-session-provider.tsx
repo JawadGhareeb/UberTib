@@ -105,7 +105,9 @@ export function readableToothId(value: string): string {
     const toothName = (quadrant <= 4 ? permanentNames : primaryNames)[position - 1];
     return toothName ? `${toothName} ${jaw} ${side}` : value;
   }
-  return 'الموضع ' + match[2] + (match[1] === 'upper' ? ' العلوي' : ' السفلي');
+  const position = Number(match[2]);
+  const side = position <= 5 ? 'الأيسر' : 'الأيمن';
+  return 'الموضع ' + position + (match[1] === 'upper' ? ' العلوي ' : ' السفلي ') + side;
 }
 
 function teethSummary(teeth: string[]): string {
@@ -191,9 +193,6 @@ export function AssessmentSessionProvider({ children }: PropsWithChildren) {
         setSelectedMediaType(saved.selectedMediaType ?? null);
         setNeedsMoreInfoChoice(saved.needsMoreInfoChoice ?? '');
         setMediaAttachments([]);
-        setUnavailableAttachmentNames([]);
-        setSelectedMediaType(null);
-        setNeedsMoreInfoChoice('');
       },
       patient,
       complaint,

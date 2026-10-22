@@ -158,22 +158,6 @@ export function AssessmentReviewScreen() {
           </AppText>
         </View>
       ) : null}
-      <View className="flex-row-reverse items-start gap-2 rounded-[12px] bg-action-subtle px-3 py-3">
-        <AppIcon
-          name={{ ios: 'lock.shield', android: 'lock', web: 'lock' }}
-          tone="action"
-          size={19}
-        />
-        <View className="min-w-0 flex-1 items-end gap-1">
-          <AppText variant="label" className="font-ui-semibold">
-            مراجعة الخصوصية
-          </AppText>
-          <AppText align="right" variant="caption" className="text-content-secondary">
-            النتيجة للتوجيه الأولي فقط. مشاركة الملفات والمعلومات مع الطبيب تحتاج موافقة مستقلة عند
-            الحجز.
-          </AppText>
-        </View>
-      </View>
     </AssessmentScaffold>
   );
 }

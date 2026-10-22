@@ -1,42 +1,42 @@
 /** Pure layout math for two curved dental arches, independent of screen pixels. */
 export const PERMANENT_UPPER = [
-  '18',
-  '17',
-  '16',
-  '15',
-  '14',
-  '13',
-  '12',
-  '11',
-  '21',
-  '22',
-  '23',
-  '24',
-  '25',
-  '26',
-  '27',
   '28',
+  '27',
+  '26',
+  '25',
+  '24',
+  '23',
+  '22',
+  '21',
+  '11',
+  '12',
+  '13',
+  '14',
+  '15',
+  '16',
+  '17',
+  '18',
 ] as const;
 export const PERMANENT_LOWER = [
-  '48',
-  '47',
-  '46',
-  '45',
-  '44',
-  '43',
-  '42',
-  '41',
-  '31',
-  '32',
-  '33',
-  '34',
-  '35',
-  '36',
-  '37',
   '38',
+  '37',
+  '36',
+  '35',
+  '34',
+  '33',
+  '32',
+  '31',
+  '41',
+  '42',
+  '43',
+  '44',
+  '45',
+  '46',
+  '47',
+  '48',
 ] as const;
-export const PRIMARY_UPPER = ['55', '54', '53', '52', '51', '61', '62', '63', '64', '65'] as const;
-export const PRIMARY_LOWER = ['85', '84', '83', '82', '81', '71', '72', '73', '74', '75'] as const;
+export const PRIMARY_UPPER = ['65', '64', '63', '62', '61', '51', '52', '53', '54', '55'] as const;
+export const PRIMARY_LOWER = ['75', '74', '73', '72', '71', '81', '82', '83', '84', '85'] as const;
 
 export interface DentalArchPoint {
   code: string;
@@ -45,7 +45,7 @@ export interface DentalArchPoint {
   lower: boolean;
 }
 
-/** Coordinates represent a front-facing mouth. Left of screen = patient's right. */
+/** Coordinates follow the chart labels: left of screen = your left, right = your right. FDI quadrants are mapped accordingly. */
 export function dentalArchPoints(
   codes: readonly string[],
   width: number,

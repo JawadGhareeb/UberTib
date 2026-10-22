@@ -113,16 +113,6 @@ export function AssessmentStartScreen() {
           size={16}
         />
       </Pressable>
-      <View className="flex-row-reverse items-center justify-center gap-2 rounded-[11px] bg-surface-subtle px-3 py-3">
-        <AppIcon
-          name={{ ios: 'lock.shield', android: 'verified_user', web: 'verified_user' }}
-          tone="secondary"
-          size={17}
-        />
-        <AppText align="right" variant="caption" className="min-w-0 flex-1 text-content-secondary">
-          المعلومات ما بتنتقل للطبيب قبل مراجعة نطاق المشاركة والموافقة.
-        </AppText>
-      </View>
     </AssessmentScaffold>
   );
 }
