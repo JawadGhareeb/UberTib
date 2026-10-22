@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
+  cancelAnimation,
   Easing,
   ReduceMotion,
   useAnimatedStyle,
@@ -10,13 +11,14 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
-import { AppIcon, AppText } from '@/shared/components/ui';
+import { AppIcon, Screen } from '@/shared/components/ui';
+
+const PREPARATION_DURATION_MS = 4000;
 
 const steps = [
-  ['نجمع', { ios: 'tray.full.fill', android: 'inventory_2', web: 'inventory_2' }],
-  ['نرتب', { ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }],
-  ['نجهّز', { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' }],
+  { ios: 'tray.full.fill', android: 'inventory_2', web: 'inventory_2' },
+  { ios: 'slider.horizontal.3', android: 'tune', web: 'tune' },
+  { ios: 'sparkles', android: 'auto_awesome', web: 'auto_awesome' },
 ] as const;
 
 export function AssessmentProcessingScreen() {
@@ -25,6 +27,7 @@ export function AssessmentProcessingScreen() {
     outcome?: 'result' | 'needs-more-info' | 'manual-review';
   }>();
   const pulse = useSharedValue(0.94);
+  const progress = useSharedValue(0);
 
   useEffect(() => {
     pulse.value = withRepeat(
@@ -36,31 +39,41 @@ export function AssessmentProcessingScreen() {
       -1,
       true,
     );
+    progress.value = 0;
+    progress.value = withTiming(100, {
+      duration: PREPARATION_DURATION_MS,
+      easing: Easing.linear,
+      reduceMotion: ReduceMotion.Never,
+    });
 
     const timer = setTimeout(() => {
       if (outcome === 'needs-more-info') {
         router.replace('/assessment/needs-more-info');
-        return;
-      }
-
-      if (outcome === 'manual-review') {
+      } else if (outcome === 'manual-review') {
         router.replace('/assessment/manual-review');
-        return;
+      } else {
+        router.replace('/assessment/result');
       }
+    }, PREPARATION_DURATION_MS);
 
-      router.replace('/assessment/result');
-    }, 5500);
-    return () => clearTimeout(timer);
-  }, [outcome, pulse, router]);
+    return () => {
+      clearTimeout(timer);
+      cancelAnimation(progress);
+      cancelAnimation(pulse);
+    };
+  }, [outcome, progress, pulse, router]);
 
   const pulseStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }],
   }));
+  const progressStyle = useAnimatedStyle(() => ({
+    width: `${progress.value}%` as `${number}%`,
+  }));
 
   return (
-    <AssessmentScaffold phase="المعالجة" scroll={false} title="نجهّز التوجيه الأولي">
-      <View className="pt-2">
-        <View className="h-[300px] items-center justify-center rounded-[22px] bg-surface-subtle">
+    <Screen contentClassName="px-0 py-0">
+      <View className="flex-1 items-center justify-center bg-surface-canvas px-7">
+        <View className="w-full max-w-[320px] items-center gap-7">
           <Animated.View
             className="h-28 w-28 items-center justify-center rounded-full bg-action-subtle"
             style={pulseStyle}
@@ -74,89 +87,33 @@ export function AssessmentProcessingScreen() {
             </View>
           </Animated.View>
 
-          <View className="mt-7 flex-row items-center justify-center gap-3">
-            {steps.map(([label, icon], index) => (
-              <View className="items-center" key={label}>
-                <View
-                  className={`h-12 w-12 items-center justify-center rounded-[15px] ${
-                    index === 1 ? 'bg-action-primary' : 'bg-surface-default'
-                  }`}
-                >
-                  <AppIcon name={icon} size={20} tone={index === 1 ? 'onAction' : 'action'} />
-                </View>
-                <AppText
-                  className="mt-1.5 text-type-caption text-content-secondary"
-                  variant="caption"
-                >
-                  {label}
-                </AppText>
+          <View className="flex-row items-center justify-center gap-3">
+            {steps.map((icon, index) => (
+              <View
+                key={icon.ios}
+                className={`h-12 w-12 items-center justify-center rounded-[15px] ${
+                  index === 1 ? 'bg-action-primary' : 'bg-surface-default'
+                }`}
+              >
+                <AppIcon name={icon} size={20} tone={index === 1 ? 'onAction' : 'action'} />
               </View>
             ))}
           </View>
-        </View>
 
-        <View className="mt-3 h-[46px] flex-row items-center justify-end gap-2 rounded-[13px] bg-action-subtle px-3">
-          <AppText className="flex-1 text-type-label text-content-link" variant="label">
-            نراجع الإجابات والاختيارات
-          </AppText>
-          <AppIcon
-            name={{ ios: 'slider.horizontal.3', android: 'tune', web: 'tune' }}
-            size={18}
-            tone="action"
-          />
-        </View>
-
-        <View className="mt-3 rounded-[14px] border border-border-subtle bg-surface-default p-3">
-          <AppText className="font-ui-bold text-type-caption" variant="label">
-            شو عم نعمل؟
-          </AppText>
-          <AppText className="mt-1.5 text-type-label  text-content-secondary" variant="caption">
-            عم ننظّم تفاصيل حالتك لنساعدك تلاقي الطبيب والخدمة الأنسب. التشخيص النهائي بيكون عند طبيب الأسنان بعد الفحص.
-          </AppText>
-        </View>
-
-        <View className="mt-3 flex-row items-center gap-3 rounded-[14px] bg-tone-info-fill p-3">
-          <View className="min-w-0 flex-1 items-end">
-            <AppText className="font-ui-bold text-type-label text-tone-info-text" variant="label">
-              إجاباتك موجودة ضمن الجلسة الحالية
-            </AppText>
-            <AppText className="mt-1 text-type-caption text-content-secondary" variant="caption">
-              رح تظهر النتيجة بهالصفحة بعد تجهيزها.
-            </AppText>
+          <View
+            accessible
+            accessibilityRole="progressbar"
+            accessibilityLabel="جاري تجهيز التوجيه الأولي"
+            accessibilityValue={{ min: 0, max: 100 }}
+            className="h-2.5 w-full overflow-hidden rounded-full bg-surface-subtle"
+          >
+            <Animated.View
+              className="h-full rounded-full bg-action-primary"
+              style={progressStyle}
+            />
           </View>
-          <AppIcon
-            name={{ ios: 'checkmark.shield.fill', android: 'verified_user', web: 'verified_user' }}
-            size={22}
-            tone="info"
-          />
         </View>
-
-        <View className="mt-2 flex-row items-center justify-end gap-2 rounded-[11px] bg-surface-subtle px-3 py-2.5">
-          <AppText className="flex-1 text-type-caption text-content-secondary" variant="caption">
-            لا تغادر الصفحة قبل ظهور النتيجة إذا بدك تكمل بنفس الجلسة.
-          </AppText>
-          <AppIcon
-            name={{ ios: 'wifi.exclamationmark', android: 'wifi', web: 'wifi' }}
-            size={16}
-            tone="secondary"
-          />
-        </View>
-
-        <Pressable
-          accessibilityRole="button"
-          className="mt-3 h-[50px] flex-row items-center justify-center gap-2 rounded-[12px] border border-action-primary bg-surface-default"
-          onPress={() => router.replace('/(tabs)/home')}
-        >
-          <AppText className="font-ui-bold text-content-link" variant="label">
-            العودة للرئيسية
-          </AppText>
-          <AppIcon
-            name={{ ios: 'house.fill', android: 'home', web: 'home' }}
-            size={18}
-            tone="action"
-          />
-        </Pressable>
       </View>
-    </AssessmentScaffold>
+    </Screen>
   );
 }
