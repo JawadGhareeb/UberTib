@@ -66,20 +66,39 @@ const acceptedMimes = new Set([
   'application/zip',
   'application/x-zip-compressed',
 ]);
+/** Clinical attachment categories, independent of file extension. */
 const mediaTypes: { label: string; icon: AppIconName }[] = [
-  { label: 'صورة المريض', icon: { ios: 'person.crop.square', android: 'person', web: 'person' } },
-  { label: 'داخل الفم', icon: { ios: 'camera', android: 'photo_camera', web: 'photo_camera' } },
-  { label: 'بانوراما', icon: { ios: 'viewfinder', android: 'panorama', web: 'panorama' } },
+  { label: 'صورة خارج الفم', icon: { ios: 'person.crop.square', android: 'face', web: 'face' } },
   {
-    label: 'حول الذروة',
-    icon: { ios: 'viewfinder', android: 'center_focus_strong', web: 'center_focus_strong' },
+    label: 'صورة داخل الفم',
+    icon: { ios: 'camera', android: 'photo_camera', web: 'photo_camera' },
   },
-  { label: 'عضّية', icon: { ios: 'rectangle.split.3x1', android: 'view_week', web: 'view_week' } },
-  { label: 'CBCT / 3D', icon: { ios: 'cube.fill', android: 'view_in_ar', web: 'view_in_ar' } },
-  { label: 'مسح', icon: { ios: 'viewfinder', android: 'scanner', web: 'scanner' } },
-  { label: 'إحالة', icon: { ios: 'doc.text', android: 'description', web: 'description' } },
-  { label: 'تقرير', icon: { ios: 'doc.text.fill', android: 'article', web: 'article' } },
-  { label: 'PDF', icon: { ios: 'doc', android: 'picture_as_pdf', web: 'picture_as_pdf' } },
+  {
+    label: 'أشعة بانورامية',
+    icon: { ios: 'photo.on.rectangle', android: 'panorama', web: 'panorama' },
+  },
+  {
+    label: 'أشعة حول الذروة',
+    icon: { ios: 'cross.case', android: 'medical_services', web: 'medical_services' },
+  },
+  {
+    label: 'أشعة عضّية',
+    icon: { ios: 'rectangle.split.3x1', android: 'view_week', web: 'view_week' },
+  },
+  {
+    label: 'تصوير ثلاثي الأبعاد CBCT',
+    icon: { ios: 'cube', android: 'view_in_ar', web: 'view_in_ar' },
+  },
+  {
+    label: 'مسح أسنان ثلاثي الأبعاد',
+    icon: { ios: 'viewfinder', android: 'scanner', web: 'scanner' },
+  },
+  {
+    label: 'تقرير طبي',
+    icon: { ios: 'doc.text.fill', android: 'description', web: 'description' },
+  },
+  { label: 'إحالة طبية', icon: { ios: 'doc.text', android: 'assignment', web: 'assignment' } },
+  { label: 'ملف طبي آخر', icon: { ios: 'doc', android: 'attach_file', web: 'attach_file' } },
 ];
 
 function extensionOf(name: string): string {
@@ -104,6 +123,7 @@ export function AssessmentMediaScreen() {
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { mediaAttachments, addMediaAttachments, removeMediaAttachment } = useAssessmentSession();
   const [picking, setPicking] = useState(false);
+  const [selectedMediaType, setSelectedMediaType] = useState<string | null>(null);
   const [pickerError, setPickerError] = useState('');
   const [sourceDialogOpen, setSourceDialogOpen] = useState(false);
   const [sourceLaunching, setSourceLaunching] = useState(false);
@@ -118,6 +138,11 @@ export function AssessmentMediaScreen() {
   );
 
   const validateAndAdd = (files: AssessmentMediaAttachment[]) => {
+    if (!selectedMediaType) {
+      setPickerError('حدّد نوع الملف قبل إضافته.');
+      return;
+    }
+    files = files.map((file) => ({ ...file, category: selectedMediaType }));
     const accepted: AssessmentMediaAttachment[] = [];
     for (const file of files) {
       const mimeType = file.mimeType?.toLowerCase();
@@ -379,7 +404,8 @@ export function AssessmentMediaScreen() {
                   {file.fileName}
                 </AppText>
                 <AppText style={{ fontSize: 10 }} variant="caption">
-                  على هذا الجهاز فقط{file.size ? ' · ' + readableSize(file.size) : ''}
+                  {file.category ? file.category + ' · ' : ''}على هذا الجهاز فقط
+                  {file.size ? ' · ' + readableSize(file.size) : ''}
                 </AppText>
               </View>
               {isImage(file) ? (
@@ -449,11 +475,30 @@ export function AssessmentMediaScreen() {
         </View>
         <View className="flex-row-reverse flex-wrap justify-between gap-y-2">
           {mediaTypes.map((type) => (
-            <View
-              className="min-h-[70px] w-[31.8%] items-center justify-center gap-1.5 rounded-[12px] border border-border-subtle bg-surface-default px-2 py-2"
+            <Pressable
+              accessibilityRole="radio"
+              accessibilityState={{ selected: selectedMediaType === type.label }}
+              onPress={() => {
+                setSelectedMediaType(type.label);
+                setPickerError('');
+              }}
+              className={`relative min-h-[84px] w-[31.8%] items-center justify-center gap-1.5 rounded-[12px] border px-2 py-3 ${selectedMediaType === type.label ? 'border-action-primary bg-action-subtle' : 'border-border-subtle bg-surface-default'}`}
               key={type.label}
             >
-              <AppIcon name={type.icon} size={20} tone="action" />
+              {selectedMediaType === type.label ? (
+                <View pointerEvents="none" className="absolute right-1.5 top-1.5">
+                  <AppIcon
+                    name={{
+                      ios: 'checkmark.circle.fill',
+                      android: 'check_circle',
+                      web: 'check_circle',
+                    }}
+                    size={16}
+                    tone="action"
+                  />
+                </View>
+              ) : null}
+              <AppIcon name={type.icon} size={22} tone="action" />
               <AppText
                 align="center"
                 className="font-ui-semibold"
@@ -463,7 +508,7 @@ export function AssessmentMediaScreen() {
               >
                 {type.label}
               </AppText>
-            </View>
+            </Pressable>
           ))}
         </View>
         <AppText

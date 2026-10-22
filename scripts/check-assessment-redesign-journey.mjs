@@ -94,14 +94,15 @@ assert.ok(
 assert.ok(
   chart.includes('selected ? (') &&
     chart.includes('accessibilityLabel={') &&
-    chart.includes('`السن ${code}'),
-  'FDI labels should show for selected teeth and remain accessible',
+    chart.includes('readableToothId(code)') &&
+    chart.includes('selectedTeeth.map((tooth) =>'),
+  'Selected teeth expose full Arabic tooth names and remain accessible',
 );
 
 assert.ok(
   location.includes('<DentalArchSelector') &&
     location.includes('setRegionLocation(region)') &&
-    location.includes('لا أعرف السن بالتحديد'),
+    !location.includes('لا أعرف السن بالتحديد'),
 );
 assert.ok(
   location.includes('primaryDisabled={!location}') && location.includes("returnTo === 'review'"),
@@ -201,7 +202,7 @@ assert.ok(
     health.includes('ASSESSMENT_PATIENT_FIXTURES') &&
     !health.includes('بنسلين — طفح جلدي سابق'),
 );
-assert.ok(profileHealth.includes('<Accordion') && profileHealth.includes('حفظ المسودة محلياً'));
+assert.ok(profileHealth.includes('<Accordion') && profileHealth.includes('<HealthNoteForm'));
 assert.ok(
   media.includes('onPress={openMediaSource}') &&
     media.includes('removeMediaAttachment(file.uri)') &&
@@ -222,8 +223,10 @@ assert.ok(
   'Health editing must carry selected patient ID',
 );
 assert.ok(
-  profileHealth.includes('assessmentPerson') && profileHealth.includes('السجل الصحي غير متصل بعد'),
-  'A dependent should never see account-holder demo medical records',
+  profileHealth.includes('assessmentPerson') &&
+    profileHealth.includes('activePatientId') &&
+    profileHealth.includes('<HealthNoteList'),
+  'Health information is grouped by selected patient without borrowing account-holder demo records',
 );
 
 console.log(

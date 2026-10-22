@@ -3,9 +3,9 @@ import type { BookingItem } from './overview-items';
 import type { MockCareCase } from '../mocks/care.mock';
 
 export type CareMainTab = 'cases' | 'bookings';
-export type CareCaseQuickFilter = 'الكل' | 'قيد العلاج' | 'مكتملة';
+export type CareCaseQuickFilter = 'الكل' | 'قيد العلاج' | 'مكتملة' | 'مسودة';
 export type CareBookingQuickFilter = 'الكل' | 'القادمة' | 'بانتظار التأكيد';
-export const caseQuickFilters: readonly CareCaseQuickFilter[] = ['الكل', 'قيد العلاج', 'مكتملة'];
+export const caseQuickFilters: readonly CareCaseQuickFilter[] = ['الكل', 'قيد العلاج', 'مكتملة', 'مسودة'];
 export const bookingQuickFilters: readonly CareBookingQuickFilter[] = [
   'الكل',
   'القادمة',
@@ -68,7 +68,7 @@ export function filterCaseRecords(
     .filter(
       (careCase) =>
         (quick === 'الكل' ||
-          (quick === 'مكتملة' ? careCase.progress >= 100 : careCase.progress < 100)) &&
+          (quick === 'مكتملة' ? careCase.progress >= 100 : quick === 'مسودة' ? false : careCase.progress < 100)) &&
         (!advanced.actionRequired || isCaseActionRequired(careCase)) &&
         (!advanced.provider || careCase.provider === advanced.provider) &&
         (!advanced.clinic || careCase.branch === advanced.clinic),

@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { SectionTabs } from '@/shared/components/ui/section-tabs';
 import { Radio } from 'heroui-native';
 
@@ -10,26 +10,35 @@ import { DentitionModeControl } from '@/features/assessment/components/dentition
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
 import { useAuthSession } from '@/providers/auth-session-provider';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
-import { AppIcon, AppText } from '@/shared/components/ui';
+import { AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
 
 const regions = ['يمين علوي', 'يسار علوي', 'يمين سفلي', 'يسار سفلي'] as const;
 
 export function AssessmentLocationScreen() {
   const router = useRouter();
-  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
+  const { returnTo, initialComplaint } = useLocalSearchParams<{
+    returnTo?: string;
+    initialComplaint?: string;
+  }>();
   const {
     location,
     patient,
     dentitionMode,
     selectedTeeth,
+    complaint,
+    setComplaint,
     setDentitionMode,
-    setLocation,
     setRegionLocation,
     toggleTooth,
     clearDentalSelection,
   } = useAssessmentSession();
   const [showRegions, setShowRegions] = useState(false);
+  // Restore the guest's chosen complaint after completing OTP; the assessment stack
+  // may be remounted while the authentication flow is shown.
+  useEffect(() => {
+    if (initialComplaint && initialComplaint !== complaint) setComplaint(initialComplaint);
+  }, [initialComplaint, complaint, setComplaint]);
   const patientName = ASSESSMENT_PATIENT_FIXTURES[patient].name;
   const { isAuthenticated } = useAuthSession();
 
@@ -111,27 +120,6 @@ export function AssessmentLocationScreen() {
           onToggleTooth={toggleTooth}
         />
       )}
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ selected: location === 'لا أعرف السن بدقة' }}
-        className={cn(
-          'min-h-[47px] flex-row-reverse items-center justify-center gap-2 rounded-[12px] border',
-          location === 'لا أعرف السن بدقة'
-            ? 'border-action-primary bg-action-subtle'
-            : 'border-border-subtle bg-surface-default',
-        )}
-        onPress={() => setLocation('لا أعرف السن بدقة')}
-      >
-        <AppIcon
-          name={{ ios: 'questionmark.circle', android: 'help_outline', web: 'help_outline' }}
-          size={18}
-          tone="action"
-        />
-        <AppText variant="label" className="font-ui-semibold">
-          لا أعرف السن بالتحديد
-        </AppText>
-      </Pressable>
     </AssessmentScaffold>
   );
 }

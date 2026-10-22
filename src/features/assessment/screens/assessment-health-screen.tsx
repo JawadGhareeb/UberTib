@@ -5,6 +5,10 @@ import { View } from 'react-native';
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
 import { useAuthSession } from '@/providers/auth-session-provider';
+import {
+  useHealthNotes,
+  healthNoteTypeLabel,
+} from '@/features/profile/state/health-notes-provider';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
@@ -42,6 +46,8 @@ export function AssessmentHealthScreen() {
   const { patient, setHealthConfirmed } = useAssessmentSession();
   const person = ASSESSMENT_PATIENT_FIXTURES[patient];
   const { isAuthenticated } = useAuthSession();
+  const { getNotes } = useHealthNotes();
+  const healthNotes = getNotes(patient);
 
   return (
     <AssessmentScaffold
@@ -67,14 +73,17 @@ export function AssessmentHealthScreen() {
               {isAuthenticated ? person.name : 'تقييم مبدئي'}
             </AppText>
             <AppText variant="caption" className="text-content-secondary">
-              {isAuthenticated ? `${person.age} سنة · المعلومات تخص المريض المختار` : 'راجع المعلومات الصحية العامة قبل المتابعة'}
+              {isAuthenticated
+                ? `${person.age} سنة · المعلومات تخص المريض المختار`
+                : 'راجع المعلومات الصحية العامة قبل المتابعة'}
             </AppText>
           </View>
         </View>
       }
     >
       <AppText align="right" variant="label" className="text-content-secondary">
-        راجع المعلومات الصحية المهمة قبل المتابعة. لا يتم ربط هذا التقييم بملف صحي شخصي للزائر.
+        راجع المعلومات الصحية المهمة قبل المتابعة، ومن ضمنها الملاحظات التي أضفتها للمريض المختار
+        خلال الجلسة.
       </AppText>
       <Accordion
         selectionMode="multiple"
@@ -101,13 +110,49 @@ export function AssessmentHealthScreen() {
               <AppText align="right" variant="label" className="text-content-secondary">
                 {item.description}
               </AppText>
-              <AppText align="right" variant="caption" className="mt-1 text-content-secondary">
-                ما في معلومات صحية متصلة بملف طبي معتمد لهالقسم حالياً.
-              </AppText>
+              {healthNotes
+                .filter((note) => {
+                  const groupedType = item.id === 'conditions' ? 'condition' : item.id;
+                  return note.type === groupedType;
+                })
+                .map((note) => (
+                  <AppText
+                    key={note.id}
+                    align="right"
+                    variant="label"
+                    className="mt-2 rounded-[10px] bg-action-subtle p-2.5 text-content-primary"
+                  >
+                    {note.description}
+                  </AppText>
+                ))}
+              {!healthNotes.some(
+                (note) => note.type === (item.id === 'conditions' ? 'condition' : item.id),
+              ) ? (
+                <AppText align="right" variant="caption" className="mt-1 text-content-secondary">
+                  لا توجد معلومات أُضيفت لهذا القسم خلال الجلسة.
+                </AppText>
+              ) : null}
             </Accordion.Content>
           </Accordion.Item>
         ))}
       </Accordion>
+      {healthNotes.length ? (
+        <View className="gap-2 rounded-[14px] border border-border-subtle bg-surface-default p-3">
+          <AppText align="right" variant="label" className="font-ui-bold">
+            معلومات أضفتها لهذا المريض
+          </AppText>
+          {healthNotes.map((note) => (
+            <View key={note.id} className="gap-1 rounded-[10px] bg-surface-subtle p-2.5">
+              <AppText align="right" variant="caption" className="font-ui-bold text-content-link">
+                {healthNoteTypeLabel(note.type)}
+              </AppText>
+              <AppText align="right" variant="label">
+                {note.description}
+              </AppText>
+            </View>
+          ))}
+        </View>
+      ) : null}
       <Button
         label="عرض وتحديث الملف الصحي"
         variant="outline"

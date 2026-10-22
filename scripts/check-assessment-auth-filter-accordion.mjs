@@ -10,22 +10,29 @@ assert.ok(
   entry.includes('<HeroCard') && entry.includes('onPress={startAssessment}'),
   'Help card remains visible; button calls auth-aware entry',
 );
-assert.ok(hook.includes("returnTo: '/assessment/start'"), 'OTP login returns to assessment start');
+const complaintScreen = source('src/features/assessment/screens/assessment-complaint-screen.tsx');
 assert.ok(
-  hook.includes('if (allowed) router.push('),
-  'Guest must not enter assessment before signing in',
+  hook.includes("router.push('/assessment/start')"),
+  'Guest can enter the assessment intro',
 );
 assert.ok(
-  hook.includes('requireAuth({') && access.includes('if (isAuthenticated) return true'),
-  'Existing shared Auth Check is used',
+  complaintScreen.includes('requireAuth({') &&
+    complaintScreen.includes("returnTo: buildReturnTo('/assessment/location'") &&
+    complaintScreen.includes('primaryDisabled={!complaint}') &&
+    access.includes('if (isAuthenticated) return true'),
+  'Authentication dialog is shown only after choosing the complaint and continuing',
 );
+for (const name of ['start', 'complaint']) {
+  assert.ok(
+    !source(`src/app/assessment/${name}.tsx`).includes('withAuthRequired('),
+    name + ' stays public for guests',
+  );
+}
 assert.ok(
   guard.includes('if (isAuthenticated) return <Component {...props} />'),
   'Direct routes render no private content to guests',
 );
 for (const name of [
-  'start',
-  'complaint',
   'health',
   'location',
   'manual-review',

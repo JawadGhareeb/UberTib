@@ -1,9 +1,14 @@
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 import { Pressable, View } from 'react-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
-import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
+import {
+  readableToothId,
+  useAssessmentSession,
+} from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { useAuthSession } from '@/providers/auth-session-provider';
@@ -13,11 +18,13 @@ function SummaryRow({
   value,
   icon,
   onEdit,
+  showFullValue = false,
 }: {
   title: string;
   value: string;
   icon: AppIconName;
   onEdit: () => void;
+  showFullValue?: boolean;
 }) {
   return (
     <View className="min-h-[69px] flex-row-reverse items-center gap-3 border-b border-border-subtle px-3 py-2.5">
@@ -32,7 +39,7 @@ function SummaryRow({
           align="right"
           variant="caption"
           className="text-content-secondary"
-          numberOfLines={2}
+          numberOfLines={showFullValue ? undefined : 2}
         >
           {value}
         </AppText>
@@ -53,6 +60,7 @@ function SummaryRow({
 
 export function AssessmentReviewScreen() {
   const router = useRouter();
+  const { saveDraft, removeDraft } = useCareDrafts();
   const { isAuthenticated } = useAuthSession();
   const {
     patient,
@@ -65,6 +73,16 @@ export function AssessmentReviewScreen() {
     mediaAttachments,
   } = useAssessmentSession();
   const who = ASSESSMENT_PATIENT_FIXTURES[patient];
+  useEffect(() => {
+    if (!complaint) return;
+    saveDraft({
+      id: 'assessment-' + patient,
+      kind: 'assessment',
+      title: complaint,
+      detail: location || 'تحديد الحالة',
+      route: '/assessment/review',
+    });
+  }, [patient, complaint, location, saveDraft]);
   const edit = (
     pathname:
       | '/assessment/patient'
@@ -81,7 +99,10 @@ export function AssessmentReviewScreen() {
       title="راجع إجاباتك"
       primaryLabel="إرسال للتوجيه الأولي"
       primaryDisabled={!complaint || !location || !healthConfirmed}
-      onPrimary={() => router.push('/assessment/processing')}
+      onPrimary={() => {
+        removeDraft('assessment-' + patient);
+        router.push('/assessment/processing');
+      }}
       topContent={
         <AppText align="right" variant="label" className="text-content-secondary">
           تأكد من معلوماتك، ويمكنك تعديل أي خطوة قبل المتابعة.
@@ -106,10 +127,11 @@ export function AssessmentReviewScreen() {
         <SummaryRow
           title="مكان المشكلة"
           value={
-            selectedTeeth.length > 1
-              ? `${location} · ${selectedTeeth.length} أسنان`
+            selectedTeeth.length
+              ? selectedTeeth.map(readableToothId).join('، ')
               : location || 'غير محدد'
           }
+          showFullValue={selectedTeeth.length > 1}
           icon={{ ios: 'mappin', android: 'place', web: 'place' }}
           onEdit={() => edit('/assessment/location')}
         />

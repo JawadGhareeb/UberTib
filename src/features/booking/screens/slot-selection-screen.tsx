@@ -1,8 +1,9 @@
 import { Radio } from 'heroui-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 
+import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 import { BookingJourneyProgress } from '@/features/booking/components/booking-journey-progress';
 import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
 import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
@@ -29,6 +30,7 @@ function monthName(key: string) {
 
 export function SlotSelectionScreen() {
   const router = useRouter();
+  const { saveDraft } = useCareDrafts();
   const { isRTL } = useAppDirection();
   const { scenario } = useMockScenario();
   const { members } = useFamilyMembers();
@@ -37,7 +39,7 @@ export function SlotSelectionScreen() {
     serviceCode?: string;
     patientId?: string;
   }>();
-  const provider = getMockProvider(providerId);
+  const provider = useMemo(() => getMockProvider(providerId), [providerId]);
   const [dateKey, setDateKey] = useState(provider?.availability[0]?.dateKey ?? '');
   const [slot, setSlot] = useState('');
 
@@ -48,6 +50,17 @@ export function SlotSelectionScreen() {
   const serviceName =
     penServiceGroups.flatMap((group) => group.families).find((family) => family.id === serviceCode)
       ?.title ?? 'الخدمة المختارة';
+  useEffect(() => {
+    if (!provider || !serviceCode) return;
+    saveDraft({
+      id: 'booking-' + provider.id + '-' + serviceCode,
+      kind: 'booking',
+      title: serviceName,
+      detail: provider.name + (slot ? ' · ' + dateKey + ' · ' + slot : ' · اختيار موعد'),
+      route: '/booking/slots',
+      params: { providerId: provider.id, serviceCode, ...(patientId ? { patientId } : {}) },
+    });
+  }, [provider, serviceCode, dateKey, slot, patientId, saveDraft, serviceName]);
 
   if (!provider || !provider.serviceCodes.includes(serviceCode ?? '')) {
     return (

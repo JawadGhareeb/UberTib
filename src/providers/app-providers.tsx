@@ -2,7 +2,9 @@ import type { PropsWithChildren } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
+import { CareDraftProvider } from '@/features/my-care/state/care-draft-provider';
 import { DiscoverySessionProvider } from '@/features/discovery/state/discovery-session-provider';
+import { HealthNotesProvider } from '@/features/profile/state/health-notes-provider';
 import { ProfilePrivacyProvider } from '@/features/profile/state/profile-privacy-provider';
 import { ProfilePhotoProvider } from '@/features/profile/state/profile-photo-provider';
 import { FamilyMembersProvider } from '@/features/profile/state/family-members-provider';
@@ -25,17 +27,21 @@ function SessionData({ children }: PropsWithChildren) {
     <PreferredLocationProvider>
       <AccountDetailsProvider>
         <FamilyMembersProvider>
-          <DiscoverySessionProvider>
-            <MockScenarioProvider>
-              <ProfilePrivacyProvider>
-                <ProfilePhotoProvider>
-                  <SupportTicketsProvider>
-                    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-                  </SupportTicketsProvider>
-                </ProfilePhotoProvider>
-              </ProfilePrivacyProvider>
-            </MockScenarioProvider>
-          </DiscoverySessionProvider>
+          <CareDraftProvider>
+            <DiscoverySessionProvider>
+              <MockScenarioProvider>
+                <HealthNotesProvider>
+                  <ProfilePrivacyProvider>
+                    <ProfilePhotoProvider>
+                      <SupportTicketsProvider>
+                        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+                      </SupportTicketsProvider>
+                    </ProfilePhotoProvider>
+                  </ProfilePrivacyProvider>
+                </HealthNotesProvider>
+              </MockScenarioProvider>
+            </DiscoverySessionProvider>
+          </CareDraftProvider>
         </FamilyMembersProvider>
       </AccountDetailsProvider>
     </PreferredLocationProvider>

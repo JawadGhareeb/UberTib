@@ -7,6 +7,7 @@ export type DentitionMode = 'permanent' | 'primary' | 'mixed' | 'uncertain';
 export interface AssessmentMediaAttachment {
   uri: string;
   fileName: string;
+  category?: string;
   mimeType?: string;
   size?: number;
   width?: number;
@@ -52,16 +53,27 @@ function suggestedDentition(patient: AssessmentPatient): DentitionMode {
   return 'permanent';
 }
 
-function readableToothId(value: string): string {
+export function readableToothId(value: string): string {
   const match = /^mixed-(upper|lower)-(\d+)$/.exec(value);
-  if (!match) return value;
+  if (!match) {
+    const number = Number(value);
+    if (!Number.isInteger(number) || number < 11 || number > 85) return value;
+    const quadrant = Math.floor(number / 10);
+    const position = number % 10;
+    const jaw = [1, 2, 5, 6].includes(quadrant) ? 'علوي' : 'سفلي';
+    const side = [1, 4, 5, 8].includes(quadrant) ? 'أيمن' : 'أيسر';
+    const permanentNames = ['الثنية المركزية', 'الثنية الجانبية', 'الناب', 'الضاحك الأول', 'الضاحك الثاني', 'الطاحن الأول', 'الطاحن الثاني', 'ضرس العقل'];
+    const primaryNames = ['الثنية المركزية', 'الثنية الجانبية', 'الناب', 'الطاحن اللبني الأول', 'الطاحن اللبني الثاني'];
+    const toothName = (quadrant <= 4 ? permanentNames : primaryNames)[position - 1];
+    return toothName ? `${toothName} ${jaw} ${side}` : value;
+  }
   return 'الموضع ' + match[2] + (match[1] === 'upper' ? ' العلوي' : ' السفلي');
 }
 
 function teethSummary(teeth: string[]): string {
   if (teeth.length === 0) return '';
   if (teeth.length === 1) {
-    return teeth[0]!.startsWith('mixed-') ? readableToothId(teeth[0]!) : `السن ${teeth[0]}`;
+    return readableToothId(teeth[0]!);
   }
   return `الأسنان ${teeth.map(readableToothId).join('، ')}`;
 }

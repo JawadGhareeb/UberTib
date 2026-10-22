@@ -49,7 +49,7 @@ export function AssessmentProcessingScreen() {
       }
 
       router.replace('/assessment/result');
-    }, 2200);
+    }, 5500);
     return () => clearTimeout(timer);
   }, [outcome, pulse, router]);
 
@@ -111,7 +111,7 @@ export function AssessmentProcessingScreen() {
             شو عم نعمل؟
           </AppText>
           <AppText className="mt-1.5 text-type-label  text-content-secondary" variant="caption">
-            نجهّز ملخص إجاباتك وخيارات البحث عن فحص مناسب. ما عم نصدر تشخيصاً طبياً.
+            عم ننظّم تفاصيل حالتك لنساعدك تلاقي الطبيب والخدمة الأنسب. التشخيص النهائي بيكون عند طبيب الأسنان بعد الفحص.
           </AppText>
         </View>
 

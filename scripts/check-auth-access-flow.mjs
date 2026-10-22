@@ -6,8 +6,6 @@ const protectedRoutes = [
   'src/app/(tabs)/care.tsx',
   'src/app/(tabs)/profile.tsx',
   ...[
-    'start',
-    'complaint',
     'health',
     'location',
     'manual-review',
@@ -62,6 +60,8 @@ for (const path of protectedRoutes) {
   );
 }
 for (const path of [
+  'src/app/assessment/start.tsx',
+  'src/app/assessment/complaint.tsx',
   'src/app/(tabs)/home.tsx',
   'src/app/(tabs)/discover.tsx',
   'src/app/discover/search/index.tsx',
@@ -141,7 +141,7 @@ assert.ok(
 );
 assert.ok(
   assessment.includes("isAuthenticated ? '/assessment/patient' : '/assessment/complaint'"),
-  'Previously supported guest branch remains isolated; public access is blocked by route guards',
+  'Guest assessment enters complaint selection before requesting authentication',
 );
 assert.ok(
   patientScreen.includes('<Redirect href={returnTo ==='),

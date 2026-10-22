@@ -94,6 +94,7 @@ function ProviderResultsContent({
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [showAllDoctors, setShowAllDoctors] = useState(false);
   const [applied, setApplied] = useState<AppliedProviderFilters>(() =>
     initialAppliedFilters(params),
   );
@@ -203,7 +204,7 @@ function ProviderResultsContent({
 
         {doctors.length ? (
           <View className="gap-3">
-            {doctors.map((doctor) => (
+            {(showAllDoctors || selectionActive ? doctors : doctors.slice(0, 4)).map((doctor) => (
               <DiscoverDoctorResultCard
                 key={doctor.id}
                 doctor={doctor}
@@ -214,6 +215,12 @@ function ProviderResultsContent({
                 onToggle={() => toggleComparisonProvider(serviceCode, doctor.id)}
               />
             ))}
+            {doctors.length > 4 && !showAllDoctors && !selectionActive ? (
+              <Pressable accessibilityRole="button" className="min-h-[52px] items-center justify-center rounded-[13px] border border-action-primary bg-action-subtle px-3" onPress={() => setShowAllDoctors(true)}>
+                <AppText variant="label" className="font-ui-bold text-content-link">إظهار المزيد من الأطباء</AppText>
+                <AppText variant="caption" className="text-content-secondary">لنتائج أنسب إلك، فيك تستخدم التصفية حسب المنطقة والسعر.</AppText>
+              </Pressable>
+            ) : null}
           </View>
         ) : (
           <ProviderResultsEmptyState

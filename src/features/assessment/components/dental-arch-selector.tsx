@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import type { DentitionMode } from '@/features/assessment/state/assessment-session-provider';
+import {
+  readableToothId,
+  type DentitionMode,
+} from '@/features/assessment/state/assessment-session-provider';
 import {
   dentalArchPoints,
   PERMANENT_LOWER,
@@ -119,9 +122,7 @@ function SelectableTooth({
       accessibilityRole="checkbox"
       accessibilityState={{ checked: selected }}
       accessibilityLabel={
-        mixed
-          ? `موضع ${index + 1} في الفك ${lower ? 'السفلي' : 'العلوي'}`
-          : `السن ${code} في الفك ${lower ? 'السفلي' : 'العلوي'}`
+        mixed ? `موضع ${index + 1} في الفك ${lower ? 'السفلي' : 'العلوي'}` : readableToothId(code)
       }
       accessibilityHint="اضغط للاختيار أو إلغاء الاختيار"
       onPress={onPress}
@@ -142,7 +143,7 @@ function SelectableTooth({
           className="font-ui-bold text-content-link"
           style={{ fontSize: 9, lineHeight: 12 }}
         >
-          {mixed ? String(index + 1) : code}
+          {mixed ? 'موضع' : ''}
         </AppText>
       ) : null}
     </Pressable>
@@ -280,29 +281,43 @@ export function DentalArchSelector({
       </View>
 
       {location ? (
-        <View className="flex-row-reverse items-center gap-2 rounded-[11px] bg-action-subtle p-2.5">
-          <AppIcon
-            name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
-            size={18}
-            tone="action"
-          />
-          <AppText
-            align="right"
-            variant="label"
-            className="min-w-0 flex-1 font-ui-semibold text-content-link"
-          >
-            {selectedTeeth.length > 1 ? `تم تحديد ${selectedTeeth.length} أسنان` : location}
-          </AppText>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="مسح التحديد"
-            onPress={onClear}
-            className="min-h-[36px] justify-center px-2"
-          >
-            <AppText variant="caption" className="font-ui-semibold text-content-link">
-              مسح
+        <View className="gap-2 rounded-[11px] bg-action-subtle p-3">
+          <View className="flex-row-reverse items-center gap-2">
+            <AppIcon
+              name={{ ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }}
+              size={18}
+              tone="action"
+            />
+            <AppText variant="label" className="min-w-0 flex-1 font-ui-semibold text-content-link">
+              {selectedTeeth.length > 1 ? `تم تحديد ${selectedTeeth.length} أسنان` : 'مكان المشكلة'}
             </AppText>
-          </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="مسح التحديد"
+              onPress={onClear}
+              className="min-h-[36px] justify-center px-2"
+            >
+              <AppText variant="caption" className="font-ui-semibold text-content-link">
+                مسح
+              </AppText>
+            </Pressable>
+          </View>
+          {selectedTeeth.length > 0 ? (
+            selectedTeeth.map((tooth) => (
+              <AppText
+                key={tooth}
+                align="right"
+                variant="label"
+                className="font-ui-medium text-content-primary"
+              >
+                {readableToothId(tooth)}
+              </AppText>
+            ))
+          ) : (
+            <AppText align="right" variant="label">
+              {location}
+            </AppText>
+          )}
         </View>
       ) : null}
     </View>

@@ -26,6 +26,7 @@ import {
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
 import { useAuthSession } from '@/providers/auth-session-provider';
+import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 import { useAuthAccess } from '@/providers/auth-access-provider';
 import { AppIcon, AppText, Button, Screen, StateView, TextField } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
@@ -48,6 +49,7 @@ export function BookingReviewScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthSession();
   const { requireAuth } = useAuthAccess();
+  const { removeDraft } = useCareDrafts();
   const { scenario, submitBookingRequest } = useMockScenario();
   const { members } = useFamilyMembers();
   const {
@@ -225,6 +227,7 @@ export function BookingReviewScreen() {
       },
     });
     clearDraft();
+    removeDraft('booking-' + provider.id + '-' + serviceCode);
     setSubmitted(true);
   };
 

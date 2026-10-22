@@ -2,8 +2,15 @@ import { useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
 import type { AssessmentPatient } from '@/features/assessment/state/assessment-session-provider';
-import { ScrollView, TextInput, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { Accordion } from 'heroui-native';
+import { HealthNoteForm } from '@/features/profile/components/health-note-form';
+import { HealthNoteList } from '@/features/profile/components/health-note-list';
+import {
+  useHealthNotes,
+  type HealthNote,
+  type HealthNoteType,
+} from '@/features/profile/state/health-notes-provider';
 
 import {
   ReferenceCard,
@@ -128,7 +135,36 @@ export function PatientHealthInformationScreen() {
   const [editing, setEditing] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const [draftNote, setDraftNote] = useState('');
-  const [previewNote, setPreviewNote] = useState('');
+  const [draftType, setDraftType] = useState<HealthNoteType | null>(null);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const { getNotes, saveNote, deleteNote } = useHealthNotes();
+  const activePatientId =
+    assessmentPatient === 'adam' || assessmentPatient === 'nour' ? assessmentPatient : 'self';
+  const notes = getNotes(activePatientId);
+  const startEditing = (note?: HealthNote) => {
+    setDraftType(note?.type ?? null);
+    setDraftNote(note?.description ?? '');
+    setEditingNoteId(note?.id ?? null);
+    setEditing(true);
+  };
+  const saveHealthNote = () => {
+    if (!draftType || !draftNote.trim()) return;
+    saveNote(activePatientId, {
+      ...(editingNoteId ? { id: editingNoteId } : {}),
+      type: draftType,
+      description: draftNote,
+    });
+    setEditing(false);
+    setDraftType(null);
+    setDraftNote('');
+    setEditingNoteId(null);
+  };
+  const stopEditing = () => {
+    setEditing(false);
+    setDraftType(null);
+    setDraftNote('');
+    setEditingNoteId(null);
+  };
   // The account mock health screen cannot impersonate another selected patient's record.
   if (assessmentPerson) {
     return (
@@ -137,7 +173,11 @@ export function PatientHealthInformationScreen() {
           title="معلومات المريض الصحية"
           icon={{ ios: 'heart.text.square', android: 'monitor_heart', web: 'monitor_heart' }}
         />
-        <View className="mx-auto w-full max-w-[430px] flex-1 gap-3 px-4 pt-3">
+        <ScrollView
+          contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pb-28 pt-3"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <View className="flex-row-reverse items-center gap-3 rounded-[15px] bg-action-subtle p-3">
             <View className="h-11 w-11 items-center justify-center rounded-full bg-surface-default">
               <AppIcon
@@ -157,15 +197,35 @@ export function PatientHealthInformationScreen() {
           </View>
           <View className="gap-2 rounded-[15px] border border-border-subtle bg-surface-default p-4">
             <AppText align="right" variant="heading-4" className="font-ui-bold">
-              السجل الصحي غير متصل بعد
+              معلومات المريض الصحية
             </AppText>
-            <AppText align="right" variant="label" className="text-content-secondary">
-              لا نعرض بيانات طبية تخص صاحب الحساب أو شخصاً آخر على أنها معلومات هذا المريض. الربط
-              والتحديث الفعلي للسجل يحتاجان إلى خدمة الملف الصحي للمريض المختار.
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              الملاحظات التي تضيفها هنا تخص المريض المختار فقط. البيانات التجريبية ليست ملفاً طبياً
+              معتمداً.
             </AppText>
           </View>
+          <HealthNoteList
+            notes={notes}
+            onEdit={startEditing}
+            onDelete={(id) => deleteNote(activePatientId, id)}
+          />
+          {editing ? (
+            <View className="rounded-[15px] border border-border-subtle bg-surface-default p-4">
+              <HealthNoteForm
+                type={draftType}
+                description={draftNote}
+                onTypeChange={setDraftType}
+                onDescriptionChange={setDraftNote}
+                onSave={saveHealthNote}
+                onCancel={stopEditing}
+                isEditing={Boolean(editingNoteId)}
+              />
+            </View>
+          ) : (
+            <Button label="إضافة معلومة صحية" onPress={() => startEditing()} />
+          )}
           <Button label="العودة لمراجعة معلومات المريض" onPress={() => router.back()} />
-        </View>
+        </ScrollView>
       </Screen>
     );
   }
@@ -175,7 +235,7 @@ export function PatientHealthInformationScreen() {
       <ReferenceHeader
         title="معلوماتي الصحية"
         icon={{ ios: 'pencil', android: 'edit', web: 'edit' }}
-        onAction={() => setEditing(true)}
+        onAction={() => startEditing()}
         actionLabel="تحديث ملف الصحة والأسنان"
       />
       <ScrollView
@@ -287,51 +347,42 @@ export function PatientHealthInformationScreen() {
             </AppText>
           </View>
 
+          <View className="mt-3 gap-2">
+            <HealthNoteList
+              notes={notes}
+              onEdit={startEditing}
+              onDelete={(id) => deleteNote(activePatientId, id)}
+            />
+          </View>
           {editing ? (
             <View
-              className="mt-2"
+              className="mt-3"
               onLayout={() => scrollRef.current?.scrollToEnd({ animated: true })}
             >
-              <ReferenceCard className="gap-2">
+              <ReferenceCard className="gap-3">
                 <AppText align="right" className="font-ui-bold" variant="label">
-                  تحديث ملف الصحة والأسنان
+                  {editingNoteId ? 'تعديل المعلومة الصحية' : 'إضافة معلومة لملف الصحة والأسنان'}
                 </AppText>
-                <TextInput
-                  accessibilityLabel="ملاحظة صحية"
-                  className="min-h-[72px] rounded-[9px] border border-border-subtle px-3 py-2 text-content-primary"
-                  multiline
-                  onChangeText={setDraftNote}
-                  placeholder="أضف ملاحظة للتحديث..."
-                  style={{ textAlign: 'right', writingDirection: 'rtl', textAlignVertical: 'top' }}
-                  value={draftNote}
-                />
-                <AppText align="right" className="text-content-secondary" variant="caption">
-                  تُحفظ ملاحظاتك على هذا الجهاز، ولا تظهر للطبيب تلقائياً.
-                </AppText>
-                <Button
-                  label="حفظ المسودة محلياً"
-                  disabled={!draftNote.trim()}
-                  size="sm"
-                  onPress={() => {
-                    setPreviewNote(draftNote.trim());
-                    setEditing(false);
-                  }}
+                <HealthNoteForm
+                  type={draftType}
+                  description={draftNote}
+                  onTypeChange={setDraftType}
+                  onDescriptionChange={setDraftNote}
+                  onSave={saveHealthNote}
+                  onCancel={stopEditing}
+                  isEditing={Boolean(editingNoteId)}
                 />
               </ReferenceCard>
             </View>
           ) : null}
-          {previewNote ? (
-            <AppText align="right" className="mt-2 text-content-secondary" variant="caption">
-              مسودة غير مرسلة: {previewNote}
-            </AppText>
+          {!editing ? (
+            <Button
+              className="mt-[7px] h-[48px]"
+              endIcon={{ ios: 'plus', android: 'add', web: 'add' }}
+              label="إضافة معلومة صحية"
+              onPress={() => startEditing()}
+            />
           ) : null}
-
-          <Button
-            className="mt-[7px] h-[48px]"
-            endIcon={{ ios: 'pencil', android: 'edit', web: 'edit' }}
-            label={editing ? 'إغلاق التعديل' : 'تحديث ملف الصحة والأسنان'}
-            onPress={() => setEditing((value) => !value)}
-          />
         </ReadStateBoundary>
       </ScrollView>
     </Screen>
