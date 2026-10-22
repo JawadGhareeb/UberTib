@@ -156,8 +156,8 @@ const additionalMockProviders: MockProvider[] = [
     experienceYears: 13,
     nextAvailable: 'الأحد 25 تشرين الأول · 10:00 ص',
     assessmentFreshnessLabel: 'تم تحديث المعلومات في 19 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['extraction', 'wisdom-teeth', 'minor-surgery', 'dental-emergency'],
     prices: {
       extraction: fixedPrice(
@@ -209,8 +209,8 @@ const additionalMockProviders: MockProvider[] = [
     experienceYears: 10,
     nextAvailable: 'الاثنين 26 تشرين الأول · 9:30 ص',
     assessmentFreshnessLabel: 'تم تحديث المعلومات في 19 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['crowns', 'bridges', 'veneers', 'dental-checkup'],
     prices: {
       crowns: rangePrice(
@@ -263,8 +263,8 @@ const additionalMockProviders: MockProvider[] = [
     experienceYears: 16,
     nextAvailable: 'الثلاثاء 27 تشرين الأول · 10:30 ص',
     assessmentFreshnessLabel: 'تم تحديث المعلومات في 19 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['implant', 'implant-prosthetics', 'bone-graft', 'sinus-lift', 'dental-checkup'],
     prices: {
       implant: rangePrice(
@@ -323,8 +323,8 @@ const additionalMockProviders: MockProvider[] = [
     experienceYears: 8,
     nextAvailable: 'السبت 24 تشرين الأول · 9:00 ص',
     assessmentFreshnessLabel: 'تم تحديث المعلومات في 19 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['pediatric-dentistry', 'dental-checkup', 'dental-filling', 'dental-cleaning'],
     prices: {
       'pediatric-dentistry': rangePrice(
@@ -376,8 +376,8 @@ const additionalMockProviders: MockProvider[] = [
     experienceYears: 14,
     nextAvailable: 'الأحد 25 تشرين الأول · 10:00 ص',
     assessmentFreshnessLabel: 'تم تحديث المعلومات في 19 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: [
       'root-canal',
       'root-retreatment',
@@ -497,8 +497,8 @@ const additionalMockProviders: MockProvider[] = [
     experienceYears: 11,
     nextAvailable: 'الأحد 25 تشرين الأول · 10:00 ص',
     assessmentFreshnessLabel: 'تم تحديث المعلومات في 19 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['dentures', 'bridges', 'crowns', 'dental-checkup'],
     prices: {
       dentures: rangePrice(
@@ -551,8 +551,8 @@ const additionalMockProviders: MockProvider[] = [
     experienceYears: 9,
     nextAvailable: 'الاثنين 26 تشرين الأول · 9:30 ص',
     assessmentFreshnessLabel: 'تم تحديث المعلومات في 19 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['dental-checkup', 'dental-cleaning', 'dental-filling', 'dental-emergency'],
     prices: {
       'dental-checkup': fixedPrice(
@@ -659,8 +659,8 @@ const additionalMockProviders: MockProvider[] = [
     experienceYears: 15,
     nextAvailable: 'السبت 24 تشرين الأول · 9:00 ص',
     assessmentFreshnessLabel: 'تم تحديث المعلومات في 19 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['periodontics', 'implant', 'sinus-lift', 'implant-prosthetics'],
     prices: {
       periodontics: rangePrice(
@@ -783,8 +783,8 @@ export const mockProviders: MockProvider[] = [
     experienceYears: 9,
     nextAvailable: 'السبت 24 تشرين الأول · 10:00 ص',
     assessmentFreshnessLabel: 'تم التحقق من الأهلية في 18 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['dental-checkup', 'dental-cleaning', 'dental-filling', 'root-canal'],
     prices: {
       'dental-checkup': fixedPrice(
@@ -873,8 +873,8 @@ export const mockProviders: MockProvider[] = [
     experienceYears: 10,
     nextAvailable: 'الخميس 10:30',
     assessmentFreshnessLabel: 'معلومات مهنية للتجربة · تتطلب تأكيداً',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['root-canal'],
     prices: {
       'root-canal': fixedPrice(
@@ -905,8 +905,8 @@ export const mockProviders: MockProvider[] = [
     experienceYears: 7,
     nextAvailable: 'السبت 24 تشرين الأول · 9:00 ص',
     assessmentFreshnessLabel: 'معلومات مهنية للتجربة · تتطلب تأكيداً',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['root-canal'],
     prices: {
       'root-canal': fixedPrice(
@@ -937,8 +937,8 @@ export const mockProviders: MockProvider[] = [
     experienceYears: 6,
     nextAvailable: 'السبت 24 تشرين الأول · 9:00 ص',
     assessmentFreshnessLabel: 'تم التحقق من الأهلية في 17 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['dental-checkup', 'dental-cleaning', 'teeth-whitening'],
     prices: {
       'dental-checkup': freePrice('يشمل استشارة فحص أولية فقط.'),
@@ -1040,8 +1040,8 @@ export const mockProviders: MockProvider[] = [
     experienceYears: 10,
     nextAvailable: 'السبت 24 تشرين الأول · 12:00 م',
     assessmentFreshnessLabel: 'تم تحديث المعلومات في 19 تشرين الأول 2026',
-    protectionLabel: 'الحماية الممولة غير مفعلة لهذه الخدمة',
-    protectionActive: false,
+    protectionLabel: 'مستوى حماية تجريبي مشروط بالخدمة',
+    protectionActive: true,
     serviceCodes: ['crowns', 'bridges', 'dentures'],
     prices: {
       crowns: fixedPrice(9000, '9,000 ل.س', 'يشمل تاجاً واحداً بعد اعتماد قياسات السن.'),

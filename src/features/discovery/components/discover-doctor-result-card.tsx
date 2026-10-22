@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { ProviderAvatar } from '@/features/discovery/components/provider-avatar';
+import { DoctorClassificationChips } from '@/features/discovery/components/doctor-classification-chips';
 import { Pressable, View } from 'react-native';
 
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
@@ -89,6 +90,15 @@ export function DiscoverDoctorResultCard({
           </View>
         </View>
       </View>
+
+      {provider ? (
+        <View className="gap-1.5">
+          <DoctorClassificationChips provider={provider} serviceCode={serviceCode} />
+          <AppText align="right" variant="caption" className="text-content-secondary">
+            مستويات توضيحية · حسب الخدمة والفرع
+          </AppText>
+        </View>
+      ) : null}
 
       <View className="flex-row-reverse gap-2">
         <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">

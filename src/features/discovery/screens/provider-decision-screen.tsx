@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 
 import { ProviderAvatar } from '@/features/discovery/components/provider-avatar';
+import { DoctorClassificationDetails } from '@/features/discovery/components/doctor-classification-details';
 import { DEMO_CLINIC_PHOTOS } from '@/features/discovery/components/provider-photo-gallery';
 import { DiscoveryHeader, ScreenCard } from '@/features/discovery/components/pen-discovery-ui';
 import {
@@ -279,6 +280,8 @@ export function ProviderDecisionScreen() {
               </AppText>
             ) : null}
           </View>
+
+          <DoctorClassificationDetails provider={provider} serviceCode={serviceCode} />
 
           <View className="gap-2">
             <ProfileSectionTitle title="عن الطبيب" />
