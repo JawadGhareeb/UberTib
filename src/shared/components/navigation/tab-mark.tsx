@@ -30,8 +30,8 @@ const symbolNames = {
     inactive: { ios: 'house', android: 'home', web: 'home' },
   },
   discover: {
-    active: { ios: 'magnifyingglass', android: 'search', web: 'search' },
-    inactive: { ios: 'magnifyingglass', android: 'search', web: 'search' },
+    active: { ios: 'square.grid.2x2.fill', android: 'grid_view', web: 'grid_view' },
+    inactive: { ios: 'square.grid.2x2', android: 'grid_view', web: 'grid_view' },
   },
   care: {
     active: { ios: 'heart.text.square.fill', android: 'favorite', web: 'favorite' },
