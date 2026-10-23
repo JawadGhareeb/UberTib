@@ -6,6 +6,6 @@ export const patientTabDestinations: readonly {
 }[] = [
   { name: 'profile', label: 'حسابي' },
   { name: 'care', label: 'علاجي' },
-  { name: 'discover', label: 'اكتشف' },
+  { name: 'discover', label: 'الخدمات' },
   { name: 'home', label: 'الرئيسية' },
 ];

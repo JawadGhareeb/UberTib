@@ -39,7 +39,7 @@ export function AssessmentJourneyProgress({ phase }: { phase: string }) {
         style={{ height: 6, flexShrink: 0 }}
       >
         <View
-          className="rounded-full bg-action-primary"
+          className="self-end rounded-full bg-action-primary"
           style={{ width: `${(number / steps.length) * 100}%`, height: 6 }}
         />
       </View>

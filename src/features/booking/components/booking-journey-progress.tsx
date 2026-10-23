@@ -23,7 +23,7 @@ export function BookingJourneyProgress({ step }: { step: 1 | 2 | 3 }) {
         style={{ height: 6 }}
       >
         <View
-          className="h-full rounded-full bg-action-primary"
+          className="h-full self-end rounded-full bg-action-primary"
           style={{ width: `${(step / steps.length) * 100}%` }}
         />
       </View>

@@ -57,7 +57,7 @@ export default function PatientTabsLayout() {
     >
       <Tabs.Screen name="profile" options={{ title: 'حسابي' }} />
       <Tabs.Screen name="care" options={{ title: 'علاجي' }} />
-      <Tabs.Screen name="discover" options={{ title: 'اكتشف' }} />
+      <Tabs.Screen name="discover" options={{ title: 'الخدمات' }} />
       <Tabs.Screen name="home" options={{ title: 'الرئيسية' }} />
     </Tabs>
   );

@@ -1,5 +1,5 @@
-import { UniversalDentalSearchScreen } from '@/features/discovery';
+import { ServiceCatalogTabScreen } from '@/features/discovery/screens/service-catalog-tab-screen';
 
 export default function DiscoverTabRoute() {
-  return <UniversalDentalSearchScreen asTab />;
+  return <ServiceCatalogTabScreen />;
 }
