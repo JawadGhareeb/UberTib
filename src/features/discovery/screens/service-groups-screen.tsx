@@ -9,7 +9,7 @@ import {
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { ServiceGroupCard } from '@/features/discovery/components/service-group-card';
 import { AppHeader } from '@/shared/components/navigation';
-import { AppIcon, AppText, Button, Screen, SearchField } from '@/shared/components/ui';
+import { AppText, EmptyState, Screen, SearchField } from '@/shared/components/ui';
 
 interface ServiceGroupsScreenProps {
   showBack?: boolean;
@@ -82,26 +82,13 @@ export function ServiceGroupsScreen({ showBack = true }: ServiceGroupsScreenProp
               />
             ))
           ) : (
-            <View className="items-center gap-2 rounded-[18px] border border-border-subtle bg-surface-default px-4 py-8">
-              <AppIcon
-                name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-                size={24}
-                tone="action"
-              />
-              <AppText align="center" className="font-ui-semibold" variant="label">
-                ما لقينا خدمة مطابقة
-              </AppText>
-              <AppText align="center" className="text-content-secondary" variant="caption">
-                جرّب كلمة أبسط أو ابحث بكل الخدمات
-              </AppText>
-              <Button
-                className="mt-1"
-                label="البحث بكل الخدمات"
-                onPress={() => router.push('/discover/search')}
-                size="sm"
-                variant="outline"
-              />
-            </View>
+            <EmptyState
+              title="ما لقينا خدمة مطابقة"
+              description="جرّب كلمة أبسط أو امسح البحث لعرض جميع المجموعات."
+              actionLabel="عرض جميع الخدمات"
+              onAction={() => setQuery('')}
+              icon={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+            />
           )}
         </View>
       </ScrollView>

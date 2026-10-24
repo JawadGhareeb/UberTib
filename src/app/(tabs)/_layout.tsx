@@ -1,4 +1,7 @@
 import { Tabs } from 'expo-router';
+import { useMemo } from 'react';
+import { useReducedMotion } from 'react-native-reanimated';
+import { useWindowDimensions } from 'react-native';
 import { useResolveClassNames } from 'uniwind';
 import { tabTransitionOptions } from '@/shared/navigation/navigation-transitions';
 
@@ -11,13 +14,18 @@ export default function PatientTabsLayout() {
   // React Navigation owns a separate tab scene surface. Keep its native
   // background in sync with the same Uniwind token as the screen canvas.
   const sceneStyle = useResolveClassNames('bg-surface-canvas');
+  const reduceMotion = useReducedMotion();
+  const { width: screenWidth } = useWindowDimensions();
+  const slideOptions = useMemo(
+    () => tabTransitionOptions(reduceMotion, screenWidth),
+    [reduceMotion, screenWidth],
+  );
 
   return (
     <Tabs
       initialRouteName="home"
       screenOptions={{
-        ...tabTransitionOptions(),
-        // Avoid mounting every authenticated tab on sign-in; render only the active scene.
+        ...slideOptions,
         lazy: true,
         freezeOnBlur: true,
         headerShown: false,

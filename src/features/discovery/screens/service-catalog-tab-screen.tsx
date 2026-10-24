@@ -5,7 +5,7 @@ import { FamilyCard } from '@/features/discovery/components/service-family-card'
 
 import { AppHeader } from '@/shared/components/navigation';
 import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-tab-metrics';
-import { AppText, Screen, SearchField } from '@/shared/components/ui';
+import { AppText, EmptyState, Screen, SearchField } from '@/shared/components/ui';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 
 type ServiceListEntry = (typeof penServiceGroups)[number]['families'][number] & {
@@ -118,9 +118,16 @@ export function ServiceCatalogTabScreen() {
           </View>
         }
         ListEmptyComponent={
-          <AppText align="center" variant="label" className="text-content-secondary">
-            ما لقينا خدمات تطابق بحثك.
-          </AppText>
+          <EmptyState
+            title="ما لقينا خدمات مطابقة"
+            description="جرّب كلمة بحث ثانية أو اختر كل مجموعات الخدمات."
+            actionLabel="عرض كل الخدمات"
+            onAction={() => {
+              setQuery('');
+              setGroupCode(null);
+            }}
+            icon={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+          />
         }
         renderItem={renderService}
       />

@@ -1,6 +1,7 @@
 import { Typography } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
+import Animated, { FadeInDown, useReducedMotion } from 'react-native-reanimated';
 
 import { AppIcon } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
@@ -32,8 +33,24 @@ const protectionIcon: IconName = {
   web: 'verified_user',
 };
 
-function Appear({ children, className }: { index: number; children: ReactNode; className?: string }) {
-  return <View className={className}>{children}</View>;
+function Appear({
+  index,
+  children,
+  className,
+}: {
+  index: number;
+  children: ReactNode;
+  className?: string;
+}) {
+  const reducedMotion = useReducedMotion();
+  return (
+    <Animated.View
+      className={className}
+      entering={reducedMotion ? undefined : FadeInDown.duration(240).delay(index * 85)}
+    >
+      {children}
+    </Animated.View>
+  );
 }
 
 function MiniText({

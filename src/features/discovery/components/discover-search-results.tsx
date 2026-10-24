@@ -9,7 +9,7 @@ import {
 } from '@/features/discovery/model/doctor-classification';
 import { getMockProvider, type MockProvider } from '@/features/discovery/mocks/providers.mock';
 import { getPenDoctorsForService } from '@/features/discovery/presentation/pen-discovery-data';
-import { AppText } from '@/shared/components/ui';
+import { AppText, EmptyState } from '@/shared/components/ui';
 import { matchingPricedServices, type DiscoveryFilterSelection } from '../model/discover-filters';
 import { selectDiscoverMatches } from '../model/discover-search';
 import { DiscoverSearchIllustration } from './discover-search-illustration';
@@ -104,11 +104,19 @@ export function DiscoverSearchResults({
       }
       ListEmptyComponent={
         hasResultsScope && activeTab !== 'all' ? (
-          <AppText align="center" variant="label" className="py-7 text-content-secondary">
-            لا يوجد أطباء ضمن هذا التصنيف في النتائج الحالية.
-          </AppText>
+          <EmptyState
+            title="لا يوجد أطباء ضمن هذا التصنيف"
+            description="جرّب تصنيفاً آخر أو اعرض جميع الأطباء المتاحين."
+            actionLabel="عرض جميع التصنيفات"
+            onAction={() => setGradeTab('all')}
+            icon={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+          />
         ) : hasResultsScope ? (
-          <DiscoverSearchIllustration empty />
+          <EmptyState
+            title="ما لقينا أطباء مطابقين"
+            description="جرّب كلمة بحث مختلفة أو خفف الفلاتر المختارة."
+            icon={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+          />
         ) : (
           <DiscoverSearchIllustration />
         )

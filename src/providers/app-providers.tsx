@@ -1,4 +1,4 @@
-import { memo, type PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
@@ -23,7 +23,7 @@ function SessionScopedProviders({ children }: PropsWithChildren) {
 }
 
 /** Private in-memory state is discarded by session key rotation on sign out. */
-const SessionData = memo(function SessionData({ children }: PropsWithChildren) {
+function SessionData({ children }: PropsWithChildren) {
   return (
     <PreferredLocationProvider>
       <AccountDetailsProvider>
@@ -49,7 +49,7 @@ const SessionData = memo(function SessionData({ children }: PropsWithChildren) {
       </AccountDetailsProvider>
     </PreferredLocationProvider>
   );
-});
+}
 
 export function AppProviders({ children }: PropsWithChildren) {
   return (

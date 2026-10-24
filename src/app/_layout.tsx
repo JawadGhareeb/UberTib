@@ -7,13 +7,14 @@ import {
   IBMPlexSansArabic_700Bold,
   useFonts,
 } from '@expo-google-fonts/ibm-plex-sans-arabic';
-import { Stack } from 'expo-router';
+import { Stack } from 'expo-router/js-stack';
 import * as NativeSplashScreen from 'expo-splash-screen';
 import { I18nManager, Image, StatusBar, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native/provider';
+import { useReducedMotion } from 'react-native-reanimated';
 
 import { AppProviders } from '@/providers/app-providers';
 import { pageTransitionOptions } from '@/shared/navigation/navigation-transitions';
@@ -32,6 +33,7 @@ I18nManager.swapLeftAndRightInRTL?.(false);
 
 function RootNavigator() {
   const { colors, scheme } = useAppTheme();
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     // Expo Go may keep the native splash surface visible after JS mounts.
@@ -51,8 +53,8 @@ function RootNavigator() {
       <View style={{ flex: 1, backgroundColor: colors.surface.canvas }}>
         <Stack
           screenOptions={{
-            ...pageTransitionOptions(),
-            contentStyle: { backgroundColor: colors.surface.canvas },
+            ...pageTransitionOptions(reduceMotion),
+            cardStyle: { backgroundColor: colors.surface.canvas },
             headerShown: false,
           }}
         />

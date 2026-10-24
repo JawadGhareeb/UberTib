@@ -6,7 +6,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { DiscoveryHeader, FamilyCard } from '@/features/discovery/components/pen-discovery-ui';
 import { mockProviders } from '@/features/discovery/mocks/providers.mock';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
-import { AppIcon, AppText, Button, Screen, SearchField } from '@/shared/components/ui';
+import { AppIcon, AppText, Button, EmptyState, Screen, SearchField } from '@/shared/components/ui';
 
 type SearchKind = 'all' | 'service' | 'doctor' | 'area';
 
@@ -146,24 +146,13 @@ export function ServiceSearchResultsScreen() {
         ) : null}
 
         {total === 0 ? (
-          <View className="mt-4 items-center gap-2 rounded-[13px] border border-border-subtle bg-surface-default p-5">
-            <AppIcon
-              name={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
-              size={24}
-              tone="action"
-            />
-            <AppText align="center" className="font-ui-semibold" variant="label">
-              ما لقينا نتائج مطابقة
-            </AppText>
-            <AppText align="center" className="text-content-secondary" variant="caption">
-              جرّب كلمة أبسط أو غيّر نوع البحث
-            </AppText>
-            <Button
-              label="العودة للبحث"
-              onPress={() => router.push('/discover/search')}
-              variant="outline"
-            />
-          </View>
+          <EmptyState
+            title="ما لقينا نتائج مطابقة"
+            description="جرّب كلمة أبسط أو غيّر نوع البحث."
+            actionLabel="مسح البحث"
+            onAction={() => setQuery('')}
+            icon={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+          />
         ) : null}
 
         <Button

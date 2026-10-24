@@ -71,8 +71,7 @@ export function CodeVerificationScreen() {
           params: returnTo ? { returnTo } : undefined,
         });
       } else {
-        // Return to an existing destination instead of stacking a second tabs navigator.
-        router.dismissTo(resolveSafeReturnTo(returnTo));
+        router.replace(resolveSafeReturnTo(returnTo));
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'تعذّر التحقق من الرمز.');

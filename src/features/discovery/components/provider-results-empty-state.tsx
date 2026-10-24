@@ -1,6 +1,4 @@
-import { View } from 'react-native';
-
-import { AppIcon, AppText, Button } from '@/shared/components/ui';
+import { EmptyState } from '@/shared/components/ui';
 
 export function ProviderResultsEmptyState({
   hasServiceDoctors,
@@ -29,42 +27,24 @@ export function ProviderResultsEmptyState({
       : 'جرّب خدمة ثانية أو ارجع لاكتشاف الخدمات.';
 
   return (
-    <View className="items-center gap-3 rounded-[16px] border border-border-subtle bg-surface-default px-5 py-8">
-      <View className="h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-action-subtle">
-        <AppIcon
-          name={{
-            ios: 'person.crop.circle.badge.questionmark',
-            android: 'person_search',
-            web: 'person_search',
-          }}
-          size={32}
-          tone="action"
-        />
-      </View>
-      <AppText variant="heading-4" align="center" className="font-ui-bold">
-        {title}
-      </AppText>
-      <AppText variant="label" align="center" className="text-content-secondary">
-        {description}
-      </AppText>
-      <Button
-        className="mt-2 w-full"
-        label={
-          hasServiceDoctors && hasFilters
-            ? 'مسح الفلاتر وعرض الأطباء'
-            : isCheckup
-              ? 'استكشف الخدمات'
-              : 'عرض أطباء الفحص العام'
-        }
-        variant="outline"
-        onPress={
-          hasServiceDoctors && hasFilters
-            ? onClearFilters
-            : isCheckup
-              ? onExploreServices
-              : onExploreCheckup
-        }
-      />
-    </View>
+    <EmptyState
+      title={title}
+      description={description}
+      icon={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+      actionLabel={
+        hasServiceDoctors && hasFilters
+          ? 'مسح الفلاتر وعرض الأطباء'
+          : isCheckup
+            ? 'استكشف الخدمات'
+            : 'عرض أطباء الفحص العام'
+      }
+      onAction={
+        hasServiceDoctors && hasFilters
+          ? onClearFilters
+          : isCheckup
+            ? onExploreServices
+            : onExploreCheckup
+      }
+    />
   );
 }

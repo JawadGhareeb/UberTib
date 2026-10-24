@@ -38,7 +38,7 @@ import {
   defaultProviderFilters,
   type ProviderFilterFlags,
 } from '@/features/discovery/utils/provider-filters';
-import { AppIcon, AppText, Button, Screen } from '@/shared/components/ui';
+import { AppIcon, AppText, Button, EmptyState, Screen } from '@/shared/components/ui';
 import type { AppliedFilterItem } from '@/shared/components/filters/applied-filter-chips';
 import {
   providerSortChoices,
@@ -294,9 +294,13 @@ function ProviderResultsContent({
             ) : null}
           </View>
         ) : activeTab !== 'all' ? (
-          <AppText align="center" variant="label" className="py-7 text-content-secondary">
-            لا يوجد أطباء ضمن هذا التصنيف في النتائج الحالية.
-          </AppText>
+          <EmptyState
+            title="لا يوجد أطباء ضمن هذا التصنيف"
+            description="جرّب تصنيفاً آخر أو اعرض جميع أطباء الخدمة."
+            actionLabel="عرض جميع التصنيفات"
+            onAction={() => setGradeTab('all')}
+            icon={{ ios: 'magnifyingglass', android: 'search', web: 'search' }}
+          />
         ) : (
           <ProviderResultsEmptyState
             hasServiceDoctors={!noServiceDoctors}

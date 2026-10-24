@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProviderAvatar } from '@/features/discovery/components/provider-avatar';
@@ -13,13 +13,11 @@ import { ProviderComparisonBar } from '@/features/discovery/components/provider-
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { findPenFamily } from '@/features/discovery/presentation/pen-discovery-data';
 import { useDoctorFavorites } from '@/features/discovery/state/doctor-favorites-provider';
-import { AppIcon, AppText, Button, Screen } from '@/shared/components/ui';
+import { AppIcon, AppText, Button, EmptyState, Screen } from '@/shared/components/ui';
 
 export function DoctorFavoritesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const imageWidth = Math.min(width - 80, 280);
   const { favorites, ready, toggleFavorite } = useDoctorFavorites();
   const [chosen, setChosen] = useState<{ serviceCode: string; ids: string[] } | null>(null);
 
@@ -58,29 +56,15 @@ export function DoctorFavoritesScreen() {
             جاري تحميل المفضلة...
           </AppText>
         ) : !rows.length ? (
-          <View className="items-center gap-3 pb-8 pt-6">
-            <Image
-              accessibilityLabel="المفضلة فارغة"
-              accessibilityIgnoresInvertColors
-              resizeMode="contain"
-              source={require('../../../shared/assets/ubertip-empty-transparent.png')}
-              style={{ width: imageWidth, height: imageWidth * (1155 / 1709) }}
-            />
-            <AppText align="center" variant="heading-4" className="font-ui-bold">
-              لايوجد أطباء بالمفضلة حالياً
-            </AppText>
-            <AppText align="center" variant="label" className="text-content-secondary">
-              تقدر تحفظ الطبيب من بطاقة النتائج أو من ملفه.
-            </AppText>
-            <Button
-              className="mt-2 w-full"
-              label="استكشف الأطباء"
-              variant="secondary"
-              onPress={() =>
-                router.push({ pathname: '/discover/search', params: { browseDoctors: '1' } })
-              }
-            />
-          </View>
+          <EmptyState
+            title="لا يوجد أطباء بالمفضلة حالياً"
+            description="تقدر تحفظ الطبيب من بطاقة النتائج أو من ملفه."
+            actionLabel="استكشف الأطباء"
+            onAction={() =>
+              router.push({ pathname: '/discover/search', params: { browseDoctors: '1' } })
+            }
+            icon={{ ios: 'heart', android: 'favorite_border', web: 'favorite_border' }}
+          />
         ) : (
           rows.map(({ doctor, providerId, serviceCode }, index) => {
             const name = findPenFamily(serviceCode ?? '')?.title;

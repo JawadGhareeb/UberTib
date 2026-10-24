@@ -89,7 +89,7 @@ export function PhoneEntryScreen() {
               <AuthBackButton
                 onPress={() => {
                   if (returnTo && router.canGoBack()) router.back();
-                  else router.dismissTo('/(tabs)/home');
+                  else router.replace('/(tabs)/home');
                 }}
               />
             </View>
@@ -180,7 +180,7 @@ export function PhoneEntryScreen() {
                   {submitting ? 'جاري إرسال الرمز...' : 'إرسال رمز التحقق'}
                 </Button.Label>
               </Button>
-              <Button size="lg" variant="outline" className="min-h-[52px] rounded-form-field" onPress={() => router.dismissTo('/(tabs)/home')} accessibilityLabel="تصفح كزائر"><Button.Label className="font-ui-semibold">تصفح كزائر</Button.Label></Button>
+              <Button size="lg" variant="outline" className="min-h-[52px] rounded-form-field" onPress={() => router.replace('/(tabs)/home')} accessibilityLabel="تصفح كزائر"><Button.Label className="font-ui-semibold">تصفح كزائر</Button.Label></Button>
               <AuthModeSwitch isRegister={mode === 'register'} onSwitch={switchAuthMode} />
               <Typography.Paragraph
                 type="body-sm"

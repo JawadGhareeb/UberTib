@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { SlideInLeft, SlideInRight, useReducedMotion } from 'react-native-reanimated';
 
 import { BrandLogo } from '@/shared/components/brand';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
@@ -40,8 +41,9 @@ const pages = [
   },
 ] as const;
 
-export function OnboardingScreen({ step, onNext, onBack, onBrowse, onLogin }: Props) {
+export function OnboardingScreen({ step, direction, onNext, onBack, onBrowse, onLogin }: Props) {
   const { height: windowHeight } = useWindowDimensions();
+  const reducedMotion = useReducedMotion();
   const artworkHeight = Math.max(232, Math.min(280, Math.round(windowHeight * 0.35)));
   const page = pages[step];
 
@@ -108,7 +110,15 @@ export function OnboardingScreen({ step, onNext, onBack, onBrowse, onLogin }: Pr
             ))}
           </View>
 
-          <View key={step} className="mt-5 gap-5">
+          <Animated.View
+            key={step}
+            entering={
+              reducedMotion
+                ? undefined
+                : (direction === 'forward' ? SlideInRight : SlideInLeft).duration(220)
+            }
+            className="mt-5 gap-5"
+          >
             <OnboardingArtwork step={step} height={artworkHeight} />
             <View className="items-center gap-3">
               <Typography.Heading
@@ -125,7 +135,7 @@ export function OnboardingScreen({ step, onNext, onBack, onBrowse, onLogin }: Pr
                 {page.description}
               </Typography.Paragraph>
             </View>
-          </View>
+          </Animated.View>
 
           <View className="min-h-4 flex-1" />
           <View className="mt-6 gap-3">

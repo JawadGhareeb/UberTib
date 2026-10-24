@@ -7,7 +7,7 @@ import { DiscoveryHeader, ScreenCard } from '@/features/discovery/components/pen
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { penReviews } from '@/features/discovery/presentation/pen-discovery-data';
 import { useAppDirection } from '@/providers/app-direction-provider';
-import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
+import { AppIcon, AppText, EmptyState, Screen, StateView } from '@/shared/components/ui';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 
@@ -301,27 +301,16 @@ export function ProviderReviewsScreen() {
               </ScreenCard>
             ))
           ) : (
-            <ScreenCard className="items-center gap-3 p-5">
-              <AppText
-                align="center"
-                className="font-ui-semibold text-content-primary"
-                variant="label"
-              >
-                ما في تقييمات تفصيلية مطابقة حالياً
-              </AppText>
-              <AppText align="center" className="text-content-secondary" variant="caption">
-                جرّب تغيير الفلتر لعرض التقييمات المتاحة.
-              </AppText>
-              <Button
-                label="عرض كل التقييمات"
-                onPress={() => {
-                  setFilter('الأحدث');
-                  setMinRating(0);
-                }}
-                size="sm"
-                variant="outline"
-              />
-            </ScreenCard>
+            <EmptyState
+              title="ما في تقييمات تفصيلية مطابقة حالياً"
+              description="جرّب تغيير الفلتر لعرض التقييمات المتاحة."
+              actionLabel="عرض كل التقييمات"
+              onAction={() => {
+                setFilter('الأحدث');
+                setMinRating(0);
+              }}
+              icon={{ ios: 'star', android: 'star', web: 'star' }}
+            />
           )}
         </View>
 
