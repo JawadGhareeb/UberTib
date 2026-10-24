@@ -22,6 +22,7 @@ import { canBookForPatient } from '@/features/booking/utils/patient-booking-perm
 import {
   getMockProvider,
   getMockProviderPriceLabel,
+  getNonPastMockAvailability,
 } from '@/features/discovery/mocks/providers.mock';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
@@ -74,6 +75,8 @@ export function BookingReviewScreen() {
     reason: legacyReason,
     origin,
     assessmentDraftId,
+    branchId,
+    priceAtSelection,
   } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
@@ -84,10 +87,13 @@ export function BookingReviewScreen() {
     reason?: string;
     origin?: string;
     assessmentDraftId?: string;
+    branchId?: string;
+    priceAtSelection?: string;
   }>();
   const [submitted, setSubmitted] = useState(false);
   const [restored, setRestored] = useState(false);
   const [shareVisitSummary, setShareVisitSummary] = useState(true);
+  const [approvedPriceLabel, setApprovedPriceLabel] = useState<string | null>(null);
   const [reasonSelection, setReasonSelection] = useState<BookingVisitReason | null>(null);
   const [selectingFile, setSelectingFile] = useState(false);
   const [attachmentError, setAttachmentError] = useState('');
@@ -105,13 +111,16 @@ export function BookingReviewScreen() {
   const chosenPatient = members.find((person) => person.id === patientId);
   const patientCanBook = canBookForPatient(patientId, scenario);
   const slotStillInSnapshot = Boolean(
-    provider?.availability.some(
+    getNonPastMockAvailability(provider?.availability ?? []).some(
       (day) =>
         day.dateKey === dateKey &&
         day.dateLabel === dateLabel &&
         day.slots.includes(timeLabel ?? ''),
     ),
   );
+  const currentPriceLabel = provider ? getMockProviderPriceLabel(provider, serviceCode) : '';
+  const quotedPriceChanged = Boolean(priceAtSelection && priceAtSelection !== currentPriceLabel);
+  const priceChangeApproved = approvedPriceLabel === currentPriceLabel;
   const activeReason: BookingVisitReason =
     reasonSelection ??
     (legacyReason === 'followup' || legacyReason === 'other' || legacyReason === 'new'
@@ -149,6 +158,8 @@ export function BookingReviewScreen() {
     () => ({
       providerId: providerId ?? '',
       serviceCode: serviceCode ?? '',
+      ...(branchId ? { branchId } : {}),
+      ...(priceAtSelection ? { priceAtSelection } : {}),
       dateKey,
       dateLabel,
       timeLabel,
@@ -162,6 +173,8 @@ export function BookingReviewScreen() {
     [
       providerId,
       serviceCode,
+      branchId,
+      priceAtSelection,
       dateKey,
       dateLabel,
       timeLabel,
@@ -247,6 +260,7 @@ export function BookingReviewScreen() {
                 params: {
                   providerId: provider.id,
                   serviceCode,
+                  ...(branchId ? { branchId } : {}),
                   ...(patientId ? { patientId } : {}),
                   ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
                 },
@@ -268,10 +282,13 @@ export function BookingReviewScreen() {
 
   const submitBooking = () => {
     if (!patientCanBook || !slotStillInSnapshot || submitted) return;
+    if (quotedPriceChanged && !priceChangeApproved) return;
     if (!isAuthenticated) {
       const returnTo = buildReturnTo('/booking/review', {
         providerId,
         serviceCode,
+        ...(branchId ? { branchId } : {}),
+        ...(priceAtSelection ? { priceAtSelection } : {}),
         dateKey,
         dateLabel,
         timeLabel,
@@ -664,6 +681,40 @@ export function BookingReviewScreen() {
           </AppText>
         </View>
 
+        {quotedPriceChanged ? (
+          <View className="gap-3 rounded-[13px] border border-border-subtle bg-surface-subtle p-3">
+            <AppText align="right" variant="label" className="font-ui-bold">
+              تغيّر السعر منذ اختيار الموعد
+            </AppText>
+            <AppText align="right" variant="caption" className="text-content-secondary">
+              السعر عند الاختيار: {priceAtSelection}
+            </AppText>
+            <AppText align="right" variant="label">
+              السعر الحالي: {currentPriceLabel}
+            </AppText>
+            <View className="flex-row-reverse items-center gap-3">
+              <AppText
+                align="right"
+                variant="caption"
+                className="min-w-0 flex-1 text-content-secondary"
+              >
+                أوافق على تقديم طلب الحجز بالسعر المعروض حالياً. العيادة تؤكد الموعد والتكلفة
+                النهائية وفق شروط الخدمة.
+              </AppText>
+              <Switch
+                accessibilityLabel="الموافقة على السعر المحدث"
+                accessibilityRole="switch"
+                value={priceChangeApproved}
+                onValueChange={(approved) =>
+                  setApprovedPriceLabel(approved ? currentPriceLabel : null)
+                }
+                thumbColor={colors.surface.default}
+                trackColor={{ false: colors.border.strong, true: colors.action.primary }}
+              />
+            </View>
+          </View>
+        ) : null}
+
         {failureCopy ? (
           <View className="gap-2">
             <BookingStatusBanner body={failureCopy.body} title={failureCopy.title} tone="warning" />
@@ -674,7 +725,13 @@ export function BookingReviewScreen() {
                 if (revalidationFailure === 'slot') {
                   router.replace({
                     pathname: '/booking/slots',
-                    params: { providerId: providerId ?? '', serviceCode: serviceCode ?? '' },
+                    params: {
+                      providerId: providerId ?? '',
+                      serviceCode: serviceCode ?? '',
+                      ...(branchId ? { branchId } : {}),
+                      ...(patientId ? { patientId } : {}),
+                      ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
+                    },
                   });
                 } else if (revalidationFailure === 'service') {
                   router.replace('/discover');
@@ -693,7 +750,7 @@ export function BookingReviewScreen() {
         <View className="mx-auto w-full max-w-[430px] gap-2">
           <Button
             className="min-h-[52px] rounded-[12px]"
-            disabled={Boolean(revalidationFailure)}
+            disabled={Boolean(revalidationFailure) || (quotedPriceChanged && !priceChangeApproved)}
             endIcon={{ ios: 'paperplane.fill', android: 'send', web: 'send' }}
             label="إرسال طلب الحجز"
             onPress={submitBooking}

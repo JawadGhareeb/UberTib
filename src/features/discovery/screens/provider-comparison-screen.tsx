@@ -28,10 +28,15 @@ export function ProviderComparisonScreen() {
     patientId?: string;
     origin?: string;
     assessmentDraftId?: string;
-    fromSearch?: 'tab' | 'search';
+    fromSearch?: 'tab' | 'search' | 'favorites' | 'doctors';
   }>();
   const serviceCode = requestedServiceCode?.trim() || null;
-  const { getServiceState, setComparisonProviders, setCatalogComparison } = useDiscoverySession();
+  const {
+    getServiceState,
+    setComparisonProviders,
+    setCatalogComparison,
+    setDoctorBrowseComparison,
+  } = useDiscoverySession();
   const routeIds = providerIds?.split(',').filter(Boolean) ?? [];
   const ids = [
     ...new Set(
@@ -47,6 +52,17 @@ export function ProviderComparisonScreen() {
   });
 
   const returnToSelection = (selectedIds: string[]) => {
+    if (fromSearch === 'doctors') {
+      setDoctorBrowseComparison(
+        selectedIds.length ? { serviceCode, providerIds: selectedIds } : null,
+      );
+      router.replace({ pathname: '/discover/search', params: { browseDoctors: '1' } });
+      return;
+    }
+    if (fromSearch === 'favorites') {
+      router.replace('/discover/favorites');
+      return;
+    }
     if (fromSearch === 'tab' || fromSearch === 'search') {
       setCatalogComparison(selectedIds.length ? { serviceCode, providerIds: selectedIds } : null);
       router.replace(fromSearch === 'tab' ? '/(tabs)/discover' : '/discover/search');
@@ -72,7 +88,9 @@ export function ProviderComparisonScreen() {
       .filter((doctor) => doctor.id !== providerId)
       .map((doctor) => doctor.id);
     if (serviceCode) setComparisonProviders(serviceCode, remaining);
-    if (fromSearch) {
+    if (fromSearch === 'doctors') {
+      setDoctorBrowseComparison(remaining.length ? { serviceCode, providerIds: remaining } : null);
+    } else if (fromSearch === 'tab' || fromSearch === 'search') {
       setCatalogComparison(remaining.length ? { serviceCode, providerIds: remaining } : null);
     }
     if (remaining.length < 2) {
@@ -97,7 +115,11 @@ export function ProviderComparisonScreen() {
         <View className="mx-auto w-full max-w-[430px] flex-1 px-4 pb-8">
           <StateView
             actionLabel="العودة لاختيار الأطباء"
-            description="اختر طبيبين على الأقل من نفس الخدمة قبل فتح المقارنة."
+            description={
+              serviceCode
+                ? 'اختر طبيبين على الأقل من نفس الخدمة قبل فتح المقارنة.'
+                : 'اختر طبيبين على الأقل لعرض المقارنة العامة.'
+            }
             onAction={() => returnToSelection(doctors.map((doctor) => doctor.id))}
             title="المقارنة تحتاج طبيبين"
           />
@@ -120,7 +142,8 @@ export function ProviderComparisonScreen() {
         ) : (
           <View className="pb-3 pt-2">
             <AppText align="right" variant="caption" className="text-content-secondary">
-              المقارنة عامة بين الأطباء. لا تظهر أسعار الخدمات قبل اختيار خدمة من الفلاتر.
+              المقارنة عامة بين الأطباء. تفاصيل الأسعار والتصنيف حسب الخدمة تظهر بعد اختيار خدمة
+              محددة.
             </AppText>
           </View>
         )}
@@ -134,9 +157,9 @@ export function ProviderComparisonScreen() {
               pathname: '/discover/provider/[providerId]',
               params: {
                 providerId,
-                serviceCode:
-                  serviceCode ?? getMockProvider(providerId)?.serviceCodes[0] ?? 'dental-checkup',
+                ...(serviceCode ? { serviceCode } : {}),
                 ...(patientId ? { patientId } : {}),
+                ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
               },
             })
           }
@@ -145,9 +168,9 @@ export function ProviderComparisonScreen() {
               pathname: serviceCode ? '/booking/slots' : '/discover/provider/[providerId]',
               params: {
                 providerId,
-                serviceCode:
-                  serviceCode ?? getMockProvider(providerId)?.serviceCodes[0] ?? 'dental-checkup',
+                ...(serviceCode ? { serviceCode } : {}),
                 ...(patientId ? { patientId } : {}),
+                ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
               },
             })
           }
@@ -161,7 +184,7 @@ export function ProviderComparisonScreen() {
               tone="info"
             />
             <AppText align="right" variant="caption" className="min-w-0 flex-1 text-tone-info-text">
-              قارن بين الأطباء والمواعيد، والتكلفة النهائية تخضع لتفاصيل الخدمة وتأكيد العيادة.
+              التفاصيل المعروضة للتجربة، ويتم تأكيد السعر والموعد عند إكمال الحجز.
             </AppText>
           </View>
           <Button

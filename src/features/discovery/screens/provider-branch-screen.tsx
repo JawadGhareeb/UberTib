@@ -18,7 +18,7 @@ export function ProviderBranchScreen() {
   const router = useRouter();
   const [mapError, setMapError] = useState(false);
   const {
-    providerId = 'provider-layan',
+    providerId,
     serviceCode: requestedServiceCode,
     patientId,
     origin,
@@ -32,7 +32,7 @@ export function ProviderBranchScreen() {
     assessmentDraftId?: string;
   }>();
 
-  const branch = getBranchView(providerId);
+  const branch = getBranchView(providerId ?? '');
   const provider = getMockProvider(providerId);
   const serviceCode =
     requestedServiceCode && provider?.serviceCodes.includes(requestedServiceCode)
@@ -166,6 +166,34 @@ export function ProviderBranchScreen() {
             </AppText>
           </View>
 
+          <View className="gap-2 rounded-[13px] bg-surface-subtle p-3">
+            <View className="flex-row-reverse items-start gap-2">
+              <AppIcon
+                name={{ ios: 'info.circle', android: 'info_outline', web: 'info_outline' }}
+                size={17}
+                tone="secondary"
+              />
+              <View className="min-w-0 flex-1 gap-1">
+                <AppText align="right" variant="label" className="font-ui-semibold">
+                  حالة بيانات الفرع
+                </AppText>
+                <AppText align="right" variant="caption" className="text-content-secondary">
+                  تاريخ آخر تحقق معتمد: غير متاح. الصور والتجهيزات الظاهرة أمثلة وليست توثيقاً لفرع
+                  فعلي.
+                </AppText>
+                <AppText align="right" variant="caption" className="text-content-secondary">
+                  تعليمات الوصول وتجهيزات الإتاحة وساعات الدوام الموثقة بانتظار بيانات العيادة.
+                </AppText>
+                {serviceCode ? (
+                  <AppText align="right" variant="caption" className="text-content-secondary">
+                    توفر الخدمة في هذا الفرع معروض للتجربة فقط؛ يُعاد التحقق من أهلية الفرع عند
+                    الحجز.
+                  </AppText>
+                ) : null}
+              </View>
+            </View>
+          </View>
+
           <ProviderBranchServices branch={branch} />
           {serviceCode ? <ProviderBranchEquipment serviceCode={serviceCode} /> : null}
 
@@ -201,11 +229,8 @@ export function ProviderBranchScreen() {
             ) : (
               <View className="gap-2">
                 {branch.doctors.map((item) => {
-                  const itemService = serviceCode
-                    ? item.serviceCodes.includes(serviceCode)
-                      ? serviceCode
-                      : (item.serviceCodes[0] ?? null)
-                    : null;
+                  const itemService =
+                    serviceCode && item.serviceCodes.includes(serviceCode) ? serviceCode : null;
                   return (
                     <Pressable
                       accessibilityRole="button"

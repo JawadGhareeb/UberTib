@@ -12,7 +12,11 @@ import { useFamilyMembers } from '@/features/profile/state/family-members-provid
 import { useMockScenario } from '@/shared/mock';
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
 import { ProviderPortrait } from '@/features/discovery/components/provider-photo-gallery';
-import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
+import {
+  getMockProvider,
+  getMockProviderPriceLabel,
+  getNonPastMockAvailability,
+} from '@/features/discovery/mocks/providers.mock';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { useAppDirection } from '@/providers/app-direction-provider';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
@@ -44,6 +48,7 @@ export function SlotSelectionScreen() {
     timeLabel: savedTime,
     origin,
     assessmentDraftId,
+    branchId,
   } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
@@ -52,21 +57,28 @@ export function SlotSelectionScreen() {
     timeLabel?: string;
     origin?: string;
     assessmentDraftId?: string;
+    branchId?: string;
   }>();
   const provider = useMemo(() => getMockProvider(providerId), [providerId]);
-  const [dateKey, setDateKey] = useState(savedDateKey ?? provider?.availability[0]?.dateKey ?? '');
+  const availableDays = useMemo(
+    () => getNonPastMockAvailability(provider?.availability ?? []),
+    [provider],
+  );
+  const initialDateKey =
+    savedDateKey && availableDays.some((day) => day.dateKey === savedDateKey)
+      ? savedDateKey
+      : (availableDays[0]?.dateKey ?? '');
+  const [dateKey, setDateKey] = useState(initialDateKey);
   const [slot, setSlot] = useState(
     savedTime &&
-      provider?.availability.some(
-        (day) => day.dateKey === savedDateKey && day.slots.includes(savedTime),
-      )
+      availableDays.some((day) => day.dateKey === savedDateKey && day.slots.includes(savedTime))
       ? savedTime
       : '',
   );
 
   const selectedDay = useMemo(
-    () => provider?.availability.find((day) => day.dateKey === dateKey),
-    [dateKey, provider],
+    () => availableDays.find((day) => day.dateKey === dateKey),
+    [dateKey, availableDays],
   );
   const serviceName =
     penServiceGroups.flatMap((group) => group.families).find((family) => family.id === serviceCode)
@@ -77,6 +89,8 @@ export function SlotSelectionScreen() {
         ? {
             providerId: provider.id,
             serviceCode,
+            ...(branchId ? { branchId } : {}),
+            priceAtSelection: getMockProviderPriceLabel(provider, serviceCode),
             ...(dateKey ? { dateKey, dateLabel: selectedDay?.dateLabel } : {}),
             ...(slot && selectedDay ? { timeLabel: slot } : {}),
             ...(patientId ? { patientId } : {}),
@@ -85,7 +99,17 @@ export function SlotSelectionScreen() {
               : {}),
           }
         : null,
-    [provider, serviceCode, dateKey, selectedDay, slot, patientId, origin, assessmentDraftId],
+    [
+      provider,
+      serviceCode,
+      branchId,
+      dateKey,
+      selectedDay,
+      slot,
+      patientId,
+      origin,
+      assessmentDraftId,
+    ],
   );
   useEffect(() => {
     if (!hydrated || !bookingFields) return;
@@ -169,11 +193,11 @@ export function SlotSelectionScreen() {
               {dateKey ? monthName(dateKey) : 'الأيام المتاحة'}
             </AppText>
           </View>
-          {provider.availability.length ? (
+          {availableDays.length ? (
             <FlatList
               horizontal
               inverted={isRTL}
-              data={provider.availability}
+              data={availableDays}
               keyExtractor={(item) => item.dateKey}
               ItemSeparatorComponent={() => <View className="w-2" />}
               showsHorizontalScrollIndicator={false}
@@ -212,7 +236,7 @@ export function SlotSelectionScreen() {
           ) : (
             <View className="rounded-[12px] bg-surface-subtle p-4">
               <AppText align="center" variant="label" className="text-content-secondary">
-                ما في أيام متاحة ضمن البيانات الحالية للطبيب.
+                ما في أيام مستقبلية متاحة ضمن البيانات الحالية للطبيب.
               </AppText>
             </View>
           )}
@@ -314,6 +338,8 @@ export function SlotSelectionScreen() {
                   dateLabel: selectedDay.dateLabel,
                   providerId: provider.id,
                   serviceCode: serviceCode ?? '',
+                  ...(branchId ? { branchId } : {}),
+                  priceAtSelection: getMockProviderPriceLabel(provider, serviceCode),
                   timeLabel: slot,
                   ...(patientId ? { patientId } : {}),
                   ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),

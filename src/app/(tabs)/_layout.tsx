@@ -26,7 +26,7 @@ export default function PatientTabsLayout() {
       initialRouteName="home"
       screenOptions={{
         ...slideOptions,
-        lazy: false,
+        lazy: true,
         freezeOnBlur: true,
         headerShown: false,
         tabBarHideOnKeyboard: true,

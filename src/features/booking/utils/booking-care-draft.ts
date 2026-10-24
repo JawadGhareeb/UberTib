@@ -29,6 +29,8 @@ export function createBookingCareDraft(
     params: {
       providerId: data.providerId,
       serviceCode: data.serviceCode,
+      ...(data.branchId ? { branchId: data.branchId } : {}),
+      ...(data.priceAtSelection ? { priceAtSelection: data.priceAtSelection } : {}),
       ...(data.dateKey ? { dateKey: data.dateKey } : {}),
       ...(data.dateLabel ? { dateLabel: data.dateLabel } : {}),
       ...(data.timeLabel ? { timeLabel: data.timeLabel } : {}),

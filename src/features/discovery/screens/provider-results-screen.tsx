@@ -9,13 +9,18 @@ import {
 } from '@/features/discovery/components/pen-discovery-ui';
 import { DiscoverAppliedFilterChips } from '@/features/discovery/components/discover-applied-filter-chips';
 import { DiscoverDoctorResultCard } from '@/features/discovery/components/discover-doctor-result-card';
+import { DoctorGradeTabs } from '@/features/discovery/components/doctor-grade-tabs';
+import {
+  matchesDoctorGrade,
+  type DoctorGradeTab,
+} from '@/features/discovery/model/doctor-classification';
 import { DiscoverFilterSheet } from '@/features/discovery/components/discover-filter-sheet';
 import { ProviderComparisonBar } from '@/features/discovery/components/provider-comparison-bar';
 import { ProviderSelectedServiceSummary } from '@/features/discovery/components/provider-selected-service-summary';
 import { providerAdvancedOptions } from '@/features/discovery/components/provider-advanced-filter-options';
 import { ProviderResultsEmptyState } from '@/features/discovery/components/provider-results-empty-state';
 import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
-import { getMockProviders } from '@/features/discovery/mocks/providers.mock';
+import { getMockProvider, getMockProviders } from '@/features/discovery/mocks/providers.mock';
 import {
   getPenDoctorsForService,
   findPenFamily,
@@ -99,6 +104,7 @@ function ProviderResultsContent({
   const insets = useSafeAreaInsets();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [showAllDoctors, setShowAllDoctors] = useState(false);
+  const [gradeTab, setGradeTab] = useState<DoctorGradeTab>('all');
   const [applied, setApplied] = useState<AppliedProviderFilters>(() =>
     initialAppliedFilters(params),
   );
@@ -118,6 +124,14 @@ function ProviderResultsContent({
     return doctor ? [doctor] : [];
   });
   const doctors = sortServiceDoctors(matchingDoctors, applied.sort, serviceCode);
+  const activeTab = gradeTab;
+  const visibleDoctors =
+    activeTab === 'all'
+      ? doctors
+      : doctors.filter((doctor) => {
+          const provider = getMockProvider(doctor.id);
+          return Boolean(provider && matchesDoctorGrade(provider, activeTab));
+        });
   const noServiceDoctors = allDoctors.length === 0;
   const areas = selectedDiscoveryAreas(applied.discovery);
   const activeAdvancedOptions = providerAdvancedOptions.filter(
@@ -241,28 +255,30 @@ function ProviderResultsContent({
             />
           </View>
         ) : null}
+        <DoctorGradeTabs value={activeTab} onChange={setGradeTab} />
         <View className="flex-row-reverse items-center justify-between gap-2">
           <AppText align="right" variant="heading-4" className="font-ui-bold">
-            النتائج ({doctors.length})
+            النتائج ({visibleDoctors.length})
           </AppText>
         </View>
-
-        {doctors.length ? (
+        {visibleDoctors.length ? (
           <View className="gap-3">
-            {(showAllDoctors || selectionActive ? doctors : doctors.slice(0, 4)).map((doctor) => (
-              <DiscoverDoctorResultCard
-                key={doctor.id}
-                doctor={doctor}
-                serviceCode={serviceCode}
-                patientId={params.patientId}
-                origin={params.origin}
-                assessmentDraftId={params.assessmentDraftId}
-                selected={selection.includes(doctor.id)}
-                disabled={maxReached && !selection.includes(doctor.id)}
-                onToggle={() => toggleComparisonProvider(serviceCode, doctor.id)}
-              />
-            ))}
-            {doctors.length > 4 && !showAllDoctors && !selectionActive ? (
+            {(showAllDoctors || selectionActive ? visibleDoctors : visibleDoctors.slice(0, 4)).map(
+              (doctor) => (
+                <DiscoverDoctorResultCard
+                  key={doctor.id}
+                  doctor={doctor}
+                  serviceCode={serviceCode}
+                  patientId={params.patientId}
+                  origin={params.origin}
+                  assessmentDraftId={params.assessmentDraftId}
+                  selected={selection.includes(doctor.id)}
+                  disabled={maxReached && !selection.includes(doctor.id)}
+                  onToggle={() => toggleComparisonProvider(serviceCode, doctor.id)}
+                />
+              ),
+            )}
+            {visibleDoctors.length > 4 && !showAllDoctors && !selectionActive ? (
               <Pressable
                 accessibilityRole="button"
                 className="min-h-[52px] items-center justify-center rounded-[13px] border border-action-primary bg-action-subtle px-3"
@@ -277,6 +293,10 @@ function ProviderResultsContent({
               </Pressable>
             ) : null}
           </View>
+        ) : activeTab !== 'all' ? (
+          <AppText align="center" variant="label" className="py-7 text-content-secondary">
+            لا يوجد أطباء ضمن هذا التصنيف في النتائج الحالية.
+          </AppText>
         ) : (
           <ProviderResultsEmptyState
             hasServiceDoctors={!noServiceDoctors}

@@ -6,6 +6,8 @@ const THEME_SCHEME_KEY = 'preferences.theme-scheme';
 const ONBOARDING_COMPLETE_KEY = 'experience.onboarding-complete';
 const PREFERRED_LOCATION_KEY = 'preferences.preferred-location';
 const CARE_DRAFT_INDEX = 'patient.care-drafts.v2.index';
+const FAVORITES_KEY = 'patient.favorite-doctors.v1';
+let favoriteStorageQueue: Promise<void> = Promise.resolve();
 const careDraftKey = (id: string) => 'patient.care-drafts.v2.' + id;
 
 const webMemory = new Map<string, string>();
@@ -173,6 +175,42 @@ export const secureStorage = {
         cachedDraftPayloads.clear();
       });
     careDraftStorageQueue = task.catch(() => undefined);
+    return task;
+  },
+  getDoctorFavorites: async (): Promise<{ providerId: string; serviceCode: string | null }[]> => {
+    const raw = await getItem(FAVORITES_KEY);
+    if (!raw) return [];
+    try {
+      const entries: unknown = JSON.parse(raw);
+      if (!Array.isArray(entries)) return [];
+      return entries
+        .slice(0, 60)
+        .filter(
+          (value): value is { providerId: string; serviceCode: string | null } =>
+            typeof value === 'object' &&
+            value !== null &&
+            typeof value.providerId === 'string' &&
+            /^[a-zA-Z0-9_-]{1,100}$/.test(value.providerId) &&
+            (value.serviceCode === null ||
+              (typeof value.serviceCode === 'string' &&
+                /^[a-zA-Z0-9_-]{1,100}$/.test(value.serviceCode))),
+        );
+    } catch {
+      return [];
+    }
+  },
+  setDoctorFavorites: (
+    favorites: readonly { providerId: string; serviceCode: string | null }[],
+  ): Promise<void> => {
+    const task = favoriteStorageQueue
+      .catch(() => undefined)
+      .then(() => setItem(FAVORITES_KEY, JSON.stringify(favorites.slice(-60))));
+    favoriteStorageQueue = task.catch(() => undefined);
+    return task;
+  },
+  clearDoctorFavorites: (): Promise<void> => {
+    const task = favoriteStorageQueue.catch(() => undefined).then(() => deleteItem(FAVORITES_KEY));
+    favoriteStorageQueue = task.catch(() => undefined);
     return task;
   },
   getAccessToken: () => getItem(ACCESS_TOKEN_KEY),

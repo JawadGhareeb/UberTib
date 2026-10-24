@@ -1,18 +1,24 @@
-import { View } from 'react-native';
+import { useMemo, useState, type ReactNode } from 'react';
+import { FlatList, View } from 'react-native';
 
 import { DiscoverDoctorResultCard } from '@/features/discovery/components/discover-doctor-result-card';
-import { type MockProvider } from '@/features/discovery/mocks/providers.mock';
+import { DoctorGradeTabs } from '@/features/discovery/components/doctor-grade-tabs';
+import {
+  matchesDoctorGrade,
+  type DoctorGradeTab,
+} from '@/features/discovery/model/doctor-classification';
+import { getMockProvider, type MockProvider } from '@/features/discovery/mocks/providers.mock';
 import { getPenDoctorsForService } from '@/features/discovery/presentation/pen-discovery-data';
 import { AppText } from '@/shared/components/ui';
 import { matchingPricedServices, type DiscoveryFilterSelection } from '../model/discover-filters';
 import { selectDiscoverMatches } from '../model/discover-search';
 import { DiscoverSearchIllustration } from './discover-search-illustration';
 
-/** Reuse the exact doctor/comparison card from the service and assessment results. */
 function matchingService(provider: MockProvider, filters: DiscoveryFilterSelection) {
   return matchingPricedServices(provider, filters)[0] ?? provider.serviceCodes[0];
 }
 
+/** Same doctor card as service results, with windowed rendering for large browse lists. */
 export function DiscoverSearchResults({
   query,
   filters,
@@ -20,6 +26,8 @@ export function DiscoverSearchResults({
   onToggleComparison,
   showAllByDefault = false,
   allowGeneralComparison = true,
+  header,
+  bottomPadding = 100,
 }: {
   query: string;
   filters: DiscoveryFilterSelection;
@@ -27,53 +35,98 @@ export function DiscoverSearchResults({
   onToggleComparison: (providerId: string, serviceCode: string | null) => void;
   showAllByDefault?: boolean;
   allowGeneralComparison?: boolean;
+  header?: ReactNode;
+  bottomPadding?: number;
 }) {
-  const matches = selectDiscoverMatches(query, filters);
+  const [gradeTab, setGradeTab] = useState<DoctorGradeTab>('all');
+  const matches = useMemo(() => selectDiscoverMatches(query, filters), [query, filters]);
+  const hasResultsScope = matches.hasCriteria || showAllByDefault;
+  const doctors = useMemo(() => {
+    if (!hasResultsScope) return [];
+    const byService = new Map<string, ReturnType<typeof getPenDoctorsForService>>();
+    return matches.providers.flatMap((provider) => {
+      const lookupService = matchingService(provider, filters);
+      if (!lookupService) return [];
+      let candidates = byService.get(lookupService);
+      if (!candidates) {
+        candidates = getPenDoctorsForService(lookupService);
+        byService.set(lookupService, candidates);
+      }
+      const doctor = candidates.find((item) => item.id === provider.id);
+      return doctor ? [{ doctor, serviceCode: filters.serviceCode ?? null }] : [];
+    });
+  }, [matches.providers, filters, hasResultsScope]);
 
-  if (!matches.hasCriteria && !showAllByDefault) return <DiscoverSearchIllustration />;
-
-  const doctors = matches.providers.flatMap((provider) => {
-    // The fallback service supplies display data only, never a booking selection.
-    const lookupService = matchingService(provider, filters);
-    if (!lookupService) return [];
-    const doctor = getPenDoctorsForService(lookupService).find((item) => item.id === provider.id);
-    return doctor ? [{ doctor, serviceCode: filters.serviceCode ?? null }] : [];
-  });
-
+  const activeTab = gradeTab;
+  const visibleDoctors = useMemo(
+    () =>
+      activeTab === 'all'
+        ? doctors
+        : doctors.filter(({ doctor }) => {
+            const provider = getMockProvider(doctor.id);
+            return Boolean(provider && matchesDoctorGrade(provider, activeTab));
+          }),
+    [doctors, activeTab],
+  );
+  const selection = comparison?.providerIds ?? [];
   return (
-    <View className="gap-3">
-      <AppText align="right" variant="heading-4" className="font-ui-bold">
-        النتائج ({doctors.length})
-      </AppText>
-      {comparison?.providerIds.length ? (
-        <AppText align="right" variant="caption" className="text-content-secondary">
-          {comparison.serviceCode
-            ? 'المقارنة بحسب الخدمة المختارة من الفلاتر، وبحد أقصى 3 أطباء.'
-            : 'المقارنة بين معلومات الأطباء، وبحد أقصى 3 أطباء. الأسعار حسب الخدمة.'}
-        </AppText>
-      ) : null}
-      {doctors.length ? (
-        <View className="gap-3">
-          {doctors.map(({ doctor, serviceCode }) => {
-            const selection = comparison?.providerIds ?? [];
-            const selected = selection.includes(doctor.id);
-            return (
-              <DiscoverDoctorResultCard
-                key={doctor.id}
-                doctor={doctor}
-                serviceCode={serviceCode}
-                selected={selected}
-                disabled={!selected && selection.length >= 3}
-                showServicePrice={Boolean(filters.serviceCode)}
-                showComparison={allowGeneralComparison || Boolean(filters.serviceCode)}
-                onToggle={() => onToggleComparison(doctor.id, filters.serviceCode ?? null)}
-              />
-            );
-          })}
+    <FlatList
+      className="min-h-0 flex-1"
+      data={visibleDoctors}
+      keyExtractor={(item) => item.doctor.id}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      showsVerticalScrollIndicator={false}
+      initialNumToRender={5}
+      maxToRenderPerBatch={5}
+      windowSize={5}
+      contentContainerClassName="mx-auto w-full max-w-[430px] gap-3 px-4 pt-4"
+      contentContainerStyle={{ paddingBottom: bottomPadding }}
+      ListHeaderComponent={
+        <View className="gap-4 pb-1">
+          {header}
+          {hasResultsScope ? (
+            <>
+              <DoctorGradeTabs value={activeTab} onChange={setGradeTab} />
+              <AppText align="right" variant="heading-4" className="font-ui-bold">
+                النتائج ({visibleDoctors.length})
+              </AppText>
+              {selection.length ? (
+                <AppText align="right" variant="caption" className="text-content-secondary">
+                  {comparison?.serviceCode
+                    ? 'المقارنة بحسب الخدمة المختارة من الفلاتر، وبحد أقصى 3 أطباء.'
+                    : 'المقارنة بين معلومات الأطباء، وبحد أقصى 3 أطباء.'}
+                </AppText>
+              ) : null}
+            </>
+          ) : null}
         </View>
-      ) : (
-        <DiscoverSearchIllustration empty />
-      )}
-    </View>
+      }
+      ListEmptyComponent={
+        hasResultsScope && activeTab !== 'all' ? (
+          <AppText align="center" variant="label" className="py-7 text-content-secondary">
+            لا يوجد أطباء ضمن هذا التصنيف في النتائج الحالية.
+          </AppText>
+        ) : hasResultsScope ? (
+          <DiscoverSearchIllustration empty />
+        ) : (
+          <DiscoverSearchIllustration />
+        )
+      }
+      renderItem={({ item: { doctor, serviceCode } }) => {
+        const selected = selection.includes(doctor.id);
+        return (
+          <DiscoverDoctorResultCard
+            doctor={doctor}
+            serviceCode={serviceCode}
+            selected={selected}
+            disabled={!selected && selection.length >= 3}
+            showServicePrice={Boolean(filters.serviceCode)}
+            showComparison={allowGeneralComparison || Boolean(filters.serviceCode)}
+            onToggle={() => onToggleComparison(doctor.id, filters.serviceCode ?? null)}
+          />
+        );
+      }}
+    />
   );
 }

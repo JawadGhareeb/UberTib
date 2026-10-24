@@ -1,9 +1,14 @@
 import { useRouter } from 'expo-router';
 import { Button as HeroButton, Card as HeroCard } from 'heroui-native';
 import { ProviderAvatar } from '@/features/discovery/components/provider-avatar';
+import { DoctorClassificationChips } from '@/features/discovery/components/doctor-classification-chips';
+import { useDoctorFavorites } from '@/features/discovery/state/doctor-favorites-provider';
 import { Pressable, View } from 'react-native';
 
-import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
+import {
+  getMockProvider,
+  getMockProviderDistanceKm,
+} from '@/features/discovery/mocks/providers.mock';
 import { getPenDoctorsForService } from '@/features/discovery/presentation/pen-discovery-data';
 import { AppIcon, AppText } from '@/shared/components/ui';
 
@@ -36,6 +41,8 @@ export function DiscoverDoctorResultCard({
 }) {
   const router = useRouter();
   const provider = getMockProvider(doctor.id);
+  const { ready, isFavorite, toggleFavorite } = useDoctorFavorites();
+  const favorite = isFavorite(doctor.id, serviceCode);
 
   return (
     <HeroCard
@@ -87,47 +94,69 @@ export function DiscoverDoctorResultCard({
               numberOfLines={1}
             >
               {doctor.branch} · {doctor.area}
+              {provider ? ' · ' + getMockProviderDistanceKm(provider).toFixed(1) + ' كم' : ''}
             </AppText>
           </View>
         </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={favorite ? 'إزالة الطبيب من المفضلة' : 'إضافة الطبيب للمفضلة'}
+          accessibilityState={{ selected: favorite, disabled: !ready }}
+          disabled={!ready}
+          className={
+            'h-10 w-10 items-center justify-center rounded-full ' +
+            (favorite ? 'bg-action-primary' : 'bg-action-subtle')
+          }
+          onPress={() => toggleFavorite(doctor.id, serviceCode)}
+        >
+          <AppIcon
+            name={
+              favorite
+                ? { ios: 'heart.fill', android: 'favorite', web: 'favorite' }
+                : { ios: 'heart', android: 'favorite_border', web: 'favorite_border' }
+            }
+            size={20}
+            tone={favorite ? 'onAction' : 'action'}
+          />
+        </Pressable>
       </View>
 
-      {serviceCode ? (
-        <View className="flex-row-reverse gap-2">
-          <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
-            <AppText variant="caption" className="text-content-secondary">
-              سعر الخدمة
-            </AppText>
-            <AppText
-              align="right"
-              variant="label"
-              className="w-full font-ui-semibold"
-              numberOfLines={2}
-            >
-              {showServicePrice ? doctor.price : 'السعر حسب الخدمة'}
-            </AppText>
-          </View>
-          <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
-            <AppText variant="caption" className="text-content-secondary">
-              موعد بحاجة لتأكيد
-            </AppText>
-            <AppText
-              align="right"
-              variant="label"
-              className="w-full font-ui-medium"
-              numberOfLines={2}
-            >
-              {doctor.next}
-            </AppText>
-          </View>
-        </View>
-      ) : (
-        <View className="rounded-[12px] bg-surface-subtle px-3 py-2">
-          <AppText align="right" variant="caption" className="text-content-secondary">
-            الأسعار بحسب الخدمة التي تختارها من ملف الطبيب.
+      {provider ? <DoctorClassificationChips provider={provider} compact /> : null}
+
+      <View className="flex-row-reverse gap-2">
+        <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
+          <AppText variant="caption" className="text-content-secondary">
+            {serviceCode ? 'سعر الخدمة' : 'الخدمات المتاحة'}
+          </AppText>
+          <AppText
+            align="right"
+            variant="label"
+            className="w-full font-ui-semibold"
+            numberOfLines={2}
+          >
+            {serviceCode
+              ? showServicePrice
+                ? doctor.price
+                : 'السعر حسب الخدمة'
+              : provider
+                ? provider.serviceCodes.length + ' خدمات'
+                : '—'}
           </AppText>
         </View>
-      )}
+        <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
+          <AppText variant="caption" className="text-content-secondary">
+            {serviceCode ? 'أقرب موعد' : 'المواعيد'}
+          </AppText>
+          <AppText
+            align="right"
+            variant="label"
+            className="w-full font-ui-medium"
+            numberOfLines={2}
+          >
+            {serviceCode ? doctor.next : 'حسب الخدمة المختارة'}
+          </AppText>
+        </View>
+      </View>
 
       <View className="flex-row-reverse gap-2">
         <Pressable

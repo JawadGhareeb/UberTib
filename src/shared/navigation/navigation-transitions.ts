@@ -5,11 +5,11 @@ import { Animated, Easing } from 'react-native';
  * Both tabs and stacks animate native-driver supported transform properties.
  * Arabic reading direction stays separate from physical route navigation.
  */
-export const PAGE_PUSH_DURATION_MS = 390;
-export const PAGE_POP_DURATION_MS = 340;
-export const TAB_TRANSITION_DURATION_MS = 360;
+export const PAGE_PUSH_DURATION_MS = 220;
+export const PAGE_POP_DURATION_MS = 200;
+export const TAB_TRANSITION_DURATION_MS = 190;
 
-const slideEasing = Easing.bezier(0.22, 0.8, 0.22, 1);
+const slideEasing = Easing.out(Easing.cubic);
 
 export function pageTransitionOptions(reduceMotion: boolean) {
   return {

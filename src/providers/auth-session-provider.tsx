@@ -25,6 +25,7 @@ export function AuthSessionProvider({ children }: PropsWithChildren) {
       secureStorage.clearAccessToken(),
       secureStorage.clearPreferredLocation(),
       secureStorage.clearCareDrafts(),
+      secureStorage.clearDoctorFavorites(),
     ]);
     queryClient.clear();
     setIsAuthenticated(false);

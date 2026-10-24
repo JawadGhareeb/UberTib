@@ -4,6 +4,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { CareDraftProvider } from '@/features/my-care/state/care-draft-provider';
 import { DiscoverySessionProvider } from '@/features/discovery/state/discovery-session-provider';
+import { DoctorFavoritesProvider } from '@/features/discovery/state/doctor-favorites-provider';
 import { HealthNotesProvider } from '@/features/profile/state/health-notes-provider';
 import { ProfilePrivacyProvider } from '@/features/profile/state/profile-privacy-provider';
 import { ProfilePhotoProvider } from '@/features/profile/state/profile-photo-provider';
@@ -29,17 +30,19 @@ function SessionData({ children }: PropsWithChildren) {
         <FamilyMembersProvider>
           <CareDraftProvider>
             <DiscoverySessionProvider>
-              <MockScenarioProvider>
-                <HealthNotesProvider>
-                  <ProfilePrivacyProvider>
-                    <ProfilePhotoProvider>
-                      <SupportTicketsProvider>
-                        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-                      </SupportTicketsProvider>
-                    </ProfilePhotoProvider>
-                  </ProfilePrivacyProvider>
-                </HealthNotesProvider>
-              </MockScenarioProvider>
+              <DoctorFavoritesProvider>
+                <MockScenarioProvider>
+                  <HealthNotesProvider>
+                    <ProfilePrivacyProvider>
+                      <ProfilePhotoProvider>
+                        <SupportTicketsProvider>
+                          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+                        </SupportTicketsProvider>
+                      </ProfilePhotoProvider>
+                    </ProfilePrivacyProvider>
+                  </HealthNotesProvider>
+                </MockScenarioProvider>
+              </DoctorFavoritesProvider>
             </DiscoverySessionProvider>
           </CareDraftProvider>
         </FamilyMembersProvider>

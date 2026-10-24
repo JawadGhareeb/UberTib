@@ -2,6 +2,7 @@ import {
   getMockProviderPriceFact,
   getMockProviderPriceLabel,
   getMockProviders,
+  getMockProviderDistanceKm,
 } from '@/features/discovery/mocks/providers.mock';
 
 export interface PenServiceFamily {
@@ -265,7 +266,7 @@ export function getPenDoctorsForService(serviceCode = 'root-canal', area?: strin
       priceMeaning: price?.includesSummary ?? 'تفاصيل السعر تُراجع عند الحجز',
       next: nextIllustrativeSlot(provider),
       // Mock reference screen displays an example branch distance (not a live ETA).
-      distance: provider.id === 'provider-layan' ? '2.4 كم' : 'غير متاح',
+      distance: getMockProviderDistanceKm(provider).toFixed(1) + ' كم',
       accessibility: 'راجع تفاصيل الفرع',
       terms: 'راجع شروط الحجز',
       availability: 'الموعد يحتاج تأكيد العيادة',

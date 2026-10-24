@@ -7,7 +7,11 @@ import {
   protectionMaximums,
   type DoctorClassificationView,
 } from '@/features/discovery/model/doctor-classification';
-import { findPenFamily } from '@/features/discovery/presentation/pen-discovery-data';
+import {
+  getMockProviderPresentation,
+  getEligibilityDisplay,
+  getVerificationDisplay,
+} from '@/features/discovery/model/provider-presentation';
 import type { MockProvider } from '@/features/discovery/mocks/providers.mock';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
@@ -26,18 +30,19 @@ const scientificExplanations: Record<DoctorClassificationView['scientific'], str
   B: 'يشير إلى مستوى أداء علمي متقدم في المجال المحدد.',
   C: 'يشير إلى مستوى أداء معياري في المجال المحدد.',
   D: 'يشير إلى نطاق أداء محافظ يحتاج متابعة وتطويراً.',
+  F: 'هذا المستوى يعني عدم استيفاء متطلبات المجال أو الفرع، ولا يُستخدم للدلالة على أهلية عامة للطبيب.',
   pending:
     'لم تكتمل الأدلة والمراجعات اللازمة لإظهار مستوى علمي. قيد التقييم ليس حكماً سلبياً على الطبيب.',
 };
 
-function detailContent(kind: DetailKind, facts: DoctorClassificationView) {
+function detailContent(kind: DetailKind, facts: DoctorClassificationView, hasService: boolean) {
   switch (kind) {
     case 'science':
       return {
         title: 'المستوى العلمي والسريري',
         value: facts.scientificLabel,
         body: scientificExplanations[facts.scientific],
-        note: 'يتعلق هذا المستوى بالخدمة والفرع المختارين، وليس تقييماً عاماً للطبيب. لا يضمن نجاح العلاج.',
+        note: 'يُعرض التصنيف على مستوى الطبيب في بيانات النموذج، ولا يضمن نجاح العلاج.',
       };
     case 'reviews':
       return {
@@ -51,10 +56,10 @@ function detailContent(kind: DetailKind, facts: DoctorClassificationView) {
     case 'prices':
       return {
         title: 'الأسعار',
-        value: facts.priceLabel,
+        value: hasService ? facts.priceLabel : facts.pricingLabel,
         body: facts.pricing
           ? `الفئة السعرية: ${facts.pricingLabel}. السعر الفعلي يعتمد على الخدمة والخطة إن لزمت، وتظهر التفاصيل قبل طلب الحجز.`
-          : 'تُحدد تكلفة الخدمة بعد الفحص أو المراجعة. الفئة السعرية غير محددة بهذه المعاينة.',
+          : 'الفئة السعرية غير محددة بهذه المعاينة. تُحدد تكلفة الخدمة بعد الفحص أو المراجعة.',
         note: 'الفئة السعرية مستقلة عن المستوى العلمي. الأسعار التجريبية لا تُعد عرضاً نهائياً.',
       };
     case 'protection':
@@ -94,7 +99,9 @@ function ClassificationTile({
           ? 'لا توجد تقييمات'
           : `${facts.rating.toFixed(1)} من 5`
         : kind === 'prices'
-          ? facts.priceLabel
+          ? facts.serviceCode
+            ? facts.priceLabel
+            : facts.pricingLabel
           : facts.protectionLabel;
 
   return (
@@ -131,6 +138,11 @@ function ClassificationTile({
         >
           {value}
         </AppText>
+        {kind === 'prices' ? (
+          <AppText align="right" variant="caption" className="text-content-secondary">
+            {facts.pricingLabel}
+          </AppText>
+        ) : null}
       </HeroCard>
     </PressableFeedback>
   );
@@ -141,21 +153,21 @@ export function DoctorClassificationDetails({
   serviceCode,
 }: {
   provider: MockProvider;
-  serviceCode: string;
+  serviceCode: string | null;
 }) {
   const [openDetail, setOpenDetail] = useState<DetailKind | null>(null);
   const facts = getDoctorClassification(provider, serviceCode);
-  const info = openDetail ? detailContent(openDetail, facts) : null;
-  const serviceTitle = findPenFamily(serviceCode)?.title ?? 'الخدمة المختارة';
+  const presentation = serviceCode ? getMockProviderPresentation(provider, serviceCode) : null;
+  const info = openDetail ? detailContent(openDetail, facts, Boolean(serviceCode)) : null;
 
   return (
     <View className="gap-3">
       <View className="gap-1">
         <AppText align="right" variant="heading-4" className="font-ui-bold">
-          مستوى الطبيب ومعلومات الخدمة
+          تصنيفات الطبيب
         </AppText>
         <AppText align="right" variant="caption" className="text-content-secondary">
-          {serviceTitle} · {provider.branch}
+          {provider.name} · {provider.branch}
         </AppText>
       </View>
 
@@ -169,6 +181,20 @@ export function DoctorClassificationDetails({
           />
         ))}
       </View>
+      {presentation ? (
+        <View className="gap-1 rounded-[12px] bg-surface-subtle p-3">
+          <AppText
+            align="right"
+            variant="caption"
+            className="font-ui-semibold text-content-primary"
+          >
+            {getEligibilityDisplay(presentation)}
+          </AppText>
+          <AppText align="right" variant="caption" className="text-content-secondary">
+            {getVerificationDisplay(presentation)} · فرع {provider.branch}
+          </AppText>
+        </View>
+      ) : null}
       <View className="flex-row-reverse items-start gap-1.5">
         <AppIcon
           name={{ ios: 'info.circle', android: 'info', web: 'info' }}
@@ -203,7 +229,7 @@ export function DoctorClassificationDetails({
                 {info?.value ?? ''}
               </AppText>
               <AppText align="right" variant="caption" className="text-content-secondary">
-                {serviceTitle} · {facts.branch}
+                {facts.branch}
               </AppText>
             </View>
             <BottomSheet.Description className="text-right text-type-label leading-6 text-content-primary">

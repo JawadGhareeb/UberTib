@@ -36,7 +36,8 @@
     "inline-facts:check": "node scripts/check-inline-fact-dividers.mjs",
     "build:android": "expo export --platform android --output-dir dist/android",
     "build:ios": "expo export --platform ios --output-dir dist/ios",
-    "build": "npm run lint && npm run typecheck && npm run uniwind:theme:check && npm run build:android && npm run build:ios"
+    "build": "npm run lint && npm run typecheck && npm run uniwind:theme:check && npm run build:android && npm run build:ios",
+    "provider-ui:check": "node scripts/check-provider-presentation-ui.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/ibm-plex-sans-arabic": "^0.4.2",

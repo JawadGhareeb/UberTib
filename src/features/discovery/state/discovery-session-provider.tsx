@@ -26,6 +26,13 @@ interface DiscoverySessionContextValue {
   catalogQuery: string;
   setCatalogQuery: (query: string) => void;
   catalogComparison: CatalogComparisonSelection | null;
+  doctorBrowseComparison: CatalogComparisonSelection | null;
+  toggleDoctorBrowseComparisonProvider: (
+    providerId: string,
+    serviceCode: string | null,
+    services: readonly string[],
+  ) => void;
+  setDoctorBrowseComparison: (selection: CatalogComparisonSelection | null) => void;
   toggleCatalogComparisonProvider: (
     providerId: string,
     serviceCode: string | null,
@@ -63,6 +70,16 @@ export function DiscoverySessionProvider({ children }: PropsWithChildren) {
   const [catalogQuery, setCatalogQuery] = useState('');
   const [catalogComparison, setCatalogComparison] = useState<CatalogComparisonSelection | null>(
     null,
+  );
+  const [doctorBrowseComparison, setDoctorBrowseComparison] =
+    useState<CatalogComparisonSelection | null>(null);
+  const toggleDoctorBrowseComparisonProvider = useCallback(
+    (providerId: string, serviceCode: string | null, services: readonly string[]) => {
+      setDoctorBrowseComparison((current) =>
+        toggleCatalogComparison(current, providerId, serviceCode, services),
+      );
+    },
+    [],
   );
   const toggleCatalogComparisonProvider = useCallback(
     (providerId: string, serviceCode: string | null, services: readonly string[]) => {
@@ -207,6 +224,9 @@ export function DiscoverySessionProvider({ children }: PropsWithChildren) {
       catalogQuery,
       setCatalogQuery,
       catalogComparison,
+      doctorBrowseComparison,
+      toggleDoctorBrowseComparisonProvider,
+      setDoctorBrowseComparison,
       toggleCatalogComparisonProvider,
       setCatalogComparison,
       getServiceState,
@@ -223,6 +243,8 @@ export function DiscoverySessionProvider({ children }: PropsWithChildren) {
       catalogQuery,
       getServiceState,
       catalogComparison,
+      doctorBrowseComparison,
+      toggleDoctorBrowseComparisonProvider,
       toggleCatalogComparisonProvider,
       setComparisonProviders,
       setProviderArea,

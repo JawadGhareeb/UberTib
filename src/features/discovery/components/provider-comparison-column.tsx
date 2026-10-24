@@ -39,15 +39,27 @@ function ComparisonValue({
   }
 
   const primary =
-    kind === 'price'
-      ? facts.price
-      : kind === 'appointment'
-        ? facts.appointment
-        : kind === 'clinic'
-          ? facts.clinic
-          : kind === 'included'
-            ? facts.included
-            : facts.conditions;
+    kind === 'scientific'
+      ? facts.scientific
+      : kind === 'pricing'
+        ? facts.pricing
+        : kind === 'protection'
+          ? facts.protection
+          : kind === 'eligibility'
+            ? facts.eligibility
+            : kind === 'verification'
+              ? facts.verification
+              : kind === 'distance'
+                ? facts.distance
+                : kind === 'price'
+                  ? facts.price
+                  : kind === 'appointment'
+                    ? facts.appointment
+                    : kind === 'clinic'
+                      ? facts.clinic
+                      : kind === 'included'
+                        ? facts.included
+                        : facts.conditions;
   const secondary =
     kind === 'price'
       ? facts.priceType
@@ -63,7 +75,9 @@ function ComparisonValue({
         align="center"
         variant={kind === 'price' ? 'label' : 'caption'}
         className={kind === 'price' ? 'font-ui-bold' : 'font-ui-medium'}
-        numberOfLines={kind === 'included' || kind === 'conditions' ? 4 : 3}
+        numberOfLines={
+          kind === 'included' || kind === 'conditions' || kind === 'eligibility' ? 4 : 3
+        }
       >
         {primary}
       </AppText>

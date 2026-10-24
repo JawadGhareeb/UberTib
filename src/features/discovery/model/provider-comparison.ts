@@ -1,17 +1,35 @@
 import {
   getMockProvider,
   getMockProviderPriceFact,
+  getMockProviderDistanceKm,
 } from '@/features/discovery/mocks/providers.mock';
 import {
   findPenFamily,
   type getPenDoctorsForService,
 } from '@/features/discovery/presentation/pen-discovery-data';
+import {
+  getMockProviderPresentation,
+  getEligibilityDisplay,
+  getVerificationDisplay,
+} from '@/features/discovery/model/provider-presentation';
+import { getDoctorClassification } from '@/features/discovery/model/doctor-classification';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 
 export type ComparisonDoctor = ReturnType<typeof getPenDoctorsForService>[number];
 
 export type ComparisonRowKey =
-  'rating' | 'price' | 'appointment' | 'clinic' | 'included' | 'conditions';
+  | 'rating'
+  | 'scientific'
+  | 'pricing'
+  | 'protection'
+  | 'eligibility'
+  | 'verification'
+  | 'distance'
+  | 'price'
+  | 'appointment'
+  | 'clinic'
+  | 'included'
+  | 'conditions';
 
 /** Shared dimensions keep every doctor aligned with its fixed criterion label. */
 export const comparisonHeaderHeight = 200;
@@ -26,6 +44,42 @@ export const comparisonRowDefinitions: readonly {
     label: 'التقييم',
     height: 86,
     icon: { ios: 'star', android: 'star', web: 'star' },
+  },
+  {
+    key: 'scientific',
+    label: 'التصنيف العلمي',
+    height: 100,
+    icon: { ios: 'seal', android: 'workspace_premium', web: 'workspace_premium' },
+  },
+  {
+    key: 'pricing',
+    label: 'الفئة السعرية',
+    height: 87,
+    icon: { ios: 'creditcard', android: 'payments', web: 'payments' },
+  },
+  {
+    key: 'protection',
+    label: 'مستوى الحماية',
+    height: 107,
+    icon: { ios: 'shield', android: 'verified_user', web: 'verified_user' },
+  },
+  {
+    key: 'eligibility',
+    label: 'الأهلية',
+    height: 103,
+    icon: { ios: 'checkmark.seal', android: 'verified', web: 'verified' },
+  },
+  {
+    key: 'verification',
+    label: 'آخر تحقق',
+    height: 95,
+    icon: { ios: 'calendar', android: 'event', web: 'event' },
+  },
+  {
+    key: 'distance',
+    label: 'المسافة',
+    height: 88,
+    icon: { ios: 'location', android: 'place', web: 'place' },
   },
   {
     key: 'price',
@@ -68,6 +122,10 @@ export function getComparisonFacts(doctor: ComparisonDoctor, serviceCode: string
       : undefined
     : undefined;
 
+  const presentation =
+    provider && serviceCode ? getMockProviderPresentation(provider, serviceCode) : null;
+  const classification = provider ? getDoctorClassification(provider) : null;
+
   const priceType = !serviceCode
     ? 'حدد الخدمة لعرض السعر'
     : !price
@@ -82,11 +140,24 @@ export function getComparisonFacts(doctor: ComparisonDoctor, serviceCode: string
 
   return {
     initials: provider?.initials ?? 'د',
+    scientific: classification?.scientificLabel ?? 'قيد التقييم',
+    pricing: classification?.pricingLabel ?? 'غير محددة',
+    protection: classification?.protectionLabel ?? 'غير مفعّلة',
+    eligibility: presentation ? getEligibilityDisplay(presentation) : 'حسب الخدمة',
+    verification: presentation
+      ? getVerificationDisplay(presentation)
+      : (provider?.assessmentFreshnessLabel ?? '—'),
+    distance:
+      presentation?.distanceKm != null
+        ? presentation.distanceKm.toFixed(1) + ' كم'
+        : provider
+          ? getMockProviderDistanceKm(provider).toFixed(1) + ' كم'
+          : '—',
     rating: provider?.reviews ? provider.rating.toFixed(1) : '—',
     reviews: provider?.reviews ? `${provider.reviews} تقييم` : 'لا توجد تقييمات',
     price: serviceCode ? doctor.price : 'حسب الخدمة المختارة',
     priceType,
-    appointment: serviceCode ? doctor.next : (provider?.nextAvailable ?? doctor.next),
+    appointment: serviceCode ? doctor.next : 'بحسب الخدمة المختارة',
     clinic: doctor.branch,
     area: doctor.area,
     included: serviceCode

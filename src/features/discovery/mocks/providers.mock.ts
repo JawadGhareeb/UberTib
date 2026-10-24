@@ -4,6 +4,26 @@ export interface MockProviderAvailability {
   slots: string[];
 }
 
+/** Only non-past mock day choices can be used to enter an appointment request.
+ * This is NOT a live-availability confirmation. The backend rechecks exact slots.
+ */
+export function getNonPastMockAvailability(
+  availability: readonly MockProviderAvailability[],
+  now: Date = new Date(),
+): MockProviderAvailability[] {
+  const dayKey = [
+    String(now.getFullYear()),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-');
+  return availability
+    .filter(
+      (day) =>
+        /^\\d{4}-\\d{2}-\\d{2}$/.test(day.dateKey) && day.dateKey >= dayKey && day.slots.length > 0,
+    )
+    .sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+}
+
 export type MockProviderPriceMode = 'fixed' | 'range' | 'free' | 'requires-plan';
 
 export interface MockProviderPriceFact {
@@ -1054,6 +1074,26 @@ export const mockProviders: MockProvider[] = [
     ],
   },
 ];
+
+/**
+ * Stable example distances for the UI mock, not the user's measured GPS distance.
+ * Replace with backend-verified patient-to-branch distances during integration.
+ * Area-based mock data is shared between lists, profile and comparison.
+ */
+const demoDistanceKmByArea: Record<string, number> = {
+  الجميلية: 2.4,
+  الفرقان: 3.8,
+  الأعظمية: 5.1,
+  الحمدانية: 6.2,
+  الشهباء: 4.6,
+  السليمانية: 3.1,
+  الموكامبو: 2.8,
+  'صلاح الدين': 4.9,
+  الزهراء: 5.5,
+};
+export function getMockProviderDistanceKm(provider: MockProvider): number {
+  return demoDistanceKmByArea[provider.area] ?? 3.6;
+}
 
 export function getMockProvider(providerId?: string): MockProvider | undefined {
   return mockProviders.find((provider) => provider.id === providerId);

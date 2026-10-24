@@ -4,6 +4,14 @@ import { Image, Pressable, ScrollView, View } from 'react-native';
 import { Accordion } from 'heroui-native';
 
 import { ProviderAvatar } from '@/features/discovery/components/provider-avatar';
+import { DoctorClassificationChips } from '@/features/discovery/components/doctor-classification-chips';
+import { ProviderBranchChooser } from '@/features/discovery/components/provider-branch-chooser';
+import {
+  getMockProviderBranchOptions,
+  isBranchServiceAvailable,
+  type ProviderBranchOption,
+} from '@/features/discovery/model/provider-branch-options';
+import { useDoctorFavorites } from '@/features/discovery/state/doctor-favorites-provider';
 import { DoctorClassificationDetails } from '@/features/discovery/components/doctor-classification-details';
 import { DEMO_CLINIC_PHOTOS } from '@/features/discovery/components/provider-photo-gallery';
 import { DiscoveryHeader, ScreenCard } from '@/features/discovery/components/pen-discovery-ui';
@@ -76,22 +84,33 @@ function ProfileSectionTitle({
 export function ProviderDecisionScreen() {
   const router = useRouter();
   const {
-    providerId = 'provider-layan',
+    providerId,
     serviceCode: requestedServiceCode,
     patientId,
     origin,
     assessmentDraftId,
+    branchId: requestedBranchId,
   } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
     patientId?: string;
     origin?: string;
     assessmentDraftId?: string;
+    branchId?: string;
   }>();
   const provider = getMockProvider(providerId);
+  const branches = getMockProviderBranchOptions(provider);
+  const [branchKey, setBranchKey] = useState<string | undefined>(
+    branches.find((branch) => branch.branchId && branch.branchId === requestedBranchId)?.uiKey ??
+      branches[0]?.uiKey,
+  );
+  const selectedBranch = branches.find((branch) => branch.uiKey === branchKey) ?? branches[0];
+  const { ready: favoritesReady, isFavorite, toggleFavorite } = useDoctorFavorites();
   // A direct doctor visit has no implicitly selected treatment.
   const [serviceCode, setServiceCode] = useState<string | null>(
-    requestedServiceCode && provider?.serviceCodes.includes(requestedServiceCode)
+    requestedServiceCode &&
+      provider?.serviceCodes.includes(requestedServiceCode) &&
+      isBranchServiceAvailable(selectedBranch, requestedServiceCode)
       ? requestedServiceCode
       : null,
   );
@@ -112,7 +131,7 @@ export function ProviderDecisionScreen() {
       review.providerId === providerId && (!serviceCode || review.serviceCode === serviceCode),
   );
   const services =
-    provider?.serviceCodes.flatMap((code) => {
+    selectedBranch?.serviceCodes.flatMap((code) => {
       const family = findPenFamily(code);
       return family ? [{ code, label: family.title }] : [];
     }) ?? [];
@@ -133,6 +152,14 @@ export function ProviderDecisionScreen() {
     );
   }
 
+  const chooseBranch = (branch: ProviderBranchOption) => {
+    if (branch.uiKey === branchKey) return;
+    setBranchKey(branch.uiKey);
+    // A selection in one branch must not silently carry an appointment/service into another.
+    setServiceCode(null);
+    setServicesExpanded('services');
+  };
+
   const openReviews = () =>
     router.push({
       pathname: '/discover/provider/[providerId]/reviews',
@@ -145,12 +172,13 @@ export function ProviderDecisionScreen() {
         providerId: doctor.id,
         ...(serviceCode ? { serviceCode } : {}),
         fromProfile: '1',
+        ...(selectedBranch?.branchId ? { branchId: selectedBranch.branchId } : {}),
         ...(patientId ? { patientId } : {}),
         ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
       },
     });
   const book = () => {
-    if (!serviceCode) {
+    if (!isBranchServiceAvailable(selectedBranch, serviceCode)) {
       setServicesExpanded('services');
       scrollRef.current?.scrollTo({ y: Math.max(0, servicesOffset.current - 20), animated: true });
       return;
@@ -160,6 +188,7 @@ export function ProviderDecisionScreen() {
       params: {
         providerId: doctor.id,
         serviceCode,
+        ...(selectedBranch?.branchId ? { branchId: selectedBranch.branchId } : {}),
         ...(patientId ? { patientId } : {}),
         ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
       },
@@ -228,6 +257,7 @@ export function ProviderDecisionScreen() {
                 </AppText>
               </View>
             </View>
+            <DoctorClassificationChips provider={provider} />
             <View className="flex-row-reverse items-center gap-1.5 rounded-[10px] bg-surface-subtle px-3 py-2">
               <AppIcon
                 name={{ ios: 'info.circle', android: 'info', web: 'info' }}
@@ -242,6 +272,46 @@ export function ProviderDecisionScreen() {
                 راجع معلومات الطبيب والفرع والخدمة قبل اختيار الموعد.
               </AppText>
             </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{
+                selected: isFavorite(doctor.id, serviceCode),
+                disabled: !favoritesReady,
+              }}
+              accessibilityLabel={
+                isFavorite(doctor.id, serviceCode)
+                  ? 'إزالة الطبيب من المفضلة'
+                  : 'حفظ الطبيب في المفضلة'
+              }
+              disabled={!favoritesReady}
+              onPress={() => toggleFavorite(doctor.id, serviceCode)}
+              className={
+                'min-h-[40px] flex-row-reverse items-center justify-center gap-2 rounded-[11px] border ' +
+                (isFavorite(doctor.id, serviceCode)
+                  ? 'border-action-primary bg-action-primary'
+                  : 'border-border-subtle bg-surface-default')
+              }
+            >
+              <AppIcon
+                name={
+                  isFavorite(doctor.id, serviceCode)
+                    ? { ios: 'heart.fill', android: 'favorite', web: 'favorite' }
+                    : { ios: 'heart', android: 'favorite_border', web: 'favorite_border' }
+                }
+                size={17}
+                tone={isFavorite(doctor.id, serviceCode) ? 'onAction' : 'action'}
+              />
+              <AppText
+                variant="label"
+                className={
+                  isFavorite(doctor.id, serviceCode)
+                    ? 'font-ui-semibold text-content-on-action'
+                    : 'font-ui-semibold text-content-link'
+                }
+              >
+                {isFavorite(doctor.id, serviceCode) ? 'محفوظ في المفضلة' : 'أضف للمفضلة'}
+              </AppText>
+            </Pressable>
           </ScreenCard>
 
           {serviceCode ? (
@@ -312,10 +382,10 @@ export function ProviderDecisionScreen() {
                   </AppText>
                 ) : null}
               </View>
-
-              <DoctorClassificationDetails provider={provider} serviceCode={serviceCode} />
             </>
           ) : null}
+
+          <DoctorClassificationDetails provider={provider} serviceCode={serviceCode} />
 
           <View className="gap-2">
             <ProfileSectionTitle title="عن الطبيب" />
@@ -338,8 +408,24 @@ export function ProviderDecisionScreen() {
             </View>
             <AppText align="right" variant="label" className="text-content-secondary">
               {doctor.name} · {doctor.specialty}. يقدم خدماته في {doctor.branch} بمنطقة{' '}
-              {doctor.area}. التفاصيل الأكاديمية والشهادات لا تظهر قبل توثيقها.
+              {doctor.area}.
             </AppText>
+            <View className="flex-row-reverse items-start gap-2 rounded-[12px] bg-surface-subtle p-3">
+              <AppIcon
+                name={{ ios: 'doc.text', android: 'description', web: 'description' }}
+                size={17}
+                tone="secondary"
+              />
+              <View className="min-w-0 flex-1 gap-1">
+                <AppText align="right" variant="label" className="font-ui-semibold">
+                  التأهيل والخبرات المهنية الموثقة
+                </AppText>
+                <AppText align="right" variant="caption" className="text-content-secondary">
+                  تفاصيل الشهادات والتراخيص والأدلة المهنية المعتمدة غير متاحة ضمن بيانات التجربة.
+                  ستظهر هنا بعد تحقق الجهة المختصة وربط بيانات الاعتماد.
+                </AppText>
+              </View>
+            </View>
           </View>
 
           <View className="gap-2">
@@ -468,11 +554,12 @@ export function ProviderDecisionScreen() {
           </View>
 
           <View className="gap-2">
-            <ProfileSectionTitle
-              title="العيادة التي يعمل فيها"
-              linkLabel="تفاصيل الفرع"
-              onPress={openBranch}
+            <ProviderBranchChooser
+              branches={branches}
+              selectedKey={selectedBranch?.uiKey}
+              onSelect={chooseBranch}
             />
+            <ProfileSectionTitle title="العيادة التي يعمل فيها" />
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={`فتح ملف ${doctor.branch}`}
@@ -492,10 +579,10 @@ export function ProviderDecisionScreen() {
                   className="w-full font-ui-bold"
                   numberOfLines={2}
                 >
-                  {doctor.branch}
+                  {selectedBranch?.name ?? doctor.branch}
                 </AppText>
                 <AppText align="right" variant="caption" className="text-content-secondary">
-                  {doctor.area} · حلب
+                  {selectedBranch?.area ?? doctor.area} · حلب
                 </AppText>
                 <AppText align="right" variant="caption" className="text-content-secondary">
                   صور توضيحية · الموقع والخدمات

@@ -15,6 +15,10 @@ import type { HealthNote } from '@/features/profile/state/health-notes-provider'
 export type BookingSavedFields = {
   providerId: string;
   serviceCode: string;
+  /** Quote shown when the user first chose the slot (demo label only). */
+  priceAtSelection?: string;
+  /** Canonical branch ID, available only from backend data. */
+  branchId?: string;
   dateKey?: string;
   dateLabel?: string;
   timeLabel?: string;

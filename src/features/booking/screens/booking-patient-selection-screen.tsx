@@ -9,7 +9,10 @@ import { BookingSaveLaterAction } from '@/features/booking/components/booking-sa
 import { BookingJourneyProgress } from '@/features/booking/components/booking-journey-progress';
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
 import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
-import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
+import {
+  getMockProvider,
+  getNonPastMockAvailability,
+} from '@/features/discovery/mocks/providers.mock';
 import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
@@ -28,6 +31,8 @@ export function BookingPatientSelectionScreen() {
     patientId,
     origin,
     assessmentDraftId,
+    branchId,
+    priceAtSelection,
   } = useLocalSearchParams<{
     providerId?: string;
     serviceCode?: string;
@@ -37,9 +42,13 @@ export function BookingPatientSelectionScreen() {
     patientId?: string;
     origin?: string;
     assessmentDraftId?: string;
+    branchId?: string;
+    priceAtSelection?: string;
   }>();
   const provider = getMockProvider(providerId);
-  const chosenDay = provider?.availability.find((day) => day.dateKey === dateKey);
+  const chosenDay = getNonPastMockAvailability(provider?.availability ?? []).find(
+    (day) => day.dateKey === dateKey,
+  );
   const validSlot = Boolean(
     provider?.serviceCodes.includes(serviceCode ?? '') &&
     chosenDay?.dateLabel === dateLabel &&
@@ -52,13 +61,26 @@ export function BookingPatientSelectionScreen() {
     () => ({
       providerId: providerId ?? '',
       serviceCode: serviceCode ?? '',
+      ...(branchId ? { branchId } : {}),
+      ...(priceAtSelection ? { priceAtSelection } : {}),
       dateKey,
       dateLabel,
       timeLabel,
       patientId: selectedId,
       ...(origin === 'assessment' ? { origin: 'assessment' as const, assessmentDraftId } : {}),
     }),
-    [providerId, serviceCode, dateKey, dateLabel, timeLabel, selectedId, origin, assessmentDraftId],
+    [
+      providerId,
+      serviceCode,
+      branchId,
+      priceAtSelection,
+      dateKey,
+      dateLabel,
+      timeLabel,
+      selectedId,
+      origin,
+      assessmentDraftId,
+    ],
   );
   useEffect(() => {
     if (hydrated && validSlot && providerId && serviceCode) {
@@ -78,7 +100,11 @@ export function BookingPatientSelectionScreen() {
           onAction={() =>
             router.replace({
               pathname: '/booking/slots',
-              params: { providerId: providerId ?? '', serviceCode: serviceCode ?? '' },
+              params: {
+                providerId: providerId ?? '',
+                serviceCode: serviceCode ?? '',
+                ...(branchId ? { branchId } : {}),
+              },
             })
           }
         />
@@ -232,6 +258,8 @@ export function BookingPatientSelectionScreen() {
                 params: {
                   providerId: providerId ?? '',
                   serviceCode: serviceCode ?? '',
+                  ...(branchId ? { branchId } : {}),
+                  ...(priceAtSelection ? { priceAtSelection } : {}),
                   dateKey: dateKey ?? '',
                   dateLabel: dateLabel ?? '',
                   timeLabel: timeLabel ?? '',
