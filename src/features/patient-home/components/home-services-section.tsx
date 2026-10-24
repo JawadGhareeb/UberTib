@@ -59,7 +59,7 @@ export function HomeServicesSection() {
         onPress={() => router.push('/(tabs)/discover')}
       >
         <HeroButton.Label className="font-ui-semibold text-content-link">
-          ابحث عن طبيب أو خدمة
+          استكشف جميع الخدمات
         </HeroButton.Label>
       </HeroButton>
     </View>

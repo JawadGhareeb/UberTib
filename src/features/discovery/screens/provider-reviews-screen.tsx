@@ -137,7 +137,7 @@ export function ProviderReviewsScreen() {
             ? router.back()
             : router.replace({
                 pathname: '/discover/provider/[providerId]',
-                params: { providerId: provider.id, serviceCode: serviceCode ?? 'root-canal' },
+                params: { providerId: provider.id, ...(serviceCode ? { serviceCode } : {}) },
               })
         }
       />

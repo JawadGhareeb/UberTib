@@ -1,27 +1,52 @@
 import { Button, Typography } from 'heroui-native';
 import { useEffect } from 'react';
-import { BackHandler, Platform, ScrollView, View } from 'react-native';
+import {
+  BackHandler,
+  Platform,
+  Pressable,
+  ScrollView,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, { SlideInLeft, SlideInRight, useReducedMotion } from 'react-native-reanimated';
 
 import { BrandLogo } from '@/shared/components/brand';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
-import { IntroArtwork } from './intro-artwork';
+import { OnboardingArtwork, type OnboardingStep } from './onboarding-artwork';
 
-type OnboardingScreenProps = {
-  step: 0 | 1;
+type Props = {
+  step: OnboardingStep;
+  direction: 'forward' | 'back';
   onNext: () => void;
   onBack: () => void;
   onBrowse: () => void;
   onLogin: () => void;
 };
 
-export function OnboardingScreen({
-  step,
-  onNext,
-  onBack,
-  onBrowse,
-  onLogin,
-}: OnboardingScreenProps) {
+const pages = [
+  {
+    title: 'عنايتك بأسنانك بتبدأ من هون',
+    description:
+      'مو متأكد شو بتحتاج؟ منساعدك تبدأ بتحديد حالتك، أو فيك تستكشف الأطباء والخدمات بنفسك.',
+  },
+  {
+    title: 'اختار طبيبك بثقة ووضوح',
+    description:
+      'قارن بين الأطباء حسب تصنيفهم العلمي، تقييمات المرضى، الأسعار ومستويات الحماية المتاحة.',
+  },
+  {
+    title: 'من الحجز للمتابعة، كل خطوة واضحة',
+    description: 'اختار موعدك، تابع طلب الحجز وخطتك العلاجية، واطّلع على شروط الحماية المتاحة إلك.',
+  },
+] as const;
+
+export function OnboardingScreen({ step, direction, onNext, onBack, onBrowse, onLogin }: Props) {
+  const { height: windowHeight } = useWindowDimensions();
+  const reducedMotion = useReducedMotion();
+  const artworkHeight = Math.max(232, Math.min(280, Math.round(windowHeight * 0.35)));
+  const page = pages[step];
+
   useEffect(() => {
     if (Platform.OS !== 'android' || step === 0) return;
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -32,70 +57,89 @@ export function OnboardingScreen({
   }, [step, onBack]);
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-surface-canvas"
-      style={{ flex: 1 }}
-      edges={['top', 'bottom']}
-    >
+    <SafeAreaView className="flex-1 bg-surface-canvas" edges={['top', 'bottom']}>
       <ScrollView
-        style={{ flex: 1 }}
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View
-          className="mx-auto w-full max-w-[430px] flex-1 px-6 pb-7 pt-5"
-          style={{ flexGrow: 1 }}
-        >
-          <View className="flex-row items-center justify-between" style={{ direction: 'ltr' }}>
+        <View className="mx-auto w-full max-w-[430px] flex-1 px-6 pb-7 pt-4">
+          <View
+            className="min-h-[44px] flex-row items-center justify-between"
+            style={{ direction: 'rtl' }}
+          >
             <BrandLogo size={32} />
-            <View className="flex-row items-center gap-2">
-              <Typography.Paragraph type="body-sm" className="font-ui-medium text-text-secondary">
-                {step + 1} / 2
-              </Typography.Paragraph>
-              {step === 1 ? <AuthBackButton onPress={onBack} /> : null}
+            <View className="flex-row items-center gap-2" style={{ direction: 'rtl' }}>
+              {step > 0 ? <AuthBackButton onPress={onBack} /> : null}
+              {step < 2 ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="تخطي المقدمة والتصفح كزائر"
+                  hitSlop={8}
+                  className="min-h-[44px] min-w-[56px] items-center justify-center"
+                  onPress={onBrowse}
+                >
+                  <Typography.Paragraph
+                    type="body-sm"
+                    className="font-ui-medium text-text-secondary"
+                  >
+                    تخطي
+                  </Typography.Paragraph>
+                </Pressable>
+              ) : null}
             </View>
           </View>
-          <View className="mt-5 flex-row gap-2" style={{ direction: 'ltr' }}>
-            <View className="h-[4px] flex-1 rounded-full bg-action-primary" />
-            <View
-              className={
-                step === 1
-                  ? 'h-[4px] flex-1 rounded-full bg-action-primary'
-                  : 'h-[4px] flex-1 rounded-full bg-border-default'
-              }
-            />
+
+          <View
+            accessible
+            accessibilityRole="progressbar"
+            accessibilityLabel="تقدم خطوات المقدمة"
+            accessibilityValue={{ min: 1, max: 3, now: step + 1 }}
+            className="mt-3 flex-row gap-2"
+            style={{ direction: 'rtl' }}
+          >
+            {pages.map((_, index) => (
+              <View
+                key={index}
+                className={
+                  'h-1 flex-1 rounded-full ' +
+                  (index <= step ? 'bg-action-primary' : 'bg-border-default')
+                }
+              />
+            ))}
           </View>
-          <View className="mt-6">
-            <IntroArtwork step={step} />
-          </View>
-          <View className="mt-2 items-end gap-3">
-            <Typography.Heading
-              type="h1"
-              className="w-full font-ui-bold text-text-primary"
-              style={{
-                textAlign: 'right',
-                writingDirection: 'rtl',
-                lineHeight: 51,
-                paddingTop: 9,
-                paddingBottom: 6,
-              }}
-            >
-              {step === 0 ? 'عناية أسنان أسهل، من أول خطوة' : 'بلّش بالطريقة اللي بتناسبك'}
-            </Typography.Heading>
-            <Typography.Paragraph
-              className="w-full font-ui-regular text-text-secondary"
-              style={{ textAlign: 'right', writingDirection: 'rtl' }}
-            >
-              {step === 0
-                ? 'مو ضروري تعرف اسم المشكلة. منساعدك توصف حاجتك، تقارن بين الأطباء المؤهلين، وتحجز الموعد المناسب.'
-                : 'تصفّح الأطباء والخدمات كزائر، أو سجّل الدخول لتتابع حجوزاتك.'}
-            </Typography.Paragraph>
-          </View>
-          <View className="min-h-8 flex-1" />
-          <View className="mt-8 gap-3">
-            {step === 0 ? (
+
+          <Animated.View
+            key={step}
+            entering={
+              reducedMotion
+                ? undefined
+                : (direction === 'forward' ? SlideInRight : SlideInLeft).duration(220)
+            }
+            className="mt-5 gap-5"
+          >
+            <OnboardingArtwork step={step} height={artworkHeight} />
+            <View className="items-center gap-3">
+              <Typography.Heading
+                type="h1"
+                className="w-full font-ui-bold text-text-primary"
+                style={{ textAlign: 'center', writingDirection: 'rtl', lineHeight: 38 }}
+              >
+                {page.title}
+              </Typography.Heading>
+              <Typography.Paragraph
+                className="w-full font-ui-regular text-text-secondary"
+                style={{ textAlign: 'center', writingDirection: 'rtl', lineHeight: 25 }}
+              >
+                {page.description}
+              </Typography.Paragraph>
+            </View>
+          </Animated.View>
+
+          <View className="min-h-4 flex-1" />
+          <View className="mt-6 gap-3">
+            {step < 2 ? (
               <Button
                 variant="primary"
                 size="lg"
@@ -112,7 +156,7 @@ export function OnboardingScreen({
                   className="min-h-[52px] rounded-form-field"
                   onPress={onBrowse}
                 >
-                  <Button.Label className="font-ui-semibold">التصفح كزائر</Button.Label>
+                  <Button.Label className="font-ui-semibold">ابدأ التصفح</Button.Label>
                 </Button>
                 <Button
                   variant="tertiary"

@@ -12,7 +12,8 @@ import { secureStorage } from '@/shared/storage/secure-storage';
 export function AppEntryScreen() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
-  const [step, setStep] = useState<0 | 1>(0);
+  const [step, setStep] = useState<0 | 1 | 2>(0);
+  const [direction, setDirection] = useState<'forward' | 'back'>('forward');
 
   useEffect(() => {
     let active = true;
@@ -61,8 +62,15 @@ export function AppEntryScreen() {
   return (
     <OnboardingScreen
       step={step}
-      onNext={() => setStep(1)}
-      onBack={() => setStep(0)}
+      direction={direction}
+      onNext={() => {
+        setDirection('forward');
+        setStep((current) => Math.min(current + 1, 2) as 0 | 1 | 2);
+      }}
+      onBack={() => {
+        setDirection('back');
+        setStep((current) => Math.max(current - 1, 0) as 0 | 1 | 2);
+      }}
       onBrowse={() => void finish('/(tabs)/home')}
       onLogin={() => void finish('/auth/phone')}
     />

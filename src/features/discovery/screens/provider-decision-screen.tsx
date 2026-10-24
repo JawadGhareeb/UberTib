@@ -1,5 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Accordion } from 'heroui-native';
 
 import { ProviderAvatar } from '@/features/discovery/components/provider-avatar';
 import { DoctorClassificationDetails } from '@/features/discovery/components/doctor-classification-details';
@@ -9,7 +11,6 @@ import {
   getMockProvider,
   getMockProviderPriceFact,
 } from '@/features/discovery/mocks/providers.mock';
-import { getProviderServiceLabels } from '@/features/discovery/model/provider-branch-view';
 import {
   findPenFamily,
   getPenDoctorsForService,
@@ -76,7 +77,7 @@ export function ProviderDecisionScreen() {
   const router = useRouter();
   const {
     providerId = 'provider-layan',
-    serviceCode = 'root-canal',
+    serviceCode: requestedServiceCode,
     patientId,
     origin,
     assessmentDraftId,
@@ -87,14 +88,34 @@ export function ProviderDecisionScreen() {
     origin?: string;
     assessmentDraftId?: string;
   }>();
-  const doctor = getPenDoctorsForService(serviceCode).find((item) => item.id === providerId);
   const provider = getMockProvider(providerId);
-  const priceFact = provider ? getMockProviderPriceFact(provider, serviceCode) : undefined;
-  const service = findPenFamily(serviceCode);
-  const relatedReviews = penReviews.filter(
-    (review) => review.providerId === providerId && review.serviceCode === serviceCode,
+  // A direct doctor visit has no implicitly selected treatment.
+  const [serviceCode, setServiceCode] = useState<string | null>(
+    requestedServiceCode && provider?.serviceCodes.includes(requestedServiceCode)
+      ? requestedServiceCode
+      : null,
   );
-  const services = provider ? getProviderServiceLabels(provider) : [];
+  const [servicesExpanded, setServicesExpanded] = useState<string | undefined>(
+    serviceCode ? undefined : 'services',
+  );
+  const scrollRef = useRef<ScrollView>(null);
+  const servicesOffset = useRef(0);
+  // Without a chosen service, only the doctor's general profile facts come from this entry.
+  const doctor = getPenDoctorsForService(serviceCode ?? provider?.serviceCodes[0] ?? '').find(
+    (item) => item.id === providerId,
+  );
+  const priceFact =
+    provider && serviceCode ? getMockProviderPriceFact(provider, serviceCode) : undefined;
+  const service = serviceCode ? findPenFamily(serviceCode) : undefined;
+  const relatedReviews = penReviews.filter(
+    (review) =>
+      review.providerId === providerId && (!serviceCode || review.serviceCode === serviceCode),
+  );
+  const services =
+    provider?.serviceCodes.flatMap((code) => {
+      const family = findPenFamily(code);
+      return family ? [{ code, label: family.title }] : [];
+    }) ?? [];
 
   if (!doctor || !provider) {
     return (
@@ -102,7 +123,9 @@ export function ProviderDecisionScreen() {
         <StateView
           actionLabel="العودة للأطباء"
           onAction={() =>
-            router.replace({ pathname: '/discover/providers/results', params: { serviceCode } })
+            serviceCode
+              ? router.replace({ pathname: '/discover/providers/results', params: { serviceCode } })
+              : router.replace('/discover/search')
           }
           title="ملف الطبيب غير موجود"
         />
@@ -113,20 +136,25 @@ export function ProviderDecisionScreen() {
   const openReviews = () =>
     router.push({
       pathname: '/discover/provider/[providerId]/reviews',
-      params: { providerId: doctor.id, serviceCode },
+      params: { providerId: doctor.id, ...(serviceCode ? { serviceCode } : {}) },
     });
   const openBranch = () =>
     router.push({
       pathname: '/discover/provider/[providerId]/branch',
       params: {
         providerId: doctor.id,
-        serviceCode,
+        ...(serviceCode ? { serviceCode } : {}),
         fromProfile: '1',
         ...(patientId ? { patientId } : {}),
         ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
       },
     });
-  const book = () =>
+  const book = () => {
+    if (!serviceCode) {
+      setServicesExpanded('services');
+      scrollRef.current?.scrollTo({ y: Math.max(0, servicesOffset.current - 20), animated: true });
+      return;
+    }
     router.push({
       pathname: '/booking/slots',
       params: {
@@ -136,6 +164,7 @@ export function ProviderDecisionScreen() {
         ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
       },
     });
+  };
 
   return (
     <Screen contentClassName="px-0 py-0">
@@ -146,6 +175,7 @@ export function ProviderDecisionScreen() {
       />
       <View className="min-h-0 flex-1">
         <ScrollView
+          ref={scrollRef}
           className="min-h-0 flex-1"
           contentContainerClassName="mx-auto w-full max-w-[430px] gap-4 px-4 pb-6 pt-3"
           showsVerticalScrollIndicator={false}
@@ -214,74 +244,78 @@ export function ProviderDecisionScreen() {
             </View>
           </ScreenCard>
 
-          <View className="gap-2 rounded-[16px] border border-action-primary/25 bg-action-subtle p-3">
-            <View className="flex-row-reverse items-center gap-2">
-              <View className="h-10 w-10 items-center justify-center rounded-[10px] bg-surface-default">
-                <AppIcon
-                  name={{
-                    ios: 'cross.case.fill',
-                    android: 'medical_services',
-                    web: 'medical_services',
-                  }}
-                  tone="action"
-                  size={20}
-                />
+          {serviceCode ? (
+            <>
+              <View className="gap-2 rounded-[16px] border border-action-primary/25 bg-action-subtle p-3">
+                <View className="flex-row-reverse items-center gap-2">
+                  <View className="h-10 w-10 items-center justify-center rounded-[10px] bg-surface-default">
+                    <AppIcon
+                      name={{
+                        ios: 'cross.case.fill',
+                        android: 'medical_services',
+                        web: 'medical_services',
+                      }}
+                      tone="action"
+                      size={20}
+                    />
+                  </View>
+                  <View className="min-w-0 flex-1 items-end gap-0.5">
+                    <AppText align="right" variant="caption" className="text-content-secondary">
+                      الخدمة المختارة
+                    </AppText>
+                    <AppText align="right" variant="heading-4" className="font-ui-bold">
+                      {service?.title ?? 'الخدمة المطلوبة'}
+                    </AppText>
+                  </View>
+                </View>
+                {service?.description ? (
+                  <AppText align="right" variant="caption" className="text-content-secondary">
+                    {service.description}
+                  </AppText>
+                ) : null}
+                <View className="flex-row-reverse gap-2">
+                  <View className="min-w-0 flex-1 items-end gap-1 rounded-[11px] bg-surface-default px-3 py-2.5">
+                    <AppText variant="caption" className="text-content-secondary">
+                      سعر الخدمة
+                    </AppText>
+                    <AppText variant="label" className="font-ui-bold" numberOfLines={2}>
+                      {doctor.price}
+                    </AppText>
+                    <AppText variant="caption" className="text-content-secondary">
+                      {priceFact?.mode === 'range'
+                        ? 'نطاق توضيحي'
+                        : priceFact?.mode === 'requires-plan'
+                          ? 'بعد الفحص'
+                          : 'بحاجة للتحقق'}
+                    </AppText>
+                  </View>
+                  <View className="min-w-0 flex-1 items-end gap-1 rounded-[11px] bg-surface-default px-3 py-2.5">
+                    <AppText variant="caption" className="text-content-secondary">
+                      أقرب موعد
+                    </AppText>
+                    <AppText
+                      align="right"
+                      variant="label"
+                      className="font-ui-semibold"
+                      numberOfLines={2}
+                    >
+                      {doctor.next}
+                    </AppText>
+                    <AppText variant="caption" className="text-content-secondary">
+                      بانتظار التأكيد
+                    </AppText>
+                  </View>
+                </View>
+                {priceFact?.includesSummary ? (
+                  <AppText align="right" variant="caption" className="text-content-secondary">
+                    {priceFact.includesSummary}
+                  </AppText>
+                ) : null}
               </View>
-              <View className="min-w-0 flex-1 items-end gap-0.5">
-                <AppText align="right" variant="caption" className="text-content-secondary">
-                  الخدمة المختارة
-                </AppText>
-                <AppText align="right" variant="heading-4" className="font-ui-bold">
-                  {service?.title ?? 'الخدمة المطلوبة'}
-                </AppText>
-              </View>
-            </View>
-            {service?.description ? (
-              <AppText align="right" variant="caption" className="text-content-secondary">
-                {service.description}
-              </AppText>
-            ) : null}
-            <View className="flex-row-reverse gap-2">
-              <View className="min-w-0 flex-1 items-end gap-1 rounded-[11px] bg-surface-default px-3 py-2.5">
-                <AppText variant="caption" className="text-content-secondary">
-                  سعر الخدمة
-                </AppText>
-                <AppText variant="label" className="font-ui-bold" numberOfLines={2}>
-                  {doctor.price}
-                </AppText>
-                <AppText variant="caption" className="text-content-secondary">
-                  {priceFact?.mode === 'range'
-                    ? 'نطاق توضيحي'
-                    : priceFact?.mode === 'requires-plan'
-                      ? 'بعد الفحص'
-                      : 'بحاجة للتحقق'}
-                </AppText>
-              </View>
-              <View className="min-w-0 flex-1 items-end gap-1 rounded-[11px] bg-surface-default px-3 py-2.5">
-                <AppText variant="caption" className="text-content-secondary">
-                  أقرب موعد
-                </AppText>
-                <AppText
-                  align="right"
-                  variant="label"
-                  className="font-ui-semibold"
-                  numberOfLines={2}
-                >
-                  {doctor.next}
-                </AppText>
-                <AppText variant="caption" className="text-content-secondary">
-                  بانتظار التأكيد
-                </AppText>
-              </View>
-            </View>
-            {priceFact?.includesSummary ? (
-              <AppText align="right" variant="caption" className="text-content-secondary">
-                {priceFact.includesSummary}
-              </AppText>
-            ) : null}
-          </View>
 
-          <DoctorClassificationDetails provider={provider} serviceCode={serviceCode} />
+              <DoctorClassificationDetails provider={provider} serviceCode={serviceCode} />
+            </>
+          ) : null}
 
           <View className="gap-2">
             <ProfileSectionTitle title="عن الطبيب" />
@@ -353,32 +387,84 @@ export function ProviderDecisionScreen() {
             </Pressable>
           </View>
 
-          <View className="gap-2">
+          <View
+            className="gap-2"
+            onLayout={(event) => {
+              servicesOffset.current = event.nativeEvent.layout.y;
+            }}
+          >
             <ProfileSectionTitle title="الخدمات التي يقدمها" />
-            <ScreenCard className="rounded-[15px] px-3 py-1">
-              {services.map((label, index) => (
-                <View
-                  key={label}
-                  className={
-                    'min-h-[47px] flex-row-reverse items-center gap-2 py-2 ' +
-                    (index > 0 ? 'border-t border-border-subtle' : '')
-                  }
-                >
+            <Accordion
+              selectionMode="single"
+              isCollapsible
+              value={servicesExpanded}
+              onValueChange={setServicesExpanded}
+              variant="default"
+              className="overflow-hidden rounded-[15px] border border-border-subtle bg-surface-default"
+            >
+              <Accordion.Item value="services">
+                <Accordion.Trigger className="min-h-[55px] flex-row-reverse items-center gap-2 px-3">
                   <AppIcon
                     name={{
-                      ios: 'checkmark.circle',
-                      android: 'check_circle_outline',
-                      web: 'check_circle_outline',
+                      ios: 'list.bullet',
+                      android: 'format_list_bulleted',
+                      web: 'format_list_bulleted',
                     }}
+                    size={19}
                     tone="action"
-                    size={17}
                   />
-                  <AppText align="right" variant="label" className="min-w-0 flex-1">
-                    {label}
-                  </AppText>
-                </View>
-              ))}
-            </ScreenCard>
+                  <View className="min-w-0 flex-1 items-end gap-0.5">
+                    <AppText align="right" variant="label" className="font-ui-semibold">
+                      {service?.title ?? 'عرض الخدمات واختيار خدمة للحجز'}
+                    </AppText>
+                    <AppText align="right" variant="caption" className="text-content-secondary">
+                      {serviceCode ? 'يمكنك تغيير الخدمة' : 'اختيار الخدمة مطلوب فقط قبل الحجز'}
+                    </AppText>
+                  </View>
+                  <Accordion.Indicator />
+                </Accordion.Trigger>
+                <Accordion.Content className="px-3 pb-3">
+                  {services.map(({ code, label }, index) => (
+                    <Pressable
+                      key={code}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: serviceCode === code }}
+                      accessibilityLabel={'اختيار خدمة ' + label}
+                      onPress={() => {
+                        setServiceCode(code);
+                        setServicesExpanded(undefined);
+                        scrollRef.current?.scrollTo({ y: 0, animated: true });
+                      }}
+                      className={
+                        'min-h-[48px] flex-row-reverse items-center gap-2 py-2 ' +
+                        (index > 0 ? 'border-t border-border-subtle' : '')
+                      }
+                    >
+                      <AppIcon
+                        name={
+                          serviceCode === code
+                            ? {
+                                ios: 'checkmark.circle.fill',
+                                android: 'check_circle',
+                                web: 'check_circle',
+                              }
+                            : {
+                                ios: 'circle',
+                                android: 'radio_button_unchecked',
+                                web: 'radio_button_unchecked',
+                              }
+                        }
+                        tone={serviceCode === code ? 'action' : 'secondary'}
+                        size={18}
+                      />
+                      <AppText align="right" variant="label" className="min-w-0 flex-1">
+                        {label}
+                      </AppText>
+                    </Pressable>
+                  ))}
+                </Accordion.Content>
+              </Accordion.Item>
+            </Accordion>
           </View>
 
           <View className="gap-2">
@@ -427,7 +513,7 @@ export function ProviderDecisionScreen() {
           <View className="mx-auto w-full max-w-[398px]">
             <Button
               className="min-h-[50px] rounded-[12px]"
-              label="اختر موعداً"
+              label={serviceCode ? 'اختر موعداً' : 'اختر خدمة للحجز'}
               endIcon={{ ios: 'calendar', android: 'event', web: 'event' }}
               onPress={book}
               variant="primary"

@@ -9,6 +9,7 @@ import { HomeAttentionSection } from '../components/home-attention-section';
 import { HomeCasesSection } from '../components/home-cases-section';
 import { HomePendingRequests, HomeUpcomingBookings } from '../components/home-bookings-section';
 import { HomeServicesSection } from '../components/home-services-section';
+import { HomeDiscoverDoctorsCard } from '../components/home-discover-doctors-card';
 import { usePatientHomeData } from '../hooks/use-patient-home-data';
 
 export function PatientHomeScreen() {
@@ -40,6 +41,7 @@ export function PatientHomeScreen() {
               </AppText>
             </View>
             <AssessmentEntryCard />
+            <HomeDiscoverDoctorsCard />
             <HomeServicesSection />
             {isAuthenticated ? (
               <>

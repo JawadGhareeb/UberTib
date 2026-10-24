@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -30,6 +30,9 @@ const initialDiscoverFilters: DiscoveryFilterSelection = {
 /** One smart search entry and one progressive filter modal; no external category/back stack. */
 export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean } = {}) {
   const router = useRouter();
+  const { browseDoctors } = useLocalSearchParams<{ browseDoctors?: string }>();
+  const isDoctorBrowse = !asTab && browseDoctors === '1';
+  const [browseQuery, setBrowseQuery] = useState('');
   const insets = useSafeAreaInsets();
   const {
     catalogQuery,
@@ -78,30 +81,33 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
       >
         <View className="items-end gap-1">
           <AppText align="right" variant="heading-2">
-            كيف فينا نساعدك؟
+            {isDoctorBrowse ? 'استكشف الأطباء' : 'كيف فينا نساعدك؟'}
           </AppText>
           <AppText align="right" variant="label" className="text-content-secondary">
-            ابحث باسم الطبيب، أو استخدم الفلاتر لتحديد الخدمة والمنطقة.
+            {isDoctorBrowse
+              ? 'تصفّح الأطباء مباشرة أو ابحث بالاسم، واستخدم الفلاتر الموجودة عند الحاجة.'
+              : 'ابحث باسم الطبيب، أو استخدم الفلاتر لتحديد الخدمة والمنطقة.'}
           </AppText>
         </View>
 
         <View className="flex-row-reverse items-center gap-2">
           <View className="min-w-0 flex-1">
             <SearchField
-              value={catalogQuery}
-              onChangeText={setCatalogQuery}
+              value={isDoctorBrowse ? browseQuery : catalogQuery}
+              onChangeText={isDoctorBrowse ? setBrowseQuery : setCatalogQuery}
               onSubmitEditing={() => Keyboard.dismiss()}
               accessibilityLabel="البحث باسم الطبيب"
               placeholder="ابحث باسم الطبيب..."
             />
           </View>
-          {catalogQuery.length ? (
+          {(isDoctorBrowse ? browseQuery : catalogQuery).length ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="مسح البحث"
               className="h-[46px] w-[40px] items-center justify-center rounded-[12px] bg-surface-default"
               onPress={() => {
-                setCatalogQuery('');
+                if (isDoctorBrowse) setBrowseQuery('');
+                else setCatalogQuery('');
                 Keyboard.dismiss();
               }}
             >
@@ -137,16 +143,18 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
 
         <DiscoverAppliedFilterChips selection={filters} onChange={applySearchFilters} />
 
-        <AssessmentEntryCard />
+        {isDoctorBrowse ? null : <AssessmentEntryCard />}
         <DiscoverSearchResults
-          query={catalogQuery}
+          query={isDoctorBrowse ? browseQuery : catalogQuery}
+          showAllByDefault={isDoctorBrowse}
+          allowGeneralComparison={!isDoctorBrowse}
           filters={filters}
           comparison={comparison}
           onToggleComparison={toggleSearchComparison}
         />
       </ScrollView>
 
-      {comparison?.providerIds.length ? (
+      {(!isDoctorBrowse || Boolean(filters.serviceCode)) && comparison?.providerIds.length ? (
         <ProviderComparisonBar
           count={comparison.providerIds.length}
           bottom={PATIENT_TAB_BAR_HEIGHT + Math.max(insets.bottom, 8)}

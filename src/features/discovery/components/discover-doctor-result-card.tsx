@@ -19,10 +19,11 @@ export function DiscoverDoctorResultCard({
   disabled,
   disabledReason,
   showServicePrice = true,
+  showComparison = true,
   onToggle,
 }: {
   doctor: Doctor;
-  serviceCode: string;
+  serviceCode: string | null;
   patientId?: string;
   origin?: string;
   assessmentDraftId?: string;
@@ -30,6 +31,7 @@ export function DiscoverDoctorResultCard({
   disabled: boolean;
   disabledReason?: string;
   showServicePrice?: boolean;
+  showComparison?: boolean;
   onToggle: () => void;
 }) {
   const router = useRouter();
@@ -90,34 +92,42 @@ export function DiscoverDoctorResultCard({
         </View>
       </View>
 
-      <View className="flex-row-reverse gap-2">
-        <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
-          <AppText variant="caption" className="text-content-secondary">
-            سعر الخدمة
-          </AppText>
-          <AppText
-            align="right"
-            variant="label"
-            className="w-full font-ui-semibold"
-            numberOfLines={2}
-          >
-            {showServicePrice ? doctor.price : 'السعر حسب الخدمة'}
+      {serviceCode ? (
+        <View className="flex-row-reverse gap-2">
+          <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
+            <AppText variant="caption" className="text-content-secondary">
+              سعر الخدمة
+            </AppText>
+            <AppText
+              align="right"
+              variant="label"
+              className="w-full font-ui-semibold"
+              numberOfLines={2}
+            >
+              {showServicePrice ? doctor.price : 'السعر حسب الخدمة'}
+            </AppText>
+          </View>
+          <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
+            <AppText variant="caption" className="text-content-secondary">
+              موعد بحاجة لتأكيد
+            </AppText>
+            <AppText
+              align="right"
+              variant="label"
+              className="w-full font-ui-medium"
+              numberOfLines={2}
+            >
+              {doctor.next}
+            </AppText>
+          </View>
+        </View>
+      ) : (
+        <View className="rounded-[12px] bg-surface-subtle px-3 py-2">
+          <AppText align="right" variant="caption" className="text-content-secondary">
+            الأسعار بحسب الخدمة التي تختارها من ملف الطبيب.
           </AppText>
         </View>
-        <View className="min-w-0 flex-1 items-end gap-1 rounded-[12px] bg-surface-subtle px-3 py-2.5">
-          <AppText variant="caption" className="text-content-secondary">
-            موعد بحاجة لتأكيد
-          </AppText>
-          <AppText
-            align="right"
-            variant="label"
-            className="w-full font-ui-medium"
-            numberOfLines={2}
-          >
-            {doctor.next}
-          </AppText>
-        </View>
-      </View>
+      )}
 
       <View className="flex-row-reverse gap-2">
         <Pressable
@@ -129,7 +139,7 @@ export function DiscoverDoctorResultCard({
               pathname: '/discover/provider/[providerId]',
               params: {
                 providerId: doctor.id,
-                serviceCode,
+                ...(serviceCode ? { serviceCode } : {}),
                 ...(patientId ? { patientId } : {}),
                 ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
               },
@@ -144,51 +154,53 @@ export function DiscoverDoctorResultCard({
             عرض الطبيب
           </AppText>
         </Pressable>
-        <HeroButton
-          variant="outline"
-          size="md"
-          isDisabled={disabled}
-          accessibilityLabel={
-            selected
-              ? 'إزالة ' + doctor.name + ' من المقارنة'
-              : 'اختيار ' + doctor.name + ' للمقارنة'
-          }
-          accessibilityHint={
-            selected ? 'اضغط لإلغاء اختيار الطبيب' : 'اضغط لإضافة الطبيب إلى قائمة المقارنة'
-          }
-          accessibilityState={{ selected }}
-          onPress={onToggle}
-          className={
-            'min-h-[46px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[12px] border px-2 ' +
-            (selected
-              ? 'border-state-selected-border bg-action-subtle'
-              : 'border-border-subtle bg-surface-default')
-          }
-        >
-          <AppIcon
-            name={
+        {showComparison ? (
+          <HeroButton
+            variant="outline"
+            size="md"
+            isDisabled={disabled}
+            accessibilityLabel={
               selected
-                ? { ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }
-                : { ios: 'plus.circle', android: 'add_circle_outline', web: 'add_circle_outline' }
+                ? 'إزالة ' + doctor.name + ' من المقارنة'
+                : 'اختيار ' + doctor.name + ' للمقارنة'
             }
-            size={18}
-            tone={selected ? 'action' : 'secondary'}
-          />
-          <HeroButton.Label
+            accessibilityHint={
+              selected ? 'اضغط لإلغاء اختيار الطبيب' : 'اضغط لإضافة الطبيب إلى قائمة المقارنة'
+            }
+            accessibilityState={{ selected }}
+            onPress={onToggle}
             className={
-              selected
-                ? 'font-ui-semibold text-content-link'
-                : 'font-ui-medium text-content-primary'
+              'min-h-[46px] min-w-0 flex-1 flex-row-reverse items-center justify-center gap-1.5 rounded-[12px] border px-2 ' +
+              (selected
+                ? 'border-state-selected-border bg-action-subtle'
+                : 'border-border-subtle bg-surface-default')
             }
-            numberOfLines={1}
           >
-            {selected
-              ? 'تم الاختيار'
-              : disabled
-                ? (disabledReason ?? 'اكتمل العدد')
-                : 'أضف للمقارنة'}
-          </HeroButton.Label>
-        </HeroButton>
+            <AppIcon
+              name={
+                selected
+                  ? { ios: 'checkmark.circle.fill', android: 'check_circle', web: 'check_circle' }
+                  : { ios: 'plus.circle', android: 'add_circle_outline', web: 'add_circle_outline' }
+              }
+              size={18}
+              tone={selected ? 'action' : 'secondary'}
+            />
+            <HeroButton.Label
+              className={
+                selected
+                  ? 'font-ui-semibold text-content-link'
+                  : 'font-ui-medium text-content-primary'
+              }
+              numberOfLines={1}
+            >
+              {selected
+                ? 'تم الاختيار'
+                : disabled
+                  ? (disabledReason ?? 'اكتمل العدد')
+                  : 'أضف للمقارنة'}
+            </HeroButton.Label>
+          </HeroButton>
+        ) : null}
       </View>
     </HeroCard>
   );

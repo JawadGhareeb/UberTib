@@ -18,21 +18,26 @@ export function DiscoverSearchResults({
   filters,
   comparison,
   onToggleComparison,
+  showAllByDefault = false,
+  allowGeneralComparison = true,
 }: {
   query: string;
   filters: DiscoveryFilterSelection;
   comparison: { serviceCode: string | null; providerIds: string[] } | null;
   onToggleComparison: (providerId: string, serviceCode: string | null) => void;
+  showAllByDefault?: boolean;
+  allowGeneralComparison?: boolean;
 }) {
   const matches = selectDiscoverMatches(query, filters);
 
-  if (!matches.hasCriteria) return <DiscoverSearchIllustration />;
+  if (!matches.hasCriteria && !showAllByDefault) return <DiscoverSearchIllustration />;
 
   const doctors = matches.providers.flatMap((provider) => {
-    const serviceCode = matchingService(provider, filters);
-    if (!serviceCode) return [];
-    const doctor = getPenDoctorsForService(serviceCode).find((item) => item.id === provider.id);
-    return doctor ? [{ doctor, serviceCode }] : [];
+    // The fallback service supplies display data only, never a booking selection.
+    const lookupService = matchingService(provider, filters);
+    if (!lookupService) return [];
+    const doctor = getPenDoctorsForService(lookupService).find((item) => item.id === provider.id);
+    return doctor ? [{ doctor, serviceCode: filters.serviceCode ?? null }] : [];
   });
 
   return (
@@ -60,6 +65,7 @@ export function DiscoverSearchResults({
                 selected={selected}
                 disabled={!selected && selection.length >= 3}
                 showServicePrice={Boolean(filters.serviceCode)}
+                showComparison={allowGeneralComparison || Boolean(filters.serviceCode)}
                 onToggle={() => onToggleComparison(doctor.id, filters.serviceCode ?? null)}
               />
             );

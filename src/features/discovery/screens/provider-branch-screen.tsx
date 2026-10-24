@@ -10,6 +10,7 @@ import {
 import { ProviderPhotoGallery } from '@/features/discovery/components/provider-photo-gallery';
 import { DiscoveryHeader, ScreenCard } from '@/features/discovery/components/pen-discovery-ui';
 import { getBranchView } from '@/features/discovery/model/provider-branch-view';
+import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { getPenDoctorsForService } from '@/features/discovery/presentation/pen-discovery-data';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 
@@ -18,7 +19,7 @@ export function ProviderBranchScreen() {
   const [mapError, setMapError] = useState(false);
   const {
     providerId = 'provider-layan',
-    serviceCode = 'root-canal',
+    serviceCode: requestedServiceCode,
     patientId,
     origin,
     assessmentDraftId,
@@ -32,7 +33,14 @@ export function ProviderBranchScreen() {
   }>();
 
   const branch = getBranchView(providerId);
-  const doctor = getPenDoctorsForService(serviceCode).find((item) => item.id === providerId);
+  const provider = getMockProvider(providerId);
+  const serviceCode =
+    requestedServiceCode && provider?.serviceCodes.includes(requestedServiceCode)
+      ? requestedServiceCode
+      : null;
+  const doctor = getPenDoctorsForService(serviceCode ?? provider?.serviceCodes[0] ?? '').find(
+    (item) => item.id === providerId,
+  );
 
   // We only know branch names and areas from the fixtures; never invent precise coordinates.
   const openBranchOnMap = async () => {
@@ -54,7 +62,9 @@ export function ProviderBranchScreen() {
         <StateView
           actionLabel="العودة للأطباء"
           onAction={() =>
-            router.replace({ pathname: '/discover/providers/results', params: { serviceCode } })
+            serviceCode
+              ? router.replace({ pathname: '/discover/providers/results', params: { serviceCode } })
+              : router.replace('/discover/search')
           }
           title="الفرع غير موجود"
         />
@@ -62,12 +72,12 @@ export function ProviderBranchScreen() {
     );
   }
 
-  const openDoctor = (id: string, fallbackService: string) => {
+  const openDoctor = (id: string, fallbackService: string | null) => {
     router.push({
       pathname: '/discover/provider/[providerId]',
       params: {
         providerId: id,
-        serviceCode: fallbackService,
+        ...(fallbackService ? { serviceCode: fallbackService } : {}),
         ...(patientId ? { patientId } : {}),
         ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
       },
@@ -157,7 +167,7 @@ export function ProviderBranchScreen() {
           </View>
 
           <ProviderBranchServices branch={branch} />
-          <ProviderBranchEquipment serviceCode={serviceCode} />
+          {serviceCode ? <ProviderBranchEquipment serviceCode={serviceCode} /> : null}
 
           <View className="gap-2">
             <AppText align="right" variant="heading-4" className="font-ui-bold">
@@ -191,9 +201,11 @@ export function ProviderBranchScreen() {
             ) : (
               <View className="gap-2">
                 {branch.doctors.map((item) => {
-                  const itemService = item.serviceCodes.includes(serviceCode)
-                    ? serviceCode
-                    : (item.serviceCodes[0] ?? serviceCode);
+                  const itemService = serviceCode
+                    ? item.serviceCodes.includes(serviceCode)
+                      ? serviceCode
+                      : (item.serviceCodes[0] ?? null)
+                    : null;
                   return (
                     <Pressable
                       accessibilityRole="button"
@@ -270,15 +282,15 @@ export function ProviderBranchScreen() {
         <View className="border-t border-border-subtle bg-surface-default px-4 pb-3 pt-3">
           <View className="mx-auto w-full max-w-[398px] gap-1">
             <Button
-              label={`احجز مع ${selectedDoctorName}`}
+              label={serviceCode ? `احجز مع ${selectedDoctorName}` : 'اختر خدمة للحجز'}
               endIcon={{ ios: 'calendar', android: 'event', web: 'event' }}
               className="min-h-[50px] rounded-[12px]"
               onPress={() =>
                 router.push({
-                  pathname: '/booking/slots',
+                  pathname: serviceCode ? '/booking/slots' : '/discover/provider/[providerId]',
                   params: {
                     providerId: doctor.id,
-                    serviceCode,
+                    ...(serviceCode ? { serviceCode } : {}),
                     ...(patientId ? { patientId } : {}),
                     ...(origin === 'assessment' ? { origin, assessmentDraftId } : {}),
                   },
