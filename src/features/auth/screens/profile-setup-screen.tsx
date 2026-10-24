@@ -51,7 +51,8 @@ export function ProfileSetupScreen() {
     try {
       // Mock-first screen: profile persistence will be attached to the approved API.
       await Promise.resolve();
-      router.replace(resolveSafeReturnTo(returnTo));
+      // Finish registration by reusing a destination already in the navigation stack.
+      router.dismissTo(resolveSafeReturnTo(returnTo));
     } finally {
       setSubmitting(false);
     }

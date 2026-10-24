@@ -2,7 +2,7 @@
 
 **Backend connection is NOT complete.**
 
-This document is restored at the historical path expected by `scripts/check-patient-v5-contract.mjs`. It is a **current integration status note (24 October 2026)**, not evidence of a completed 12 October backend delivery.
+This document is preserved at its historical path for backend handoff reference. It is a **current integration status note (24 October 2026)**, not evidence of a completed 12 October backend delivery.
 
 - The Patient V5 API types and operation names live in `src/shared/api/patient-v5-contract.ts`.
 - The gateway and missing-backend behavior live in `src/shared/api/patient-v5-gateway.ts`.
