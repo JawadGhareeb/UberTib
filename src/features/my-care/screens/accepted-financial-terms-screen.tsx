@@ -7,7 +7,7 @@ import {
   CareFinancialPageHeader,
   FinancialCaseUnavailable,
 } from '@/features/my-care/components/care-financial-ui';
-import { CareV5Badge, CareV5BottomNav, CareV5Card } from '@/features/my-care/components/care-v5-ui';
+import { CareV5Badge, CareV5Card } from '@/features/my-care/components/care-v5-ui';
 import { getMockCareCaseForScenario } from '@/features/my-care/mocks/care.mock';
 import {
   getMockFinancialEventsForScenario,
@@ -302,7 +302,6 @@ export function AcceptedFinancialTermsScreen({ caseId }: { caseId: string }) {
             </View>
           )}
         </ScrollView>
-        <CareV5BottomNav active="care" />
       </ReadStateBoundary>
     </Screen>
   );

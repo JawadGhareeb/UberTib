@@ -2,12 +2,7 @@ import { Accordion } from 'heroui-native';
 import { useRouter } from 'expo-router';
 import { ScrollView, View } from 'react-native';
 
-import {
-  CareV5Badge,
-  CareV5BottomNav,
-  CareV5Card,
-  CareV5Header,
-} from '@/features/my-care/components/care-v5-ui';
+import { CareV5Badge, CareV5Card, CareV5Header } from '@/features/my-care/components/care-v5-ui';
 import { getCareStageSummary } from '@/features/my-care/model/care-overview-view';
 import { getMockCareCaseForScenario } from '@/features/my-care/mocks/care.mock';
 import {
@@ -316,7 +311,6 @@ export function TreatmentPlanScreen({ caseId }: TreatmentPlanScreenProps) {
             />
           ) : null}
         </ScrollView>
-        <CareV5BottomNav active="care" />
       </ReadStateBoundary>
     </Screen>
   );

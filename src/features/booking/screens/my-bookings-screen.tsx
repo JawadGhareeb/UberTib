@@ -7,11 +7,7 @@ import {
   getMockBookingsForScenario,
   type MockBooking,
 } from '@/features/booking/mocks/bookings.mock';
-import {
-  CareFilterTabs,
-  CareV5Badge,
-  CareV5BottomNav,
-} from '@/features/my-care/components/care-v5-ui';
+import { CareFilterTabs, CareV5Badge } from '@/features/my-care/components/care-v5-ui';
 import { AppHeader } from '@/shared/components/navigation';
 import { AppText, Screen } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
@@ -25,7 +21,7 @@ function bookingFilter(booking: MockBooking): Exclude<BookingFilter, 'الكل'>
   return 'قادمة';
 }
 
-export function MyBookingsScreen({ showBottomNav = true }: { showBottomNav?: boolean }) {
+export function MyBookingsScreen() {
   const router = useRouter();
   const scenario = useMockScenario((state) => state.scenario);
   const bookingRequests = useMockScenario((state) => state.bookingRequests);
@@ -39,11 +35,7 @@ export function MyBookingsScreen({ showBottomNav = true }: { showBottomNav?: boo
   return (
     <Screen contentClassName="px-0 py-0" header={<AppHeader variant="primary" title="حجوزاتي" />}>
       <ScrollView
-        contentContainerClassName={
-          showBottomNav
-            ? 'mx-auto w-full max-w-[430px] px-4 pb-[86px] pt-[7px]'
-            : 'mx-auto w-full max-w-[430px] px-4 pb-4 pt-[7px]'
-        }
+        contentContainerClassName="mx-auto w-full max-w-[430px] px-4 pb-5 pt-[7px]"
         showsVerticalScrollIndicator={false}
       >
         <View className="flex-row items-center justify-between gap-3">
@@ -109,7 +101,6 @@ export function MyBookingsScreen({ showBottomNav = true }: { showBottomNav?: boo
           ) : null}
         </View>
       </ScrollView>
-      {showBottomNav ? <CareV5BottomNav active="care" /> : null}
     </Screen>
   );
 }

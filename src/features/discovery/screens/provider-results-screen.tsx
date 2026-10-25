@@ -3,10 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  DiscoveryBottomBar,
-  DiscoveryHeader,
-} from '@/features/discovery/components/pen-discovery-ui';
+import { DiscoveryHeader } from '@/features/discovery/components/pen-discovery-ui';
 import { DiscoverAppliedFilterChips } from '@/features/discovery/components/discover-applied-filter-chips';
 import { DiscoverDoctorResultCard } from '@/features/discovery/components/discover-doctor-result-card';
 import { DoctorGradeTabs } from '@/features/discovery/components/doctor-grade-tabs';
@@ -199,7 +196,7 @@ function ProviderResultsContent({
       <ScrollView
         style={{ flex: 1 }}
         contentContainerClassName="mx-auto w-full max-w-[430px] gap-4 px-4 pt-3"
-        contentContainerStyle={{ paddingBottom: selection.length ? 154 : 94 }}
+        contentContainerStyle={{ paddingBottom: selection.length ? 112 : 36 }}
         showsVerticalScrollIndicator={false}
       >
         <ProviderSelectedServiceSummary serviceCode={serviceCode} title={serviceTitle} />
@@ -323,7 +320,7 @@ function ProviderResultsContent({
       {selection.length > 0 ? (
         <ProviderComparisonBar
           count={selection.length}
-          bottom={68 + Math.max(insets.bottom, 8)}
+          bottom={Math.max(insets.bottom, 12)}
           onCompare={() =>
             router.push({
               pathname: '/discover/providers/compare',
@@ -355,7 +352,6 @@ function ProviderResultsContent({
         }}
         limits={priceLimitsForService(serviceCode)}
       />
-      <DiscoveryBottomBar activeTab="اكتشف" />
     </Screen>
   );
 }

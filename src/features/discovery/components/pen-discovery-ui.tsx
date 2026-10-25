@@ -5,7 +5,6 @@ import { Pressable, Share, View } from 'react-native';
 import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
-import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 
 export function DiscoveryHeader({
@@ -136,21 +135,6 @@ export function DiscoveryHeader({
       )}
     </View>
   );
-}
-
-export function DiscoveryBottomBar({
-  activeTab = 'اكتشف',
-}: {
-  activeTab?: 'الرئيسية' | 'اكتشف' | 'علاجي' | 'حسابي';
-}) {
-  const active = {
-    الرئيسية: 'home',
-    اكتشف: 'discover',
-    علاجي: 'care',
-    حسابي: 'profile',
-  } as const;
-
-  return <PatientBottomBar active={active[activeTab]} />;
 }
 
 export { FamilyCard } from './service-family-card';

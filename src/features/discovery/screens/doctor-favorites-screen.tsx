@@ -5,10 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ProviderAvatar } from '@/features/discovery/components/provider-avatar';
 import { DoctorClassificationChips } from '@/features/discovery/components/doctor-classification-chips';
-import {
-  DiscoveryBottomBar,
-  DiscoveryHeader,
-} from '@/features/discovery/components/pen-discovery-ui';
+import { DiscoveryHeader } from '@/features/discovery/components/pen-discovery-ui';
 import { ProviderComparisonBar } from '@/features/discovery/components/provider-comparison-bar';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { findPenFamily } from '@/features/discovery/presentation/pen-discovery-data';
@@ -149,7 +146,7 @@ export function DoctorFavoritesScreen() {
       {chosen && selectedIds.length >= 2 ? (
         <ProviderComparisonBar
           count={selectedIds.length}
-          bottom={72 + Math.max(insets.bottom, 8)}
+          bottom={Math.max(insets.bottom, 12)}
           onCompare={() =>
             router.push({
               pathname: '/discover/providers/compare',
@@ -162,7 +159,6 @@ export function DoctorFavoritesScreen() {
           }
         />
       ) : null}
-      <DiscoveryBottomBar activeTab="اكتشف" />
     </Screen>
   );
 }

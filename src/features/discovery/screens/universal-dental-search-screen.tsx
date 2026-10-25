@@ -3,16 +3,12 @@ import { useState } from 'react';
 import { Keyboard, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  DiscoveryBottomBar,
-  DiscoveryHeader,
-} from '@/features/discovery/components/pen-discovery-ui';
+import { DiscoveryHeader } from '@/features/discovery/components/pen-discovery-ui';
 import { useDiscoverySession } from '@/features/discovery/state/discovery-session-store';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { ProviderComparisonBar } from '@/features/discovery/components/provider-comparison-bar';
 import { AssessmentEntryCard } from '@/shared/components/assessment/assessment-entry-card';
 import { AppHeader } from '@/shared/components/navigation';
-import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-tab-metrics';
 import { AppIcon, AppText, Screen, SearchField } from '@/shared/components/ui';
 import { selectedDiscoveryAreas, type DiscoveryFilterSelection } from '../model/discover-filters';
 import { DiscoverFilterSheet } from '../components/discover-filter-sheet';
@@ -85,7 +81,7 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
         filters={filters}
         comparison={comparison}
         onToggleComparison={toggleSearchComparison}
-        bottomPadding={PATIENT_TAB_BAR_HEIGHT + (comparison ? 152 : 52)}
+        bottomPadding={comparison ? 128 : 52}
         header={
           <>
             <View className="items-end gap-1">
@@ -160,7 +156,7 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
       {comparison?.providerIds.length ? (
         <ProviderComparisonBar
           count={comparison.providerIds.length}
-          bottom={PATIENT_TAB_BAR_HEIGHT + Math.max(insets.bottom, 8)}
+          bottom={Math.max(insets.bottom, 12)}
           onCompare={() => {
             if (comparison.providerIds.length < 2) return;
             Keyboard.dismiss();
@@ -183,7 +179,6 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
         onApply={applySearchFilters}
         serviceSelectionEnabled
       />
-      {asTab ? null : <DiscoveryBottomBar activeTab="اكتشف" />}
     </Screen>
   );
 }

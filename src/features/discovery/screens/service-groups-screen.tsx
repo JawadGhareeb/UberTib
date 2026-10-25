@@ -2,10 +2,7 @@ import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
-import {
-  DiscoveryBottomBar,
-  DiscoveryHeader,
-} from '@/features/discovery/components/pen-discovery-ui';
+import { DiscoveryHeader } from '@/features/discovery/components/pen-discovery-ui';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { ServiceGroupCard } from '@/features/discovery/components/service-group-card';
 import { AppHeader } from '@/shared/components/navigation';
@@ -92,8 +89,6 @@ export function ServiceGroupsScreen({ showBack = true }: ServiceGroupsScreenProp
           )}
         </View>
       </ScrollView>
-
-      {showBack ? <DiscoveryBottomBar /> : null}
     </Screen>
   );
 }

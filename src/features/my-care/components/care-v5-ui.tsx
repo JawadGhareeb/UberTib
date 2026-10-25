@@ -5,7 +5,6 @@ import { Pressable, View } from 'react-native';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { cn } from '@/shared/utils/cn';
-import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';
 import { AppHeader } from '@/shared/components/navigation/app-header';
 import { SectionTabs } from '@/shared/components/ui/section-tabs';
 
@@ -95,10 +94,6 @@ export function CareV5Header({
       }}
     />
   );
-}
-
-export function CareV5BottomNav({ active }: { active: 'bookings' | 'care' }) {
-  return <PatientBottomBar active={active === 'care' ? 'care' : 'discover'} />;
 }
 
 export function CareV5Card({ children, className }: PropsWithChildren<{ className?: string }>) {

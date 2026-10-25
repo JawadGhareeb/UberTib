@@ -7,19 +7,16 @@ import {
   IBMPlexSansArabic_700Bold,
   useFonts,
 } from '@expo-google-fonts/ibm-plex-sans-arabic';
-import { Stack } from 'expo-router/js-stack';
+import { Stack } from 'expo-router';
 import * as NativeSplashScreen from 'expo-splash-screen';
 import { I18nManager, Image, StatusBar, View } from 'react-native';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native/provider';
-import { useReducedMotion } from 'react-native-reanimated';
 
 import { AppProviders } from '@/shared/components/app-providers';
-import { pageTransitionOptions } from '@/shared/navigation/navigation-transitions';
 import { AuthAccessDialog } from '@/features/auth/components/auth-access-dialog';
-import { RootErrorBoundary } from '@/shared/components/error-boundary/root-error-boundary';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { initializePreferredTheme } from '@/shared/theme/theme-preference';
 
@@ -33,7 +30,6 @@ I18nManager.swapLeftAndRightInRTL?.(false);
 
 function RootNavigator() {
   const { colors, scheme } = useAppTheme();
-  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     // Expo Go may keep the native splash surface visible after JS mounts.
@@ -53,8 +49,7 @@ function RootNavigator() {
       <View style={{ flex: 1, backgroundColor: colors.surface.canvas }}>
         <Stack
           screenOptions={{
-            ...pageTransitionOptions(reduceMotion),
-            cardStyle: { backgroundColor: colors.surface.canvas },
+            contentStyle: { backgroundColor: colors.surface.canvas },
             headerShown: false,
           }}
         />
@@ -108,17 +103,15 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider style={{ flex: 1 }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <RootErrorBoundary>
-          {/* Portalled HeroUI content must remain under the app's direction/theme contexts. */}
-          <AppProviders>
-            <HeroUINativeProvider config={{ isRTL: true, devInfo: { stylingPrinciples: false } }}>
-              <View style={{ direction: 'ltr', flex: 1 }}>
-                <RootNavigator />
-                <AuthAccessDialog />
-              </View>
-            </HeroUINativeProvider>
-          </AppProviders>
-        </RootErrorBoundary>
+        {/* Portalled HeroUI content must remain under the app's direction/theme contexts. */}
+        <AppProviders>
+          <HeroUINativeProvider config={{ isRTL: true, devInfo: { stylingPrinciples: false } }}>
+            <View style={{ direction: 'ltr', flex: 1 }}>
+              <RootNavigator />
+              <AuthAccessDialog />
+            </View>
+          </HeroUINativeProvider>
+        </AppProviders>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
