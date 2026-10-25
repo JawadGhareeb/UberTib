@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import Animated, {
   Easing,
@@ -34,8 +33,7 @@ interface ButtonProps {
 
 const containerClasses: Record<ButtonVariant, string> = {
   primary: 'bg-action-primary active:bg-action-primary-active',
-  secondary:
-    'border border-action-primary bg-action-secondary-surface active:bg-action-subtle',
+  secondary: 'border border-action-primary bg-action-secondary-surface active:bg-action-subtle',
   outline: 'border border-action-primary/55 bg-surface-default active:bg-action-subtle',
   soft: 'bg-action-subtle active:bg-state-selected',
   destructive: 'bg-action-destructive active:bg-action-destructive-active',
@@ -72,15 +70,16 @@ export function Button({
   const { colors } = useAppTheme();
   const { rowClassName } = useAppDirection();
   const isDisabled = disabled || loading;
-  const [pressed, setPressed] = useState(false);
   const pressScale = useSharedValue(1);
-  useEffect(() => {
+  // UI-thread feedback should not schedule another React render while the
+  // same button is initiating a navigation transition.
+  const animatePressed = (pressed: boolean) => {
     pressScale.value = withTiming(pressed ? 0.985 : 1, {
       duration: pressed ? 120 : 160,
       easing: Easing.out(Easing.cubic),
       reduceMotion: ReduceMotion.System,
     });
-  }, [pressScale, pressed]);
+  };
   const pressStyle = useAnimatedStyle(() => ({ transform: [{ scale: pressScale.value }] }));
   const visibleLabel = loading ? (loadingLabel ?? label) : label;
   const labelColor = isDisabled
@@ -107,15 +106,18 @@ export function Button({
       disabled={isDisabled}
       hitSlop={size === 'compact' ? 4 : 0}
       style={pressStyle}
-      onPressIn={() => setPressed(true)}
-      onPressOut={() => setPressed(false)}
+      onPressIn={() => animatePressed(true)}
+      onPressOut={() => animatePressed(false)}
       onPress={onPress}
     >
       <View className={cn('items-center gap-[10px]', rowClassName)}>
         {loading ? <ActivityIndicator color={labelColor} size="small" /> : null}
         <AppText
           align="center"
-          className={cn('font-ui-bold', isDisabled ? 'text-content-disabled' : labelClasses[variant])}
+          className={cn(
+            'font-ui-bold',
+            isDisabled ? 'text-content-disabled' : labelClasses[variant],
+          )}
           style={{
             color: labelColor,
             ...(size === 'compact'

@@ -1,18 +1,7 @@
-import { SymbolView } from 'expo-symbols';
-import medium from 'expo-symbols/androidWeights/medium';
-import regular from 'expo-symbols/androidWeights/regular';
-import { useEffect } from 'react';
-import { View, type ColorValue } from 'react-native';
-import Animated, {
-  Easing,
-  ReduceMotion,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { memo } from 'react';
+import { View } from 'react-native';
 
-import { theme } from '@/shared/theme';
+import { AppIcon } from '@/shared/components/ui/app-icon';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 
 type TabMarkKind = 'home' | 'discover' | 'care' | 'profile';
@@ -20,11 +9,11 @@ type TabMarkKind = 'home' | 'discover' | 'care' | 'profile';
 interface TabMarkProps {
   kind: TabMarkKind;
   focused: boolean;
-  activeTintColor?: ColorValue;
-  inactiveTintColor?: ColorValue;
+  activeTintColor?: string;
+  inactiveTintColor?: string;
 }
 
-const symbolNames = {
+const iconNames = {
   home: {
     active: { ios: 'house.fill', android: 'home_filled', web: 'home_filled' },
     inactive: { ios: 'house', android: 'home', web: 'home' },
@@ -43,49 +32,41 @@ const symbolNames = {
   },
 } as const;
 
-export function TabMark({ kind, focused, activeTintColor, inactiveTintColor }: TabMarkProps) {
+/**
+ * Show exactly one synchronous SVG icon per tab.
+ *
+ * Expo Symbols on Android renders an empty placeholder while it loads its
+ * icon font. The former implementation had two font-backed SymbolViews behind
+ * overlapping Reanimated views; tab switches could leave an icon invisible
+ * until a subsequent interaction. AppIcon uses bundled Lucide SVG paths and
+ * does not depend on async font loading or animated opacity layers.
+ */
+export const TabMark = memo(function TabMark({
+  kind,
+  focused,
+  activeTintColor,
+  inactiveTintColor,
+}: TabMarkProps) {
   const { colors } = useAppTheme();
-  const progress = useSharedValue(focused ? 1 : 0);
-  const activeSymbol = symbolNames[kind].active;
-  const inactiveSymbol = symbolNames[kind].inactive;
-
-  useEffect(() => {
-    progress.value = withTiming(focused ? 1 : 0, {
-      duration: theme.motion.duration.stateChange,
-      easing: Easing.out(Easing.cubic),
-      reduceMotion: ReduceMotion.System,
-    });
-  }, [focused, progress]);
-
-  const inactiveIconStyle = useAnimatedStyle(() => ({
-    opacity: 1 - progress.value,
-    transform: [{ scale: interpolate(progress.value, [0, 1], [1, 0.92]) }],
-  }));
-
-  const activeIconStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    transform: [{ scale: interpolate(progress.value, [0, 1], [0.9, 1]) }],
-  }));
 
   return (
-    <View className="h-8 w-8 items-center justify-center">
-      <Animated.View className="absolute items-center justify-center" style={inactiveIconStyle}>
-        <SymbolView
-          name={inactiveSymbol}
-          size={22}
-          tintColor={inactiveTintColor ?? colors.text.secondary}
-          weight={{ android: regular, ios: 'regular' }}
-        />
-      </Animated.View>
-
-      <Animated.View className="absolute items-center justify-center" style={activeIconStyle}>
-        <SymbolView
-          name={activeSymbol}
-          size={23}
-          tintColor={activeTintColor ?? colors.action.primary}
-          weight={{ android: medium, ios: 'semibold' }}
-        />
-      </Animated.View>
+    <View
+      style={{
+        width: 32,
+        height: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <AppIcon
+        name={focused ? iconNames[kind].active : iconNames[kind].inactive}
+        size={focused ? 23 : 22}
+        color={
+          focused
+            ? (activeTintColor ?? colors.text.onAction)
+            : (inactiveTintColor ?? colors.text.secondary)
+        }
+      />
     </View>
   );
-}
+});

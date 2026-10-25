@@ -15,7 +15,9 @@ export default function PatientTabsLayout() {
       initialRouteName="home"
       screenOptions={{
         lazy: true,
-        freezeOnBlur: true,
+        // Avoid stale frozen native screens when tabs are switched quickly.
+        // Keep lazy mounting so inactive tabs do not load eagerly.
+        freezeOnBlur: false,
         headerShown: false,
         tabBarHideOnKeyboard: true,
         sceneStyle,
