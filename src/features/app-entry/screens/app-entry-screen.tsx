@@ -1,35 +1,48 @@
 import { useRouter } from 'expo-router';
-import { Typography } from 'heroui-native';
 import { useCallback, useEffect, useState } from 'react';
-import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { OnboardingScreen } from '@/features/app-entry/components/onboarding-screen';
-import { BrandLogo } from '@/shared/components/brand';
+import type { OnboardingStep } from '@/features/app-entry/components/onboarding-artwork';
+import { AppLoadingScreen } from '@/features/app-entry/components/app-loading-screen';
 import { secureStorage } from '@/shared/storage/secure-storage';
 
-/** Intro is shown only on first launch, regardless of development/release mode. */
+/**
+ * The index route owns the initial session check, never RootLayout.
+ * Both Expo Go and release honor the saved completion flag: intro is
+ * shown only until a user explicitly chooses to browse or sign in.
+ */
 export function AppEntryScreen() {
   const router = useRouter();
-  const [checking, setChecking] = useState(true);
-  const [step, setStep] = useState<0 | 1 | 2>(0);
+  const [ready, setReady] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [step, setStep] = useState<OnboardingStep>(0);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
 
   useEffect(() => {
     let active = true;
-    void (async () => {
+
+    const boot = async () => {
+      let onboardingComplete = false;
+
       try {
-        const complete = await secureStorage.getOnboardingComplete();
-        if (!active) return;
-        if (complete) {
-          router.replace('/(tabs)/home');
-          return;
-        }
+        onboardingComplete = await secureStorage.getOnboardingComplete();
       } catch {
-        // First use is still available when storage is inaccessible.
+        // Missing/unavailable storage must never trap a first-time visitor.
       }
-      if (active) setChecking(false);
-    })();
+
+      if (!active) return;
+
+      if (onboardingComplete) {
+        router.replace('/(tabs)/home');
+        return;
+      }
+
+      setStep(0);
+      setShowOnboarding(true);
+      setReady(true);
+    };
+
+    void boot();
     return () => {
       active = false;
     };
@@ -40,36 +53,32 @@ export function AppEntryScreen() {
       try {
         await secureStorage.setOnboardingComplete();
       } catch {
-        // Never block an explicit onboarding choice.
+        // Never block the user's choice if persistence is unavailable.
       }
       router.replace(destination);
     },
     [router],
   );
 
-  if (checking) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-surface-canvas">
-        <View className="items-center gap-3">
-          <BrandLogo size={68} />
-          <Typography.Paragraph className="font-ui-medium text-text-secondary">
-            جارٍ تهيئة التطبيق…
-          </Typography.Paragraph>
-        </View>
-      </SafeAreaView>
-    );
+  if (!ready || !showOnboarding) {
+    return <AppLoadingScreen />;
   }
+
   return (
     <OnboardingScreen
       step={step}
       direction={direction}
       onNext={() => {
         setDirection('forward');
-        setStep((current) => Math.min(current + 1, 2) as 0 | 1 | 2);
+        setStep((current) => Math.min(current + 1, 3) as OnboardingStep);
       }}
       onBack={() => {
         setDirection('back');
-        setStep((current) => Math.max(current - 1, 0) as 0 | 1 | 2);
+        setStep((current) => Math.max(current - 1, 0) as OnboardingStep);
+      }}
+      onSkip={() => {
+        setDirection('forward');
+        setStep(3);
       }}
       onBrowse={() => void finish('/(tabs)/home')}
       onLogin={() => void finish('/auth/phone')}

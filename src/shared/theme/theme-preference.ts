@@ -26,7 +26,5 @@ export async function initializePreferredTheme(): Promise<void> {
 /** Apply via Uniwind's global theme engine; persist but never block the UI. */
 export function setPreferredTheme(scheme: ThemeScheme): void {
   applyNativeTheme(scheme);
-  void secureStorage.setThemeScheme(scheme).catch((error: unknown) => {
-    if (__DEV__) console.warn('[UberTib theme] Could not save appearance', error);
-  });
+  void secureStorage.setThemeScheme(scheme).catch(() => undefined);
 }
