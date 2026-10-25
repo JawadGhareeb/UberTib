@@ -9,7 +9,7 @@ import {
   ProfileReferenceSectionTitle,
 } from '@/features/profile/components/profile-reference-ui';
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
-import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-provider';
+import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-store';
 import { AppText, Button, ConfirmationDialog, StateView, StatusIndicator } from '@/shared/components/ui';
 
 export function ConsentDetailScreen({ consentId }: { consentId: string }) {

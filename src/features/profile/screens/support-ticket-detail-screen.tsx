@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
-import { topicTitle, useSupportTickets } from '@/features/profile/state/support-tickets-provider';
+import { topicTitle, useSupportTickets } from '@/features/profile/state/support-tickets-store';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 
 export function SupportTicketDetailScreen() {

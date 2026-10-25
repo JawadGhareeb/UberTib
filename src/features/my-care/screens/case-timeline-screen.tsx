@@ -25,7 +25,7 @@ import {
   StateView,
 } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { cn } from '@/shared/utils/cn';
 import { useMockScenario } from '@/shared/mock';
 
@@ -53,8 +53,11 @@ interface CaseEvent {
 export function CaseTimelineScreen({ caseId }: CaseTimelineScreenProps) {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
-  const { getSurfaceState, scenario, claimSubmissions, financialSubmissions, reviewSubmissions } =
-    useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const scenario = useMockScenario((state) => state.scenario);
+  const claimSubmissions = useMockScenario((state) => state.claimSubmissions);
+  const financialSubmissions = useMockScenario((state) => state.financialSubmissions);
+  const reviewSubmissions = useMockScenario((state) => state.reviewSubmissions);
   const [filter, setFilter] = useState<Filter>('الكل');
   const readState = getSurfaceState('care');
   const claimsReadState = getSurfaceState('claims');

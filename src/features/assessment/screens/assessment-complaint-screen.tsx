@@ -4,8 +4,8 @@ import { RadioGroup } from 'heroui-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
-import { useAuthSession } from '@/providers/auth-session-provider';
-import { useAuthAccess } from '@/providers/auth-access-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
+import { useAuthAccess } from '@/features/auth/state/auth-access-store';
 import { buildReturnTo } from '@/features/auth/navigation/auth-intent';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
@@ -32,7 +32,7 @@ export function AssessmentComplaintScreen() {
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { patient, complaint, setComplaint } = useAssessmentSession();
   const { isAuthenticated } = useAuthSession();
-  const { requireAuth } = useAuthAccess();
+  const requireAuth = useAuthAccess((state) => state.requireAuth);
   return (
     <AssessmentScaffold
       onPrimary={() => {

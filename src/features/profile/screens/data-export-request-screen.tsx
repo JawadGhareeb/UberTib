@@ -2,14 +2,15 @@ import { useState } from 'react';
 import { Share, View } from 'react-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
-import { useAccountDetails } from '@/features/profile/state/account-details-provider';
-import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-provider';
-import { useSupportTickets } from '@/features/profile/state/support-tickets-provider';
+import { useAccountDetails } from '@/features/profile/state/account-details-store';
+import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-store';
+import { useSupportTickets } from '@/features/profile/state/support-tickets-store';
 import { AppIcon, AppText, Button, ReadStateBoundary } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
 export function DataExportRequestScreen() {
-  const { getSurfaceState } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  useMockScenario((state) => state.scenarioId);
   const { name, phone, city } = useAccountDetails();
   const { tickets } = useSupportTickets();
   const { consents, dataExportStatus, requestDataExport } = useProfilePrivacy();

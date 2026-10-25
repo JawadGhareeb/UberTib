@@ -7,7 +7,7 @@ import {
   DiscoveryBottomBar,
   DiscoveryHeader,
 } from '@/features/discovery/components/pen-discovery-ui';
-import { useDiscoverySession } from '@/features/discovery/state/discovery-session-provider';
+import { useDiscoverySession } from '@/features/discovery/state/discovery-session-store';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { ProviderComparisonBar } from '@/features/discovery/components/provider-comparison-bar';
 import { AssessmentEntryCard } from '@/shared/components/assessment/assessment-entry-card';
@@ -34,16 +34,18 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
   const isDoctorBrowse = !asTab && browseDoctors === '1';
   const [browseQuery, setBrowseQuery] = useState('');
   const insets = useSafeAreaInsets();
-  const {
-    catalogQuery,
-    setCatalogQuery,
-    catalogComparison,
-    doctorBrowseComparison,
-    toggleCatalogComparisonProvider,
-    toggleDoctorBrowseComparisonProvider,
-    setCatalogComparison,
-    setDoctorBrowseComparison,
-  } = useDiscoverySession();
+  const catalogQuery = useDiscoverySession((state) => state.catalogQuery);
+  const setCatalogQuery = useDiscoverySession((state) => state.setCatalogQuery);
+  const catalogComparison = useDiscoverySession((state) => state.catalogComparison);
+  const doctorBrowseComparison = useDiscoverySession((state) => state.doctorBrowseComparison);
+  const toggleCatalogComparisonProvider = useDiscoverySession(
+    (state) => state.toggleCatalogComparisonProvider,
+  );
+  const toggleDoctorBrowseComparisonProvider = useDiscoverySession(
+    (state) => state.toggleDoctorBrowseComparisonProvider,
+  );
+  const setCatalogComparison = useDiscoverySession((state) => state.setCatalogComparison);
+  const setDoctorBrowseComparison = useDiscoverySession((state) => state.setDoctorBrowseComparison);
 
   const comparison = isDoctorBrowse ? doctorBrowseComparison : catalogComparison;
   const toggleSearchComparison = (providerId: string, serviceCode: string | null) => {

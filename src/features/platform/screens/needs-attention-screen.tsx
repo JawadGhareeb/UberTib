@@ -8,7 +8,8 @@ import { useMockScenario } from '@/shared/mock';
 
 export function NeedsAttentionScreen() {
   const router = useRouter();
-  const { getSurfaceState, scenario } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const scenario = useMockScenario((state) => state.scenario);
   const readState = getSurfaceState('attention');
   const attentionItems = getMockNeedsAttentionForScenario(scenario);
 

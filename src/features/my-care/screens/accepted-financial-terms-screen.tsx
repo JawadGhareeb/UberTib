@@ -27,7 +27,10 @@ const tabs: { value: FinanceTab; label: string }[] = [
 export function AcceptedFinancialTermsScreen({ caseId }: { caseId: string }) {
   const router = useRouter();
   const [tab, setTab] = useState<FinanceTab>('transactions');
-  const { claimSubmissions, financialSubmissions, getSurfaceState, scenario } = useMockScenario();
+  const claimSubmissions = useMockScenario((state) => state.claimSubmissions);
+  const financialSubmissions = useMockScenario((state) => state.financialSubmissions);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const scenario = useMockScenario((state) => state.scenario);
   const careCase = getMockCareCaseForScenario(caseId, scenario);
   const readState = getSurfaceState('finance');
   const record = getMockFinancialRecordForScenario(scenario, caseId);

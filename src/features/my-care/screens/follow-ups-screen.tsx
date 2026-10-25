@@ -18,7 +18,9 @@ import { useMockScenario } from '@/shared/mock';
 export function FollowUpsScreen({ caseId }: { caseId: string }) {
   const router = useRouter();
   const [previewUri, setPreviewUri] = useState<string | null>(null);
-  const { getSurfaceState, scenario, stageEvidenceDrafts } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const scenario = useMockScenario((state) => state.scenario);
+  const stageEvidenceDrafts = useMockScenario((state) => state.stageEvidenceDrafts);
   const readState = getSurfaceState('care');
   const careCase = getMockCareCaseForScenario(caseId, scenario);
   const availablePhotos = Object.values(stageEvidenceDrafts)

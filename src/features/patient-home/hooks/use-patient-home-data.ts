@@ -12,7 +12,9 @@ const hasAvailableData = (state: string) =>
 
 /** Patient Home uses the same records and scenario rules as booking/care screens. */
 export function usePatientHomeData() {
-  const { scenario, bookingRequests, getSurfaceState } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
+  const bookingRequests = useMockScenario((state) => state.bookingRequests);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
   const bookings = hasAvailableData(getSurfaceState('booking'))
     ? [...bookingRequests, ...getMockBookingsForScenario(scenario)]
     : [];

@@ -6,7 +6,7 @@ import {
   isAssessmentDraftRoute,
 } from '@/features/assessment/utils/assessment-draft';
 import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
-import { useHealthNotes } from '@/features/profile/state/health-notes-provider';
+import { useHealthNotes } from '@/features/profile/state/health-notes-store';
 
 /**
  * Restore the saved assessment before a deep-linked step is rendered.

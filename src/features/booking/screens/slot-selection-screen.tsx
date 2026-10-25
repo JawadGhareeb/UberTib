@@ -8,7 +8,7 @@ import { createBookingCareDraft } from '@/features/booking/utils/booking-care-dr
 import { BookingSaveLaterAction } from '@/features/booking/components/booking-save-later-action';
 import { BookingJourneyProgress } from '@/features/booking/components/booking-journey-progress';
 import { canBookForPatient } from '@/features/booking/utils/patient-booking-permissions';
-import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
+import { useFamilyMembers } from '@/features/profile/state/family-members-store';
 import { useMockScenario } from '@/shared/mock';
 import { BookingHeader } from '@/features/booking/components/booking-v5-ui';
 import { ProviderPortrait } from '@/features/discovery/components/provider-photo-gallery';
@@ -18,7 +18,7 @@ import {
   getNonPastMockAvailability,
 } from '@/features/discovery/mocks/providers.mock';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 
 function dayName(key: string) {
@@ -38,7 +38,7 @@ export function SlotSelectionScreen() {
   const router = useRouter();
   const { saveDraft, hydrated, removeDraft } = useCareDrafts();
   const { isRTL } = useAppDirection();
-  const { scenario } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
   const { members } = useFamilyMembers();
   const {
     providerId,

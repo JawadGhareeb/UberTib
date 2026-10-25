@@ -4,8 +4,19 @@ import { ScrollView, TextInput, View } from 'react-native';
 
 import { CareV5Badge, CareV5Card, CareV5Header } from '@/features/my-care/components/care-v5-ui';
 import { CareActionFooter } from '@/features/my-care/components/care-financial-ui';
-import { getMockCareCaseForScenario, getMockCareReferenceLabel } from '@/features/my-care/mocks/care.mock';
-import { AppIcon, AppText, Button, RatingInput, ReadStateBoundary, Screen, StateView } from '@/shared/components/ui';
+import {
+  getMockCareCaseForScenario,
+  getMockCareReferenceLabel,
+} from '@/features/my-care/mocks/care.mock';
+import {
+  AppIcon,
+  AppText,
+  Button,
+  RatingInput,
+  ReadStateBoundary,
+  Screen,
+  StateView,
+} from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 
@@ -16,7 +27,10 @@ interface SubmitReviewScreenProps {
 export function SubmitReviewScreen({ caseId }: SubmitReviewScreenProps) {
   const router = useRouter();
   const { colors } = useAppTheme();
-  const { getSurfaceState, reviewSubmissions, submitReview, scenario } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const reviewSubmissions = useMockScenario((state) => state.reviewSubmissions);
+  const submitReview = useMockScenario((state) => state.submitReview);
+  const scenario = useMockScenario((state) => state.scenario);
   const careCase = getMockCareCaseForScenario(caseId, scenario);
   const readState = getSurfaceState('reviews');
   const existing = reviewSubmissions.find((review) => review.caseId === caseId);
@@ -92,13 +106,21 @@ export function SubmitReviewScreen({ caseId }: SubmitReviewScreenProps) {
           </View>
 
           <CareV5Card className="mt-2 rounded-[15px] px-3 py-[11px]">
-            <AppText align="right" className="font-ui-bold text-content-primary" variant="label">كيف كانت تجربتك الموثّقة؟</AppText>
+            <AppText align="right" className="font-ui-bold text-content-primary" variant="label">
+              كيف كانت تجربتك الموثّقة؟
+            </AppText>
 
             <View className="mt-[5px] items-center">
-              <RatingInput value={displayedRating} onChange={setRating} disabled={Boolean(existing) || readState !== 'success'} />
+              <RatingInput
+                value={displayedRating}
+                onChange={setRating}
+                disabled={Boolean(existing) || readState !== 'success'}
+              />
             </View>
             <AppText align="center" className="mt-1 text-content-secondary" variant="caption">
-              {displayedRating > 0 ? `التقييم المختار: ${displayedRating}/5 — يمكنك تغييره قبل الإرسال` : 'اضغط على النجوم لتقييم تجربتك من 1 إلى 5.'}
+              {displayedRating > 0
+                ? `التقييم المختار: ${displayedRating}/5 — يمكنك تغييره قبل الإرسال`
+                : 'اضغط على النجوم لتقييم تجربتك من 1 إلى 5.'}
             </AppText>
             <View className="mt-2 flex-row-reverse justify-center gap-1.5">
               {[
@@ -106,16 +128,29 @@ export function SubmitReviewScreen({ caseId }: SubmitReviewScreenProps) {
                 { text: 'الالتزام', detail: 'المواعيد والتنظيم' },
                 { text: 'التواصل', detail: 'التعامل والمتابعة' },
               ].map((item) => (
-                <View className="min-w-0 flex-1 items-center justify-center rounded-[8px] bg-surface-subtle px-1.5 py-[5px]" key={item.text}>
-                  <AppText align="center" className="font-ui-semibold text-content-primary" variant="badge">{item.text}</AppText>
-                  <AppText align="center" className="text-content-secondary" variant="badge">{item.detail}</AppText>
+                <View
+                  className="min-w-0 flex-1 items-center justify-center rounded-[8px] bg-surface-subtle px-1.5 py-[5px]"
+                  key={item.text}
+                >
+                  <AppText
+                    align="center"
+                    className="font-ui-semibold text-content-primary"
+                    variant="badge"
+                  >
+                    {item.text}
+                  </AppText>
+                  <AppText align="center" className="text-content-secondary" variant="badge">
+                    {item.detail}
+                  </AppText>
                 </View>
               ))}
             </View>
           </CareV5Card>
 
           <View className="mt-2 rounded-[15px] border border-border-subtle bg-surface-default px-3 py-[10px]">
-            <AppText align="right" className="font-ui-bold text-type-label">تفاصيل تجربتك</AppText>
+            <AppText align="right" className="font-ui-bold text-type-label">
+              تفاصيل تجربتك
+            </AppText>
             <TextInput
               className="mt-1 min-h-[54px] p-0 font-ui-regular text-sm leading-5 text-content-primary"
               maxLength={500}
@@ -136,22 +171,68 @@ export function SubmitReviewScreen({ caseId }: SubmitReviewScreenProps) {
           </View>
 
           <CareV5Card className="mt-2 rounded-[15px] px-3 py-[10px]">
-            <AppText align="right" className="font-ui-bold text-type-label">ما الذي يحدث بعد الإرسال؟</AppText>
+            <AppText align="right" className="font-ui-bold text-type-label">
+              ما الذي يحدث بعد الإرسال؟
+            </AppText>
 
             <View className="mt-[7px] flex-row gap-[5px]">
-              {([
-                { number: 1, label: 'مُرسل', tone: 'primary', icon: { ios: 'paperplane', android: 'send', web: 'send' } },
-                { number: 2, label: 'تحقق', tone: 'info', icon: { ios: 'checkmark.shield', android: 'verified_user', web: 'verified_user' } },
-                { number: 3, label: 'نشر', tone: 'success', icon: { ios: 'eye', android: 'visibility', web: 'visibility' } },
-                { number: 4, label: 'اعتدال', tone: 'neutral', icon: { ios: 'shield', android: 'shield', web: 'shield' } },
-              ] as const).map((step) => (
+              {(
+                [
+                  {
+                    number: 1,
+                    label: 'مُرسل',
+                    tone: 'primary',
+                    icon: { ios: 'paperplane', android: 'send', web: 'send' },
+                  },
+                  {
+                    number: 2,
+                    label: 'تحقق',
+                    tone: 'info',
+                    icon: {
+                      ios: 'checkmark.shield',
+                      android: 'verified_user',
+                      web: 'verified_user',
+                    },
+                  },
+                  {
+                    number: 3,
+                    label: 'نشر',
+                    tone: 'success',
+                    icon: { ios: 'eye', android: 'visibility', web: 'visibility' },
+                  },
+                  {
+                    number: 4,
+                    label: 'اعتدال',
+                    tone: 'neutral',
+                    icon: { ios: 'shield', android: 'shield', web: 'shield' },
+                  },
+                ] as const
+              ).map((step) => (
                 <View
                   className={`min-h-[63px] min-w-0 flex-1 items-center justify-center gap-0.5 rounded-[9px] ${step.tone === 'success' ? 'bg-tone-success-fill' : step.tone === 'info' ? 'bg-tone-info-fill' : step.tone === 'primary' ? 'bg-action-subtle' : 'bg-surface-subtle'}`}
                   key={step.number}
                 >
-                  <AppText direction="ltr" className="font-ui-semibold text-content-primary" variant="badge">{step.number}</AppText>
-                  <AppText className="font-ui-semibold text-content-primary" variant="badge">{step.label}</AppText>
-                  <AppIcon name={step.icon} tone={step.tone === 'primary' ? 'action' : step.tone === 'neutral' ? 'secondary' : step.tone} size={13} />
+                  <AppText
+                    direction="ltr"
+                    className="font-ui-semibold text-content-primary"
+                    variant="badge"
+                  >
+                    {step.number}
+                  </AppText>
+                  <AppText className="font-ui-semibold text-content-primary" variant="badge">
+                    {step.label}
+                  </AppText>
+                  <AppIcon
+                    name={step.icon}
+                    tone={
+                      step.tone === 'primary'
+                        ? 'action'
+                        : step.tone === 'neutral'
+                          ? 'secondary'
+                          : step.tone
+                    }
+                    size={13}
+                  />
                 </View>
               ))}
             </View>

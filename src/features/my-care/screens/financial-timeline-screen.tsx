@@ -2,10 +2,23 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
-import { CareActionFooter, CareDetailRow, CareFinancialCardHeading, CareFinancialPageHeader, FinancialCaseUnavailable } from '@/features/my-care/components/care-financial-ui';
+import {
+  CareActionFooter,
+  CareDetailRow,
+  CareFinancialCardHeading,
+  CareFinancialPageHeader,
+  FinancialCaseUnavailable,
+} from '@/features/my-care/components/care-financial-ui';
 
 import { CareV5Card } from '@/features/my-care/components/care-v5-ui';
-import { AppIcon, AppText, Button, ConfirmationDialog, ReadStateBoundary, Screen } from '@/shared/components/ui';
+import {
+  AppIcon,
+  AppText,
+  Button,
+  ConfirmationDialog,
+  ReadStateBoundary,
+  Screen,
+} from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
 interface FinancialTimelineScreenProps {
@@ -15,8 +28,12 @@ interface FinancialTimelineScreenProps {
 export function FinancialTimelineScreen({ caseId }: FinancialTimelineScreenProps) {
   const router = useRouter();
   const [confirmingCheck, setConfirmingCheck] = useState(false);
-  const { financialEventResponses, getSurfaceState, submitFinancialEventResponse } =
-    useMockScenario();
+  const financialEventResponses = useMockScenario((state) => state.financialEventResponses);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const submitFinancialEventResponse = useMockScenario(
+    (state) => state.submitFinancialEventResponse,
+  );
+  useMockScenario((state) => state.scenarioId);
   const readState = getSurfaceState('finance');
   const pending = financialEventResponses['financial-event-002'];
 
@@ -62,36 +79,46 @@ export function FinancialTimelineScreen({ caseId }: FinancialTimelineScreenProps
 
           {/* These are read-only system states, not controls the patient can select. */}
           <View className="mt-[8px] min-h-[44px] flex-row gap-1 rounded-[11px] bg-surface-subtle p-1">
-            {([
-              {
-                key: 'sending',
-                label: 'قيد الإرسال',
-                icon: { ios: 'paperplane', android: 'send', web: 'send' },
-                background: 'bg-surface-default',
-                text: 'text-content-secondary',
-              },
-              {
-                key: 'unknown',
-                label: 'غير معروف',
-                icon: { ios: 'questionmark.circle', android: 'help_outline', web: 'help_outline' },
-                background: 'bg-tone-warning-fill',
-                text: 'text-tone-warning-text',
-              },
-              {
-                key: 'confirmed',
-                label: 'مؤكد',
-                icon: { ios: 'checkmark.circle', android: 'check_circle', web: 'check_circle' },
-                background: 'bg-tone-success-fill',
-                text: 'text-tone-success-text',
-              },
-              {
-                key: 'disputed',
-                label: 'متنازع',
-                icon: { ios: 'exclamationmark.triangle', android: 'report_problem', web: 'report_problem' },
-                background: 'bg-tone-danger-fill',
-                text: 'text-tone-danger-text',
-              },
-            ] as const).map(({ label, key, icon, background, text }) => {
+            {(
+              [
+                {
+                  key: 'sending',
+                  label: 'قيد الإرسال',
+                  icon: { ios: 'paperplane', android: 'send', web: 'send' },
+                  background: 'bg-surface-default',
+                  text: 'text-content-secondary',
+                },
+                {
+                  key: 'unknown',
+                  label: 'غير معروف',
+                  icon: {
+                    ios: 'questionmark.circle',
+                    android: 'help_outline',
+                    web: 'help_outline',
+                  },
+                  background: 'bg-tone-warning-fill',
+                  text: 'text-tone-warning-text',
+                },
+                {
+                  key: 'confirmed',
+                  label: 'مؤكد',
+                  icon: { ios: 'checkmark.circle', android: 'check_circle', web: 'check_circle' },
+                  background: 'bg-tone-success-fill',
+                  text: 'text-tone-success-text',
+                },
+                {
+                  key: 'disputed',
+                  label: 'متنازع',
+                  icon: {
+                    ios: 'exclamationmark.triangle',
+                    android: 'report_problem',
+                    web: 'report_problem',
+                  },
+                  background: 'bg-tone-danger-fill',
+                  text: 'text-tone-danger-text',
+                },
+              ] as const
+            ).map(({ label, key, icon, background, text }) => {
               const selected = pending ? key === 'sending' : key === 'unknown';
               return (
                 <View
@@ -101,10 +128,19 @@ export function FinancialTimelineScreen({ caseId }: FinancialTimelineScreenProps
                   key={key}
                 >
                   <View className="flex-row-reverse items-center justify-center gap-1">
-                    <AppIcon name={icon} size={13} tone={
-                      key === 'unknown' ? 'warning' : key === 'confirmed' ? 'success'
-                        : key === 'disputed' ? 'danger' : 'secondary'
-                    } />
+                    <AppIcon
+                      name={icon}
+                      size={13}
+                      tone={
+                        key === 'unknown'
+                          ? 'warning'
+                          : key === 'confirmed'
+                            ? 'success'
+                            : key === 'disputed'
+                              ? 'danger'
+                              : 'secondary'
+                      }
+                    />
                     <AppText
                       align="center"
                       className={`font-ui-semibold ${text}`}
@@ -154,7 +190,12 @@ export function FinancialTimelineScreen({ caseId }: FinancialTimelineScreenProps
                 <AppText className="text-type-caption text-content-placeholder" variant="caption">
                   إثبات خارجي
                 </AppText>
-                <AppText className="font-ui-semibold" numberOfLines={2} style={{ fontSize: 10, lineHeight: 16 }} variant="caption">
+                <AppText
+                  className="font-ui-semibold"
+                  numberOfLines={2}
+                  style={{ fontSize: 10, lineHeight: 16 }}
+                  variant="caption"
+                >
                   صورة إيصال • قيد الفحص
                 </AppText>
               </View>
@@ -176,7 +217,14 @@ export function FinancialTimelineScreen({ caseId }: FinancialTimelineScreenProps
                 <AppText className="text-type-caption text-content-placeholder" variant="caption">
                   عند الخلاف
                 </AppText>
-                <AppText className="font-ui-semibold" numberOfLines={2} style={{ fontSize: 10, lineHeight: 16 }} variant="caption">نزاع دفعة منفصل</AppText>
+                <AppText
+                  className="font-ui-semibold"
+                  numberOfLines={2}
+                  style={{ fontSize: 10, lineHeight: 16 }}
+                  variant="caption"
+                >
+                  نزاع دفعة منفصل
+                </AppText>
               </View>
             </CareV5Card>
           </View>

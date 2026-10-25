@@ -27,7 +27,8 @@ function bookingFilter(booking: MockBooking): Exclude<BookingFilter, 'الكل'>
 
 export function MyBookingsScreen({ showBottomNav = true }: { showBottomNav?: boolean }) {
   const router = useRouter();
-  const { scenario, bookingRequests } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
+  const bookingRequests = useMockScenario((state) => state.bookingRequests);
   const [filter, setFilter] = useState<BookingFilter>('الكل');
   // Use canonical booking IDs/data rather than a separate visual-only case list.
   const bookings = [...bookingRequests, ...getMockBookingsForScenario(scenario)];

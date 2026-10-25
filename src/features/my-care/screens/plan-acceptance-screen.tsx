@@ -16,8 +16,10 @@ import { useMockScenario } from '@/shared/mock';
 
 /** A version-aware, read-only agreement record; the only mutation is explicit confirmation. */
 export function PlanAcceptanceScreen({ caseId }: { caseId: string }) {
-  const { getSurfaceState, planAcceptanceCaseIds, scenario, submitPlanAcceptance } =
-    useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const planAcceptanceCaseIds = useMockScenario((state) => state.planAcceptanceCaseIds);
+  const scenario = useMockScenario((state) => state.scenario);
+  const submitPlanAcceptance = useMockScenario((state) => state.submitPlanAcceptance);
   const [confirmingAccept, setConfirmingAccept] = useState(false);
   const careCase = getMockCareCaseForScenario(caseId, scenario);
   const readState = getSurfaceState('care');

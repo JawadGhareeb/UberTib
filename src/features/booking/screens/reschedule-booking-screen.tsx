@@ -24,7 +24,10 @@ import { cn } from '@/shared/utils/cn';
 export function RescheduleBookingScreen() {
   const router = useRouter();
   const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
-  const { getBookingMutation, scenario, submitBookingReschedule } = useMockScenario();
+  const getBookingMutation = useMockScenario((state) => state.getBookingMutation);
+  const scenario = useMockScenario((state) => state.scenario);
+  const submitBookingReschedule = useMockScenario((state) => state.submitBookingReschedule);
+  useMockScenario((state) => state.bookingMutations);
   const booking = getMockBookingForScenario(bookingId, scenario);
   const provider = getMockProvider(booking?.providerId);
   const pendingProposal = getBookingMutation(bookingId)?.reschedule;

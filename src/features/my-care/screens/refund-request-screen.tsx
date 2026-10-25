@@ -28,8 +28,12 @@ interface RefundRequestScreenProps {
 export function RefundRequestScreen({ caseId }: RefundRequestScreenProps) {
   const router = useRouter();
   const [confirmingReceipt, setConfirmingReceipt] = useState(false);
-  const { financialEventResponses, getSurfaceState, submitFinancialEventResponse } =
-    useMockScenario();
+  const financialEventResponses = useMockScenario((state) => state.financialEventResponses);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const submitFinancialEventResponse = useMockScenario(
+    (state) => state.submitFinancialEventResponse,
+  );
+  useMockScenario((state) => state.scenarioId);
   const readState = getSurfaceState('claims');
   const receiptResponse = financialEventResponses['refund-execution-case-001'];
 

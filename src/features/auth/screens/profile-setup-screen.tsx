@@ -16,7 +16,7 @@ import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-re
 
 import { BrandedDateField } from '@/features/auth/components/branded-date-field';
 import { formatDate, type Gender } from '@/features/auth/utils/profile-fields';
-import { useProfilePhoto } from '@/features/profile/state/profile-photo-provider';
+import { useProfilePhoto } from '@/features/profile/state/profile-photo-store';
 import { EditableProfileAvatar } from '@/shared/components/media/editable-profile-avatar';
 import { OutlineIcon } from '@/shared/components/media/outline-icon';
 import { resolveSafeReturnTo } from '@/features/auth/navigation/auth-intent';

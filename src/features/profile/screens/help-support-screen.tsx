@@ -6,7 +6,7 @@ import { AppHeader } from '@/shared/components/navigation';
 import { AppIcon, AppText, ReadStateBoundary, Screen } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
-import { useSupportTickets } from '@/features/profile/state/support-tickets-provider';
+import { useSupportTickets } from '@/features/profile/state/support-tickets-store';
 
 const faq = [
   {
@@ -93,7 +93,8 @@ function NavigationRow({
 export function HelpSupportScreen() {
   const router = useRouter();
   const { caseId } = useLocalSearchParams<{ caseId?: string }>();
-  const { getSurfaceState } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  useMockScenario((state) => state.scenarioId);
   const { tickets } = useSupportTickets();
   const filtered = faq;
 

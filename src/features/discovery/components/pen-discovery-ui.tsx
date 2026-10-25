@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState, type PropsWithChildren } from 'react';
 import { Pressable, Share, View } from 'react-native';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
 import { PatientBottomBar } from '@/shared/components/navigation/patient-bottom-bar';

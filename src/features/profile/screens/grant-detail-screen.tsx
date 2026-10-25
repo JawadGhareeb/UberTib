@@ -4,7 +4,7 @@ import { View } from 'react-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { getMockGrantForScenario } from '@/features/profile/mocks/representation.mock';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import {
   AppIcon,
   AppText,
@@ -20,7 +20,11 @@ import { cn } from '@/shared/utils/cn';
 export function GrantDetailScreen({ grantId }: { grantId: string }) {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
-  const { getGrantMutation, getSurfaceState, scenario, submitGrantRevocation } = useMockScenario();
+  const getGrantMutation = useMockScenario((state) => state.getGrantMutation);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const scenario = useMockScenario((state) => state.scenario);
+  const submitGrantRevocation = useMockScenario((state) => state.submitGrantRevocation);
+  useMockScenario((state) => state.grantMutations);
   const [confirming, setConfirming] = useState(false);
   const grant = getMockGrantForScenario(grantId, scenario);
   const readState = getSurfaceState('representation');

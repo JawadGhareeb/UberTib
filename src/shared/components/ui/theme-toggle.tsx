@@ -1,7 +1,7 @@
 import { SymbolView } from 'expo-symbols';
 import { Pressable } from 'react-native';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';
 

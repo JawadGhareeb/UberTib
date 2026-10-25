@@ -19,7 +19,10 @@ interface ReportExternalPaymentScreenProps {
 
 export function ReportExternalPaymentScreen({ caseId }: ReportExternalPaymentScreenProps) {
   const router = useRouter();
-  const { financialSubmissions, getSurfaceState, submitExternalPayment } = useMockScenario();
+  const financialSubmissions = useMockScenario((state) => state.financialSubmissions);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const submitExternalPayment = useMockScenario((state) => state.submitExternalPayment);
+  useMockScenario((state) => state.scenarioId);
   const readState = getSurfaceState('finance');
   const [amount, setAmount] = useState('');
   const [reference, setReference] = useState('');

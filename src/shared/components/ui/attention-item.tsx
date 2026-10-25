@@ -1,6 +1,6 @@
 import { Pressable, View } from 'react-native';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, type AppIconName } from '@/shared/components/ui/app-icon';
 import { AppText } from '@/shared/components/ui/app-text';
 import type { StatusTone } from '@/shared/components/ui/status-indicator';

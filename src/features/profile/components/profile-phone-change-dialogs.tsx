@@ -16,7 +16,7 @@ import {
 } from '@/features/auth/mocks/auth.mock';
 import { normalizeDigits } from '@/features/auth/utils/phone-input';
 import { CODE_LENGTH, formatTimer } from '@/features/auth/utils/otp-formatters';
-import { useAccountDetails } from '@/features/profile/state/account-details-provider';
+import { useAccountDetails } from '@/features/profile/state/account-details-store';
 import {
   AppIcon,
   AppText,
@@ -49,7 +49,7 @@ export function ProfilePhoneChangeDialogs({
 }) {
   const { colors } = useAppTheme();
   const { phone, setVerifiedPhone } = useAccountDetails();
-  const { scenario } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
   const [stage, setStage] = useState<Stage>(initialPhone ? 'otp' : 'number');
   const autoRequestStarted = useRef(false);
   const [country, setCountry] = useState<CountryOption>(defaultPhoneCountry);

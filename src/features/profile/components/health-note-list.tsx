@@ -3,7 +3,7 @@ import { AppText } from '@/shared/components/ui';
 import {
   healthNoteTypeLabel,
   type HealthNote,
-} from '@/features/profile/state/health-notes-provider';
+} from '@/features/profile/state/health-notes-store';
 
 export function HealthNoteList({
   notes,

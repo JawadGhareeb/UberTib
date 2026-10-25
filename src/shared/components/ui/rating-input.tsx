@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Radio } from 'heroui-native';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { cn } from '@/shared/utils/cn';
 import { RatingStarIcon } from '@/shared/components/ui/rating-star-icon';
 

@@ -4,8 +4,8 @@ import { View } from 'react-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
-import { useAuthSession } from '@/providers/auth-session-provider';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, AppText, Button, ConfirmationDialog } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
 

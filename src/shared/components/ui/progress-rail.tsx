@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppText } from '@/shared/components/ui/app-text';
 import { cn } from '@/shared/utils/cn';
 

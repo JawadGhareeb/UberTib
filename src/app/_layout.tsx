@@ -16,16 +16,16 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native/provider';
 import { useReducedMotion } from 'react-native-reanimated';
 
-import { AppProviders } from '@/providers/app-providers';
+import { AppProviders } from '@/shared/components/app-providers';
 import { pageTransitionOptions } from '@/shared/navigation/navigation-transitions';
-import { AuthAccessProvider } from '@/providers/auth-access-provider';
+import { AuthAccessDialog } from '@/features/auth/components/auth-access-dialog';
 import { RootErrorBoundary } from '@/shared/components/error-boundary/root-error-boundary';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { initializePreferredTheme } from '@/shared/theme/theme-preference';
 
 // Same direction model used by Scent World:
 // - React Native / Yoga always stays physically LTR.
-// - The app owns Arabic reading direction through AppDirectionProvider.
+// - The app owns Arabic reading direction through fixed RTL layout helpers.
 // This avoids device-locale RTL mirroring the layout a second time.
 I18nManager.allowRTL(false);
 I18nManager.forceRTL(false);
@@ -113,9 +113,8 @@ export default function RootLayout() {
           <AppProviders>
             <HeroUINativeProvider config={{ isRTL: true, devInfo: { stylingPrinciples: false } }}>
               <View style={{ direction: 'ltr', flex: 1 }}>
-                <AuthAccessProvider>
-                  <RootNavigator />
-                </AuthAccessProvider>
+                <RootNavigator />
+                <AuthAccessDialog />
               </View>
             </HeroUINativeProvider>
           </AppProviders>

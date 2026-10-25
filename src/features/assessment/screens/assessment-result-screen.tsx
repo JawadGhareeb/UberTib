@@ -5,7 +5,7 @@ import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 
 export function AssessmentResultScreen() {

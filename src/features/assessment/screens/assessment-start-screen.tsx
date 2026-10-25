@@ -4,7 +4,7 @@ import { Pressable, View } from 'react-native';
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 import { IntroArtwork } from '@/features/app-entry/components/intro-artwork';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 
 export function AssessmentStartScreen() {

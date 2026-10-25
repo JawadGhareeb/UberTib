@@ -13,7 +13,7 @@ import {
   displayPhone,
   formatTimer,
 } from '@/features/auth/utils/otp-formatters';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import { BrandLogo } from '@/shared/components/brand';
 import { AuthBackButton } from '@/shared/components/navigation/auth-back-button';
 import { useMockScenario } from '@/shared/mock';
@@ -28,7 +28,7 @@ export function CodeVerificationScreen() {
     expiresInSeconds?: string;
   }>();
   const { signInMock } = useAuthSession();
-  const { scenario } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);

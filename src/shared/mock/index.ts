@@ -11,7 +11,7 @@ export type {
   MockScenarioId,
   MockSurface,
 } from './scenarios';
-export { MockScenarioProvider, useMockScenario } from './scenario-provider';
+export { useMockScenario } from './scenario-store';
 export type {
   MockBookingMutation,
   MockClaimSubmission,
@@ -20,4 +20,4 @@ export type {
   MockGrantMutation,
   MockRepresentationSubmission,
   MockReviewSubmission,
-} from './scenario-provider';
+} from './scenario-store';

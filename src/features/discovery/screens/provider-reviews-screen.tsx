@@ -6,7 +6,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { DiscoveryHeader, ScreenCard } from '@/features/discovery/components/pen-discovery-ui';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
 import { penReviews } from '@/features/discovery/presentation/pen-discovery-data';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, AppText, EmptyState, Screen, StateView } from '@/shared/components/ui';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { cn } from '@/shared/utils/cn';

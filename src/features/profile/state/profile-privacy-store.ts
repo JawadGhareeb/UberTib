@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from 'react';
-import { createContext, useContext, useMemo, useState } from 'react';
+import { create } from 'zustand';
+import { registerSessionStore } from '@/shared/state/session-stores';
 
 export type ConsentStatus = 'active' | 'inactive' | 'withdrawn' | 'restricted';
 export type DataExportStatus = 'not-requested' | 'preparing' | 'ready' | 'expired' | 'failure';
@@ -148,69 +148,43 @@ const initialSessions: AccountSession[] = [
   },
 ];
 
-const ProfilePrivacyContext = createContext<ProfilePrivacyContextValue | null>(null);
+export const useProfilePrivacy = create<ProfilePrivacyContextValue>()((set, get) => ({
+  securityMethod: 'رمز دخول مفعّل',
+  setSecurityMethod: (securityMethod) => set({ securityMethod }),
+  sessions: initialSessions,
+  endSession: (sessionId) =>
+    set(({ sessions }) => ({
+      sessions: sessions.filter((session) => session.current || session.id !== sessionId),
+    })),
+  endOtherSessions: () =>
+    set(({ sessions }) => ({ sessions: sessions.filter((session) => session.current) })),
+  consents: initialConsents,
+  getConsent: (consentId) => get().consents.find((consent) => consent.id === consentId),
+  withdrawConsent: (consentId) =>
+    set(({ consents }) => ({
+      consents: consents.map((consent) =>
+        consent.id === consentId && consent.withdrawalAllowed
+          ? {
+              ...consent,
+              status: 'withdrawn' as const,
+              history: [
+                {
+                  id: `${consent.id}-withdrawn-session`,
+                  version: consent.version,
+                  action: 'withdrawn' as const,
+                  atLabel: 'الآن',
+                },
+                ...consent.history,
+              ],
+            }
+          : consent,
+      ),
+    })),
+  dataExportStatus: 'not-requested',
+  requestDataExport: () => set({ dataExportStatus: 'ready' }),
+  setDataExportStatus: (dataExportStatus) => set({ dataExportStatus }),
+  accountClosureStatus: 'idle',
+  setAccountClosureStatus: (accountClosureStatus) => set({ accountClosureStatus }),
+}));
 
-export function ProfilePrivacyProvider({ children }: PropsWithChildren) {
-  const [securityMethod, setSecurityMethod] = useState('رمز دخول مفعّل');
-  const [sessions, setSessions] = useState<AccountSession[]>(initialSessions);
-  const [consents, setConsents] = useState<PrivacyConsent[]>(initialConsents);
-  const [dataExportStatus, setDataExportStatus] = useState<DataExportStatus>('not-requested');
-  const [accountClosureStatus, setAccountClosureStatus] = useState<AccountClosureStatus>('idle');
-
-  const value = useMemo<ProfilePrivacyContextValue>(
-    () => ({
-      securityMethod,
-      setSecurityMethod,
-      sessions,
-      endSession: (sessionId) => {
-        setSessions((current) =>
-          current.filter((session) => session.current || session.id !== sessionId),
-        );
-      },
-      endOtherSessions: () => {
-        setSessions((current) => current.filter((session) => session.current));
-      },
-      consents,
-      getConsent: (consentId) => consents.find((consent) => consent.id === consentId),
-      withdrawConsent: (consentId) => {
-        setConsents((current) =>
-          current.map((consent) =>
-            consent.id === consentId && consent.withdrawalAllowed
-              ? {
-                  ...consent,
-                  status: 'withdrawn',
-                  history: [
-                    {
-                      id: `${consent.id}-withdrawn-session`,
-                      version: consent.version,
-                      action: 'withdrawn',
-                      atLabel: 'الآن',
-                    },
-                    ...consent.history,
-                  ],
-                }
-              : consent,
-          ),
-        );
-      },
-      dataExportStatus,
-      requestDataExport: () => setDataExportStatus('ready'),
-      setDataExportStatus,
-      accountClosureStatus,
-      setAccountClosureStatus,
-    }),
-    [accountClosureStatus, consents, dataExportStatus, securityMethod, sessions],
-  );
-
-  return <ProfilePrivacyContext.Provider value={value}>{children}</ProfilePrivacyContext.Provider>;
-}
-
-export function useProfilePrivacy(): ProfilePrivacyContextValue {
-  const value = useContext(ProfilePrivacyContext);
-
-  if (!value) {
-    throw new Error('useProfilePrivacy must be used inside ProfilePrivacyProvider');
-  }
-
-  return value;
-}
+registerSessionStore(useProfilePrivacy);

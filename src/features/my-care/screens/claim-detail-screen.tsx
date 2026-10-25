@@ -41,14 +41,12 @@ interface ClaimDetailScreenProps {
  */
 export function ClaimDetailScreen({ caseId, claimId }: ClaimDetailScreenProps) {
   const router = useRouter();
-  const {
-    claimAppealIds,
-    claimExplanationRequestIds,
-    claimSubmissions,
-    getSurfaceState,
-    requestClaimExplanation,
-    scenario,
-  } = useMockScenario();
+  const claimAppealIds = useMockScenario((state) => state.claimAppealIds);
+  const claimExplanationRequestIds = useMockScenario((state) => state.claimExplanationRequestIds);
+  const claimSubmissions = useMockScenario((state) => state.claimSubmissions);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const requestClaimExplanation = useMockScenario((state) => state.requestClaimExplanation);
+  const scenario = useMockScenario((state) => state.scenario);
   const [confirmingExplanation, setConfirmingExplanation] = useState(false);
   const readState = getSurfaceState('claims');
   const claim =

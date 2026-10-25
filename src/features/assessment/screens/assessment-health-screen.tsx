@@ -4,11 +4,11 @@ import { View } from 'react-native';
 
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import {
   useHealthNotes,
   healthNoteTypeLabel,
-} from '@/features/profile/state/health-notes-provider';
+} from '@/features/profile/state/health-notes-store';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';

@@ -20,14 +20,12 @@ interface ClaimAppealScreenProps {
 }
 
 export function ClaimAppealScreen({ caseId, claimId }: ClaimAppealScreenProps) {
-  const {
-    claimAppealDrafts,
-    claimAppealIds,
-    claimSubmissions,
-    getSurfaceState,
-    scenario,
-    submitClaimAppeal,
-  } = useMockScenario();
+  const claimAppealDrafts = useMockScenario((state) => state.claimAppealDrafts);
+  const claimAppealIds = useMockScenario((state) => state.claimAppealIds);
+  const claimSubmissions = useMockScenario((state) => state.claimSubmissions);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const scenario = useMockScenario((state) => state.scenario);
+  const submitClaimAppeal = useMockScenario((state) => state.submitClaimAppeal);
   const claim =
     claimSubmissions.find((item) => item.id === claimId && item.caseId === caseId) ??
     getMockClaimForScenario(claimId, scenario);

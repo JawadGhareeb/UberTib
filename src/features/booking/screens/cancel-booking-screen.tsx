@@ -18,7 +18,10 @@ import { useMockScenario } from '@/shared/mock';
 export function CancelBookingScreen() {
   const router = useRouter();
   const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
-  const { getBookingMutation, scenario, submitBookingCancellation } = useMockScenario();
+  const getBookingMutation = useMockScenario((state) => state.getBookingMutation);
+  const scenario = useMockScenario((state) => state.scenario);
+  const submitBookingCancellation = useMockScenario((state) => state.submitBookingCancellation);
+  useMockScenario((state) => state.bookingMutations);
   const booking = getMockBookingForScenario(bookingId, scenario);
   const mutation = getBookingMutation(bookingId);
   const [reason, setReason] = useState('');

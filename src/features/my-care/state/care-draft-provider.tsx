@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { secureStorage } from '@/shared/storage/secure-storage';
 import type { AssessmentSnapshot } from '@/features/assessment/state/assessment-session-provider';
-import type { HealthNote } from '@/features/profile/state/health-notes-provider';
+import type { HealthNote } from '@/features/profile/state/health-notes-store';
 
 export type BookingSavedFields = {
   providerId: string;

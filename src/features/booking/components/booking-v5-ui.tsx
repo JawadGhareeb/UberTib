@@ -6,7 +6,7 @@ import {
   ProviderPortrait,
 } from '@/features/discovery/components/provider-photo-gallery';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { AppHeader } from '@/shared/components/navigation/app-header';
 import { cn } from '@/shared/utils/cn';

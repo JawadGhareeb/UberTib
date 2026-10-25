@@ -9,7 +9,7 @@ import {
 } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 
 function SummaryRow({
   title,

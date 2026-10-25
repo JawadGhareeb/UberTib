@@ -11,7 +11,8 @@ import { useMockScenario } from '@/shared/mock';
 export function BookingDetailScreen() {
   const router = useRouter();
   const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
-  const { scenario, bookingRequests } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
+  const bookingRequests = useMockScenario((state) => state.bookingRequests);
   const booking =
     bookingRequests.find((request) => request.id === bookingId) ??
     getMockBookingForScenario(bookingId, scenario);

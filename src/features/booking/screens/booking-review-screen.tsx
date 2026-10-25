@@ -25,12 +25,12 @@ import {
   getNonPastMockAvailability,
 } from '@/features/discovery/mocks/providers.mock';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
-import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useFamilyMembers } from '@/features/profile/state/family-members-store';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import { bookingCareDraftId, useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 import { createBookingCareDraft } from '@/features/booking/utils/booking-care-draft';
 import { BookingSaveLaterAction } from '@/features/booking/components/booking-save-later-action';
-import { useAuthAccess } from '@/providers/auth-access-provider';
+import { useAuthAccess } from '@/features/auth/state/auth-access-store';
 import { AppIcon, AppText, Button, Screen, StateView, TextField } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
@@ -51,9 +51,10 @@ function canPreviewImage(file: { mimeType?: string; fileName: string }) {
 export function BookingReviewScreen() {
   const router = useRouter();
   const { isAuthenticated } = useAuthSession();
-  const { requireAuth } = useAuthAccess();
+  const requireAuth = useAuthAccess((state) => state.requireAuth);
   const { removeDraft, saveDraft, getDraft, hydrated } = useCareDrafts();
-  const { scenario, submitBookingRequest } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
+  const submitBookingRequest = useMockScenario((state) => state.submitBookingRequest);
   const { members } = useFamilyMembers();
   const {
     reason,

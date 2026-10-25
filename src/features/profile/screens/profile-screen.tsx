@@ -6,17 +6,18 @@ import { ProfileAccountHeader } from '../components/profile-account-header';
 import { ProfileShortcuts } from '../components/profile-shortcuts';
 import { ProfileMenuSection } from '../components/profile-menu-section';
 import { EditableProfileAvatar } from '@/shared/components/media/editable-profile-avatar';
-import { useProfilePhoto } from '../state/profile-photo-provider';
-import { useAccountDetails } from '../state/account-details-provider';
-import { useAuthSession } from '@/providers/auth-session-provider';
-import { useAuthAccess } from '@/providers/auth-access-provider';
+import { useProfilePhoto } from '../state/profile-photo-store';
+import { useAccountDetails } from '../state/account-details-store';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
+import { useAuthAccess } from '@/features/auth/state/auth-access-store';
 
 export function ProfileScreen() {
-  const { getSurfaceState } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  useMockScenario((state) => state.scenarioId);
   const { photo, setPhoto } = useProfilePhoto();
   const { name } = useAccountDetails();
   const { isAuthenticated } = useAuthSession();
-  const { requireAuth } = useAuthAccess();
+  const requireAuth = useAuthAccess((state) => state.requireAuth);
 
   return (
     <Screen contentClassName="px-0 py-0" header={<ProfileAccountHeader />}>

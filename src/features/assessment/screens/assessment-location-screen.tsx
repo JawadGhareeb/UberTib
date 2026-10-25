@@ -8,7 +8,7 @@ import { AssessmentScaffold } from '@/features/assessment/components/assessment-
 import { DentalArchSelector } from '@/features/assessment/components/dental-arch-selector';
 import { DentitionModeControl } from '@/features/assessment/components/dentition-mode-control';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';

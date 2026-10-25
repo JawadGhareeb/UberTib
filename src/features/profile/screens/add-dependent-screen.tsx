@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
-import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
+import { useFamilyMembers } from '@/features/profile/state/family-members-store';
 import { AppText, Button, TextField } from '@/shared/components/ui';
 
 const relations = [

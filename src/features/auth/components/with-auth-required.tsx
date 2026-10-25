@@ -4,7 +4,7 @@ import { useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { buildReturnTo } from '@/features/auth/navigation/auth-intent';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import { AppIcon, AppText, Button, Screen } from '@/shared/components/ui';
 
 function guestDestination(pathname: string) {

@@ -7,7 +7,9 @@ const isVisibleRead = (state: string) =>
   !['empty-no-data', 'loading-initial', 'error-fetch', 'error-permission'].includes(state);
 
 export function useCareOverviewRecords() {
-  const { scenario, bookingRequests, getSurfaceState } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
+  const bookingRequests = useMockScenario((state) => state.bookingRequests);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
   const bookingState = getSurfaceState('booking');
   const careState = getSurfaceState('care');
   const bookings = isVisibleRead(bookingState)

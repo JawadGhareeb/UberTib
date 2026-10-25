@@ -57,8 +57,11 @@ type LocalEvidence = { uri: string; fileName: string };
 export function ClaimsScreen({ caseId }: { caseId: string }) {
   const router = useRouter();
   const params = useLocalSearchParams<{ issue?: string }>();
-  const { claimSubmissions, getSurfaceState, submitCaseIssue, submitRefundRequest, scenario } =
-    useMockScenario();
+  const claimSubmissions = useMockScenario((state) => state.claimSubmissions);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const submitCaseIssue = useMockScenario((state) => state.submitCaseIssue);
+  const submitRefundRequest = useMockScenario((state) => state.submitRefundRequest);
+  const scenario = useMockScenario((state) => state.scenario);
   const readState = getSurfaceState('claims');
   const financeAvailable = caseId === 'case-001';
   const availableTypes = issueTypes.filter(

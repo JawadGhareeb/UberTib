@@ -9,7 +9,7 @@ import {
   type AssessmentPatient,
 } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText, Button } from '@/shared/components/ui';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 
 const patients: { value: AssessmentPatient; status: string; disabled: boolean }[] = [
   { value: 'self', status: 'ملفي الصحي', disabled: false },

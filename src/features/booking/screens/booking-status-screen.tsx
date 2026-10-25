@@ -13,7 +13,7 @@ import {
   mockAlternativeAppointment,
 } from '@/features/booking/mocks/bookings.mock';
 import { getMockProvider } from '@/features/discovery/mocks/providers.mock';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import {
   AppIcon,
   AppText,
@@ -29,8 +29,13 @@ export function BookingStatusScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
   const { bookingId } = useLocalSearchParams<{ bookingId?: string }>();
-  const { scenario, bookingRequests, getBookingMutation, submitBookingAlternativeDecision } =
-    useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
+  const bookingRequests = useMockScenario((state) => state.bookingRequests);
+  const getBookingMutation = useMockScenario((state) => state.getBookingMutation);
+  const submitBookingAlternativeDecision = useMockScenario(
+    (state) => state.submitBookingAlternativeDecision,
+  );
+  useMockScenario((state) => state.bookingMutations);
   const [calendarBusy, setCalendarBusy] = useState(false);
   const [calendarError, setCalendarError] = useState('');
   const [alternativeDecision, setAlternativeDecision] = useState<'accept' | 'decline' | null>(null);

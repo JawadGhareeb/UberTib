@@ -15,7 +15,7 @@ import {
   type SupportTicketTopic,
   topicTitle,
   useSupportTickets,
-} from '@/features/profile/state/support-tickets-provider';
+} from '@/features/profile/state/support-tickets-store';
 import { AppIcon, AppText, Button, ReadStateBoundary, TextField } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
@@ -38,7 +38,8 @@ const isCaseIssue = (type: IssueType): type is CaseIssueType =>
 export function CreateSupportTicketScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ caseId?: string; type?: string }>();
-  const { scenario, getSurfaceState } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
   const { saveLocalTicket } = useSupportTickets();
   const [type, setType] = useState<IssueType>(
     options.some((o) => o.id === params.type) ? (params.type as IssueType) : 'app',

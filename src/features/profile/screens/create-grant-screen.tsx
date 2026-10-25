@@ -5,7 +5,7 @@ import { Checkbox, Radio } from 'heroui-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { mockDependents } from '@/features/profile/mocks/representation.mock';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import {
   AppIcon,
   AppText,
@@ -54,7 +54,9 @@ function Choice({
 export function CreateGrantScreen() {
   const router = useRouter();
   const { rowClassName } = useAppDirection();
-  const { getSurfaceState, submitGrantRequest } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const submitGrantRequest = useMockScenario((state) => state.submitGrantRequest);
+  useMockScenario((state) => state.scenarioId);
   const readState = getSurfaceState('representation');
   const [subjectId, setSubjectId] = useState('patient-001');
   const [granteeName, setGranteeName] = useState('');

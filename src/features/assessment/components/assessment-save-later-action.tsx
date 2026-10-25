@@ -7,7 +7,7 @@ import {
 } from '@/features/assessment/utils/assessment-draft';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { useCareDrafts } from '@/features/my-care/state/care-draft-provider';
-import { useHealthNotes } from '@/features/profile/state/health-notes-provider';
+import { useHealthNotes } from '@/features/profile/state/health-notes-store';
 import { AppText, Button } from '@/shared/components/ui';
 
 export function AssessmentSaveLaterAction() {

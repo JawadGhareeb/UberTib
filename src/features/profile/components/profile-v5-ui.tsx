@@ -2,7 +2,7 @@ import { Radio } from 'heroui-native';
 import type { PropsWithChildren } from 'react';
 import { Pressable, View } from 'react-native';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, type AppIconName, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
 

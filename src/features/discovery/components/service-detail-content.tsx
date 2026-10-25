@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { ServiceIcon } from '@/features/discovery/components/service-icon';
 import type { ServiceDetailCopy } from '@/features/discovery/presentation/service-detail-copy';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { cn } from '@/shared/utils/cn';

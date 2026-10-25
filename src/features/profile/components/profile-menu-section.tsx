@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import { AppIcon, AppText, ConfirmationDialog } from '@/shared/components/ui';
 import { ProfileAppearanceSettings } from './profile-appearance-settings';
 import { ProfileMenuCard } from './profile-menu-card';

@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
-import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-provider';
+import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-store';
 import {
   AppIcon,
   AppText,
@@ -11,7 +11,8 @@ import {
 import { useMockScenario } from '@/shared/mock';
 
 export function AccountClosureRequestScreen() {
-  const { getSurfaceState } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  useMockScenario((state) => state.scenarioId);
   const { accountClosureStatus, setAccountClosureStatus } = useProfilePrivacy();
   const pending = ['requested', 'review', 'scheduled', 'closed'].includes(accountClosureStatus);
   const busy = accountClosureStatus === 'submitting';

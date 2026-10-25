@@ -29,8 +29,10 @@ type NotificationTab = 'attention' | 'history';
 
 export function NotificationCentreScreen() {
   const router = useRouter();
-  const { getSurfaceState, markNotificationRead, readNotificationIds, scenario } =
-    useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const markNotificationRead = useMockScenario((state) => state.markNotificationRead);
+  const readNotificationIds = useMockScenario((state) => state.readNotificationIds);
+  const scenario = useMockScenario((state) => state.scenario);
   const [tab, setTab] = useState<NotificationTab>('attention');
   const actions = getMockNeedsAttentionForScenario(scenario);
   const notifications = getMockNotificationsForScenario(scenario).map((item) => ({

@@ -9,7 +9,9 @@ import { useAppTheme } from '@/shared/theme/use-app-theme';
 export function HeaderNotificationButton() {
   const router = useRouter();
   const { colors } = useAppTheme();
-  const { scenario, getSurfaceState, readNotificationIds } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const readNotificationIds = useMockScenario((state) => state.readNotificationIds);
   const hasUnreadNotifications =
     getSurfaceState('notifications') !== 'empty-no-data' &&
     getMockNotificationsForScenario(scenario).some(

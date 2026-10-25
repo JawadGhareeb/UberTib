@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, type AppIconName } from '@/shared/components/ui/app-icon';
 import { AppText } from '@/shared/components/ui/app-text';
 import { useAppTheme } from '@/shared/theme/use-app-theme';

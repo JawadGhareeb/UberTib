@@ -4,7 +4,7 @@ import { PATIENT_TAB_BAR_HEIGHT } from '@/shared/components/navigation/patient-t
 import { AppText, ReadStateBoundary, Screen } from '@/shared/components/ui';
 import { mockPatientWorld } from '@/shared/mock/patient.mock';
 import { AssessmentEntryCard } from '@/shared/components/assessment/assessment-entry-card';
-import { useAuthSession } from '@/providers/auth-session-provider';
+import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import { HomeAttentionSection } from '../components/home-attention-section';
 import { HomeCasesSection } from '../components/home-cases-section';
 import { HomePendingRequests, HomeUpcomingBookings } from '../components/home-bookings-section';

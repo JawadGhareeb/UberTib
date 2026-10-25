@@ -27,7 +27,9 @@ interface TreatmentPlanScreenProps {
 /** Patient-facing read-only plan: one case, one version, no fabricated diagnosis or pricing. */
 export function TreatmentPlanScreen({ caseId }: TreatmentPlanScreenProps) {
   const router = useRouter();
-  const { scenario, getSurfaceState, planAcceptanceCaseIds } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const planAcceptanceCaseIds = useMockScenario((state) => state.planAcceptanceCaseIds);
   const careCase = getMockCareCaseForScenario(caseId, scenario);
   const readState = getSurfaceState('care');
 

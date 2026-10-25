@@ -10,7 +10,7 @@ import {
   findPenFamily,
   getPenDoctorsForService,
 } from '@/features/discovery/presentation/pen-discovery-data';
-import { useDiscoverySession } from '@/features/discovery/state/discovery-session-provider';
+import { useDiscoverySession } from '@/features/discovery/state/discovery-session-store';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 
 export function ProviderComparisonScreen() {
@@ -31,12 +31,11 @@ export function ProviderComparisonScreen() {
     fromSearch?: 'tab' | 'search' | 'favorites' | 'doctors';
   }>();
   const serviceCode = requestedServiceCode?.trim() || null;
-  const {
-    getServiceState,
-    setComparisonProviders,
-    setCatalogComparison,
-    setDoctorBrowseComparison,
-  } = useDiscoverySession();
+  const getServiceState = useDiscoverySession((state) => state.getServiceState);
+  const setComparisonProviders = useDiscoverySession((state) => state.setComparisonProviders);
+  const setCatalogComparison = useDiscoverySession((state) => state.setCatalogComparison);
+  const setDoctorBrowseComparison = useDiscoverySession((state) => state.setDoctorBrowseComparison);
+  useDiscoverySession((state) => state.serviceStates);
   const routeIds = providerIds?.split(',').filter(Boolean) ?? [];
   const ids = [
     ...new Set(

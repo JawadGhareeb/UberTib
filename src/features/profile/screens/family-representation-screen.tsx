@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
-import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
+import { useFamilyMembers } from '@/features/profile/state/family-members-store';
 import { getMockGrantsForScenario } from '@/features/profile/mocks/representation.mock';
 import { AppIcon, AppText, Button, ReadStateBoundary } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
@@ -10,7 +10,8 @@ import { useMockScenario } from '@/shared/mock';
 export function FamilyRepresentationScreen() {
   const router = useRouter();
   const { members } = useFamilyMembers();
-  const { getSurfaceState, scenario } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const scenario = useMockScenario((state) => state.scenario);
   const readState = getSurfaceState('representation');
   const grants = getMockGrantsForScenario(scenario);
   const family = members.filter((person) => !person.active);

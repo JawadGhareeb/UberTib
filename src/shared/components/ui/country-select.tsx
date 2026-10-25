@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, View } from 'react-native';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon } from '@/shared/components/ui/app-icon';
 import { AppText } from '@/shared/components/ui/app-text';
 import { SelectField } from '@/shared/components/ui/select-field';

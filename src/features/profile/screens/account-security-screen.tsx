@@ -4,14 +4,15 @@ import { Pressable, View } from 'react-native';
 
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
 import { ProfilePhoneChangeDialogs } from '@/features/profile/components/profile-phone-change-dialogs';
-import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-provider';
-import { useAccountDetails } from '@/features/profile/state/account-details-provider';
+import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-store';
+import { useAccountDetails } from '@/features/profile/state/account-details-store';
 import { AppIcon, AppText, ConfirmationDialog, ReadStateBoundary } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
 export function AccountSecurityScreen() {
   const router = useRouter();
-  const { getSurfaceState } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  useMockScenario((state) => state.scenarioId);
   const { phone } = useAccountDetails();
   const { securityMethod, sessions, endSession, endOtherSessions } = useProfilePrivacy();
   const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);

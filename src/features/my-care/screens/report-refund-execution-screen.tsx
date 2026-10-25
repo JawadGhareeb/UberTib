@@ -19,7 +19,10 @@ interface ReportRefundExecutionScreenProps {
 
 export function ReportRefundExecutionScreen({ caseId }: ReportRefundExecutionScreenProps) {
   const router = useRouter();
-  const { financialSubmissions, getSurfaceState, submitRefundExecution } = useMockScenario();
+  const financialSubmissions = useMockScenario((state) => state.financialSubmissions);
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const submitRefundExecution = useMockScenario((state) => state.submitRefundExecution);
+  useMockScenario((state) => state.scenarioId);
   const readState = getSurfaceState('finance');
   const [reference, setReference] = useState('');
   const [confirmingReport, setConfirmingReport] = useState(false);

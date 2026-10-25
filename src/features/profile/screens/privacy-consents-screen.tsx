@@ -8,13 +8,14 @@ import {
   ProfileReferenceCard,
   ProfileReferenceNotice,
 } from '@/features/profile/components/profile-reference-ui';
-import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-provider';
+import { useProfilePrivacy } from '@/features/profile/state/profile-privacy-store';
 import { AppText, ReadStateBoundary, ConfirmationDialog } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
 export function PrivacyConsentsScreen() {
   const router = useRouter();
-  const { getSurfaceState } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  useMockScenario((state) => state.scenarioId);
   const { consents, withdrawConsent } = useProfilePrivacy();
   const [pendingWithdrawal, setPendingWithdrawal] = useState<string>();
   const [submitting, setSubmitting] = useState(false);

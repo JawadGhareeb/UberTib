@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { usePreferredLocation } from '@/features/location/state/preferred-location-provider';
-import { useAccountDetails } from '@/features/profile/state/account-details-provider';
+import { useAccountDetails } from '@/features/profile/state/account-details-store';
 import { ProfileScreenShell } from '@/features/profile/components/profile-screen-shell';
-import { useProfilePhoto } from '@/features/profile/state/profile-photo-provider';
+import { useProfilePhoto } from '@/features/profile/state/profile-photo-store';
 import { EditableProfileAvatar } from '@/shared/components/media/editable-profile-avatar';
 import { ProfilePhoneChangeDialogs } from '@/features/profile/components/profile-phone-change-dialogs';
 import { phoneCountries } from '@/shared/components/ui/country-select';

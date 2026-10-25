@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { BrandLogo } from '@/shared/components/brand';
 import { AppText, ThemeToggle } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';

@@ -10,7 +10,7 @@ import {
   useHealthNotes,
   type HealthNote,
   type HealthNoteType,
-} from '@/features/profile/state/health-notes-provider';
+} from '@/features/profile/state/health-notes-store';
 
 import {
   ReferenceCard,
@@ -131,7 +131,8 @@ export function PatientHealthInformationScreen() {
     assessmentPatient === 'self' || assessmentPatient === 'adam' || assessmentPatient === 'nour'
       ? ASSESSMENT_PATIENT_FIXTURES[assessmentPatient as AssessmentPatient]
       : undefined;
-  const { getSurfaceState } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  useMockScenario((state) => state.scenarioId);
   const [editing, setEditing] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const [draftNote, setDraftNote] = useState('');

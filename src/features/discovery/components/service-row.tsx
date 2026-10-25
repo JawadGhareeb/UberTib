@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 
 import type { CatalogService } from '@/features/discovery/api/catalog';
 import { ServiceIcon } from '@/features/discovery/components/service-icon';
-import { useAppDirection } from '@/providers/app-direction-provider';
+import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
 

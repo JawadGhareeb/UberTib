@@ -21,11 +21,20 @@ interface MyReviewScreenProps {
 
 export function MyReviewScreen({ caseId, reviewId }: MyReviewScreenProps) {
   const router = useRouter();
-  const { getSurfaceState, reviewAppealIds, reviewSubmissions, scenario } = useMockScenario();
+  const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
+  const reviewAppealIds = useMockScenario((state) => state.reviewAppealIds);
+  const reviewSubmissions = useMockScenario((state) => state.reviewSubmissions);
+  const scenario = useMockScenario((state) => state.scenario);
   const readState = getSurfaceState('reviews');
   const scenarioReview = getMockReviewRecordForScenario(scenario).existingReview;
-  const sessionReview = reviewSubmissions.find((item) => item.id === reviewId && item.caseId === caseId);
-  const review = sessionReview ?? (scenarioReview.id === reviewId && scenarioReview.caseId === caseId ? scenarioReview : undefined);
+  const sessionReview = reviewSubmissions.find(
+    (item) => item.id === reviewId && item.caseId === caseId,
+  );
+  const review =
+    sessionReview ??
+    (scenarioReview.id === reviewId && scenarioReview.caseId === caseId
+      ? scenarioReview
+      : undefined);
 
   if (!review) {
     return (

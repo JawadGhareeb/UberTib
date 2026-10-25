@@ -32,7 +32,7 @@ import {
   type DiscoveryFilterSelection,
   type PriceRange,
 } from '@/features/discovery/model/discover-filters';
-import { useDiscoverySession } from '@/features/discovery/state/discovery-session-provider';
+import { useDiscoverySession } from '@/features/discovery/state/discovery-session-store';
 import {
   filterMockProviders,
   defaultProviderFilters,
@@ -108,7 +108,9 @@ function ProviderResultsContent({
   const [applied, setApplied] = useState<AppliedProviderFilters>(() =>
     initialAppliedFilters(params),
   );
-  const { getServiceState, toggleComparisonProvider } = useDiscoverySession();
+  const getServiceState = useDiscoverySession((state) => state.getServiceState);
+  const toggleComparisonProvider = useDiscoverySession((state) => state.toggleComparisonProvider);
+  useDiscoverySession((state) => state.serviceStates);
   const serviceState = getServiceState(serviceCode);
 
   const allDoctors = getPenDoctorsForService(serviceCode);

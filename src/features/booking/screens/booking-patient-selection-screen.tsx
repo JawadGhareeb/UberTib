@@ -13,14 +13,14 @@ import {
   getMockProvider,
   getNonPastMockAvailability,
 } from '@/features/discovery/mocks/providers.mock';
-import { useFamilyMembers } from '@/features/profile/state/family-members-provider';
+import { useFamilyMembers } from '@/features/profile/state/family-members-store';
 import { AppIcon, AppText, Button, Screen, StateView } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 
 export function BookingPatientSelectionScreen() {
   const router = useRouter();
   const { saveDraft, hydrated } = useCareDrafts();
-  const { scenario } = useMockScenario();
+  const scenario = useMockScenario((state) => state.scenario);
   const { members } = useFamilyMembers();
   const {
     providerId,

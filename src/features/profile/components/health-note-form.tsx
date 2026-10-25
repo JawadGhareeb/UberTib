@@ -3,7 +3,7 @@ import { BottomSheet } from 'heroui-native';
 import { Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 
 import { AppIcon, AppText, Button, TextField } from '@/shared/components/ui';
-import { healthNoteTypes, type HealthNoteType } from '@/features/profile/state/health-notes-provider';
+import { healthNoteTypes, type HealthNoteType } from '@/features/profile/state/health-notes-store';
 
 export function HealthNoteForm({
   type, description, onTypeChange, onDescriptionChange, onSave, onCancel, isEditing = false,
