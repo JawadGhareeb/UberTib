@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { FlatList, Pressable, ScrollView, View } from 'react-native';
 import { FamilyCard } from '@/features/discovery/components/service-family-card';
@@ -16,6 +16,8 @@ export function ServiceCatalogTabScreen() {
   const router = useRouter();
   const [groupCode, setGroupCode] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const groupScrollRef = useRef<ScrollView>(null);
+  const initialGroupScrollDone = useRef(false);
   const families = useMemo(
     () =>
       penServiceGroups
@@ -82,6 +84,12 @@ export function ServiceCatalogTabScreen() {
               accessibilityLabel="البحث في الخدمات"
             />
             <ScrollView
+              ref={groupScrollRef}
+              onContentSizeChange={() => {
+                if (initialGroupScrollDone.current) return;
+                groupScrollRef.current?.scrollToEnd({ animated: false });
+                initialGroupScrollDone.current = true;
+              }}
               horizontal
               showsHorizontalScrollIndicator={false}
               style={{ flexGrow: 0 }}

@@ -1,5 +1,6 @@
 import { Tabs } from 'heroui-native';
-import { View } from 'react-native';
+import { useRef } from 'react';
+import { ScrollView, View } from 'react-native';
 
 import {
   doctorGradeTabs,
@@ -14,6 +15,9 @@ export function DoctorGradeTabs({
   value: DoctorGradeTab;
   onChange: (value: DoctorGradeTab) => void;
 }) {
+  const tabScrollRef = useRef<ScrollView>(null);
+  const initialTabScrollDone = useRef(false);
+
   return (
     <View className="gap-2">
       <Tabs
@@ -23,6 +27,12 @@ export function DoctorGradeTabs({
         animation="disable-all"
       >
         <Tabs.ScrollView
+          ref={tabScrollRef}
+          onContentSizeChange={() => {
+            if (initialTabScrollDone.current) return;
+            tabScrollRef.current?.scrollToEnd({ animated: false });
+            initialTabScrollDone.current = true;
+          }}
           horizontal
           showsHorizontalScrollIndicator={false}
           scrollAlign="none"
