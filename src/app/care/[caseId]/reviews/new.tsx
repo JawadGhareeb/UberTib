@@ -1,4 +1,3 @@
-import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { SubmitReviewScreen } from '@/features/my-care';
@@ -9,4 +8,4 @@ function SubmitReviewRoute() {
   return <SubmitReviewScreen caseId={caseId} />;
 }
 
-export default withAuthRequired(SubmitReviewRoute);
+export default SubmitReviewRoute;

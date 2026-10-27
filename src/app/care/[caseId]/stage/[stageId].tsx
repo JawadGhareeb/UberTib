@@ -1,4 +1,3 @@
-import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { StageDetailScreen } from '@/features/my-care';
@@ -9,4 +8,4 @@ function StageDetailRoute() {
   return <StageDetailScreen caseId={caseId} stageId={stageId} />;
 }
 
-export default withAuthRequired(StageDetailRoute);
+export default StageDetailRoute;

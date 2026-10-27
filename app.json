@@ -2,7 +2,7 @@
   "expo": {
     "name": "UperTib",
     "slug": "UberTib",
-    "scheme": "UberTib",
+    "scheme": "ubertib",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",

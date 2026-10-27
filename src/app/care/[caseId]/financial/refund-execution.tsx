@@ -1,4 +1,3 @@
-import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { ReportRefundExecutionScreen } from '@/features/my-care';
@@ -9,4 +8,4 @@ function ReportRefundExecutionRoute() {
   return <ReportRefundExecutionScreen caseId={caseId} />;
 }
 
-export default withAuthRequired(ReportRefundExecutionRoute);
+export default ReportRefundExecutionRoute;

@@ -16,7 +16,7 @@ interface AuthSessionState {
  * after sign-out, while global Zustand stores are explicitly reset.
  */
 export const useAuthSession = create<AuthSessionState>()((set) => ({
-  isAuthenticated: false,
+  isAuthenticated: true,
   sessionEpoch: 0,
   signInMock: () => set({ isAuthenticated: true }),
   signOut: async () => {
@@ -28,6 +28,6 @@ export const useAuthSession = create<AuthSessionState>()((set) => ({
     ]);
     queryClient.clear();
     resetSessionStores();
-    set(({ sessionEpoch }) => ({ isAuthenticated: false, sessionEpoch: sessionEpoch + 1 }));
+    set(({ sessionEpoch }) => ({ isAuthenticated: true, sessionEpoch: sessionEpoch + 1 }));
   },
 }));

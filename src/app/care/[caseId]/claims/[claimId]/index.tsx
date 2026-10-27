@@ -1,4 +1,3 @@
-import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { ClaimDetailScreen } from '@/features/my-care';
@@ -9,4 +8,4 @@ function ClaimDetailRoute() {
   return <ClaimDetailScreen caseId={caseId} claimId={claimId} />;
 }
 
-export default withAuthRequired(ClaimDetailRoute);
+export default ClaimDetailRoute;

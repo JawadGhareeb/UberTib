@@ -11,11 +11,9 @@ import { Stack } from 'expo-router';
 import { I18nManager, StatusBar, View } from 'react-native';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { HeroUINativeProvider } from 'heroui-native/provider';
 
 import { AppProviders } from '@/shared/components/app-providers';
-import { AuthAccessDialog } from '@/features/auth/components/auth-access-dialog';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
 import { initializePreferredTheme } from '@/shared/theme/theme-preference';
 
@@ -65,16 +63,13 @@ export default function RootLayout() {
   // here: the index route chooses the in-app loader, intro, or destination.
   return (
     <SafeAreaProvider style={{ flex: 1 }}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <AppProviders>
-          <HeroUINativeProvider config={{ isRTL: true, devInfo: { stylingPrinciples: false } }}>
-            <View style={{ direction: 'ltr', flex: 1 }}>
-              <RootNavigator />
-              <AuthAccessDialog />
-            </View>
-          </HeroUINativeProvider>
-        </AppProviders>
-      </GestureHandlerRootView>
+      <AppProviders>
+        <HeroUINativeProvider config={{ isRTL: true, devInfo: { stylingPrinciples: false } }}>
+          <View style={{ direction: 'ltr', flex: 1 }}>
+            <RootNavigator />
+          </View>
+        </HeroUINativeProvider>
+      </AppProviders>
     </SafeAreaProvider>
   );
 }

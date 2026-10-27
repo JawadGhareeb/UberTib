@@ -9,7 +9,6 @@ import { EditableProfileAvatar } from '@/shared/components/media/editable-profil
 import { useProfilePhoto } from '../state/profile-photo-store';
 import { useAccountDetails } from '../state/account-details-store';
 import { useAuthSession } from '@/features/auth/state/auth-session-store';
-import { useAuthAccess } from '@/features/auth/state/auth-access-store';
 
 export function ProfileScreen() {
   const getSurfaceState = useMockScenario((state) => state.getSurfaceState);
@@ -17,7 +16,6 @@ export function ProfileScreen() {
   const { photo, setPhoto } = useProfilePhoto();
   const { name } = useAccountDetails();
   const { isAuthenticated } = useAuthSession();
-  const requireAuth = useAuthAccess((state) => state.requireAuth);
 
   return (
     <Screen contentClassName="px-0 py-0" header={<ProfileAccountHeader />}>
@@ -36,12 +34,6 @@ export function ProfileScreen() {
             <EditableProfileAvatar
               value={isAuthenticated ? photo : null}
               onChange={setPhoto}
-              beforeEdit={() =>
-                requireAuth({
-                  returnTo: '/(tabs)/profile',
-                  description: 'سجّل دخولك لإضافة أو تعديل صورة حسابك، أو تابع التصفح كزائر.',
-                })
-              }
             />
             <AppText align="center" variant="heading-4" className="font-ui-bold">
               {isAuthenticated ? name : 'حساب الزائر'}

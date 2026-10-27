@@ -5,8 +5,6 @@ import { RadioGroup } from 'heroui-native';
 import { AssessmentScaffold } from '@/features/assessment/components/assessment-scaffold';
 import { ASSESSMENT_PATIENT_FIXTURES } from '@/features/assessment/presentation/assessment-patient-copy';
 import { useAuthSession } from '@/features/auth/state/auth-session-store';
-import { useAuthAccess } from '@/features/auth/state/auth-access-store';
-import { buildReturnTo } from '@/features/auth/navigation/auth-intent';
 import { useAssessmentSession } from '@/features/assessment/state/assessment-session-provider';
 import { AppIcon, AppText } from '@/shared/components/ui';
 import { cn } from '@/shared/utils/cn';
@@ -32,19 +30,12 @@ export function AssessmentComplaintScreen() {
   const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { patient, complaint, setComplaint } = useAssessmentSession();
   const { isAuthenticated } = useAuthSession();
-  const requireAuth = useAuthAccess((state) => state.requireAuth);
   return (
     <AssessmentScaffold
       onPrimary={() => {
         if (returnTo === 'review') router.replace('/assessment/review');
         else {
-          const allowed = requireAuth({
-            returnTo: buildReturnTo('/assessment/location', { initialComplaint: complaint }),
-            title: 'سجّل دخولك لتكمل تحديد حالتك',
-            description:
-              'اخترت المشكلة، وبقي كم سؤال لحتى نجهّز التوجيه المناسب. سجّل دخولك لنحفظ اختياراتك ونكمل.',
-          });
-          if (allowed) router.push('/assessment/location');
+          router.push('/assessment/location');
         }
       }}
       primaryDisabled={!complaint}

@@ -1,4 +1,3 @@
-import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { ReportExternalPaymentScreen } from '@/features/my-care';
@@ -9,4 +8,4 @@ function ReportExternalPaymentRoute() {
   return <ReportExternalPaymentScreen caseId={caseId} />;
 }
 
-export default withAuthRequired(ReportExternalPaymentRoute);
+export default ReportExternalPaymentRoute;

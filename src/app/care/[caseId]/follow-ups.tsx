@@ -1,4 +1,3 @@
-import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { FollowUpsScreen } from '@/features/my-care';
@@ -9,4 +8,4 @@ function FollowUpsRoute() {
   return <FollowUpsScreen caseId={caseId} />;
 }
 
-export default withAuthRequired(FollowUpsRoute);
+export default FollowUpsRoute;

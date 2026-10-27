@@ -1,4 +1,3 @@
-import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { GrantDetailScreen } from '@/features/profile';
@@ -8,4 +7,4 @@ function GrantDetailRoute() {
   return <GrantDetailScreen grantId={grantId ?? ''} />;
 }
 
-export default withAuthRequired(GrantDetailRoute);
+export default GrantDetailRoute;

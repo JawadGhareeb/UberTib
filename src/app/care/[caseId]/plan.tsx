@@ -1,4 +1,3 @@
-import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { TreatmentPlanScreen } from '@/features/my-care';
@@ -9,4 +8,4 @@ function TreatmentPlanRoute() {
   return <TreatmentPlanScreen caseId={caseId} />;
 }
 
-export default withAuthRequired(TreatmentPlanRoute);
+export default TreatmentPlanRoute;

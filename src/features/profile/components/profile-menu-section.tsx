@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
-import { useAuthSession } from '@/features/auth/state/auth-session-store';
-import { AppIcon, AppText, ConfirmationDialog } from '@/shared/components/ui';
+import { AppText } from '@/shared/components/ui';
 import { ProfileAppearanceSettings } from './profile-appearance-settings';
 import { ProfileMenuCard } from './profile-menu-card';
 
@@ -22,22 +20,6 @@ function MenuGroup({ title, children }: { title: string; children: React.ReactNo
 
 export function ProfileMenuSection() {
   const router = useRouter();
-  const { isAuthenticated, signOut } = useAuthSession();
-  const [logoutOpen, setLogoutOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-
-  const confirmLogout = async () => {
-    if (loggingOut) return;
-    setLoggingOut(true);
-    setLogoutOpen(false);
-    try {
-      await signOut();
-      router.replace('/(tabs)/home');
-    } finally {
-      setLoggingOut(false);
-    }
-  };
-
   return (
     <View className="mt-5 gap-5">
       <MenuGroup title="الخصوصية والأمان">
@@ -89,43 +71,6 @@ export function ProfileMenuSection() {
         />
       </MenuGroup>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={isAuthenticated ? 'تسجيل الخروج' : 'تسجيل الدخول'}
-        className="min-h-[48px] flex-row-reverse items-center justify-center gap-2 rounded-[13px]"
-        onPress={() => {
-          if (isAuthenticated) setLogoutOpen(true);
-          else router.push('/auth/phone');
-        }}
-      >
-        <AppIcon
-          name={{ ios: 'rectangle.portrait.and.arrow.right', android: 'logout', web: 'logout' }}
-          size={18}
-          tone={isAuthenticated ? 'danger' : 'action'}
-        />
-        <AppText
-          variant="label"
-          className={
-            isAuthenticated
-              ? 'font-ui-semibold text-tone-danger-text'
-              : 'font-ui-semibold text-content-link'
-          }
-        >
-          {isAuthenticated ? 'تسجيل الخروج' : 'تسجيل الدخول'}
-        </AppText>
-      </Pressable>
-      <ConfirmationDialog
-        visible={logoutOpen}
-        title="تسجيل الخروج؟"
-        description="رح تنتهي جلستك على هالجهاز. بتقدر تسجّل الدخول مرة تانية بأي وقت."
-        confirmLabel="تسجيل الخروج"
-        cancelLabel="إلغاء"
-        destructive
-        loading={loggingOut}
-        icon={{ ios: 'rectangle.portrait.and.arrow.right', android: 'logout', web: 'logout' }}
-        onCancel={() => setLogoutOpen(false)}
-        onConfirm={() => void confirmLogout()}
-      />
     </View>
   );
 }

@@ -6,7 +6,6 @@ import { Pressable, Switch, View } from 'react-native';
 import { KeyboardResponsiveScrollView } from '@/shared/components/ui/keyboard-responsive-scroll-view';
 
 import { AssessmentImagePreview } from '@/features/assessment/components/assessment-image-preview';
-import { buildReturnTo } from '@/features/auth/navigation/auth-intent';
 import { BookingJourneyProgress } from '@/features/booking/components/booking-journey-progress';
 import {
   BookingCard,
@@ -26,11 +25,9 @@ import {
 } from '@/features/discovery/mocks/providers.mock';
 import { penServiceGroups } from '@/features/discovery/presentation/pen-discovery-data';
 import { useFamilyMembers } from '@/features/profile/state/family-members-store';
-import { useAuthSession } from '@/features/auth/state/auth-session-store';
 import { bookingCareDraftId, useCareDrafts } from '@/features/my-care/state/care-draft-provider';
 import { createBookingCareDraft } from '@/features/booking/utils/booking-care-draft';
 import { BookingSaveLaterAction } from '@/features/booking/components/booking-save-later-action';
-import { useAuthAccess } from '@/features/auth/state/auth-access-store';
 import { AppIcon, AppText, Button, Screen, StateView, TextField } from '@/shared/components/ui';
 import { useMockScenario } from '@/shared/mock';
 import { useAppTheme } from '@/shared/theme/use-app-theme';
@@ -50,8 +47,6 @@ function canPreviewImage(file: { mimeType?: string; fileName: string }) {
 
 export function BookingReviewScreen() {
   const router = useRouter();
-  const { isAuthenticated } = useAuthSession();
-  const requireAuth = useAuthAccess((state) => state.requireAuth);
   const { removeDraft, saveDraft, getDraft, hydrated } = useCareDrafts();
   const scenario = useMockScenario((state) => state.scenario);
   const submitBookingRequest = useMockScenario((state) => state.submitBookingRequest);
@@ -284,24 +279,6 @@ export function BookingReviewScreen() {
   const submitBooking = () => {
     if (!patientCanBook || !slotStillInSnapshot || submitted) return;
     if (quotedPriceChanged && !priceChangeApproved) return;
-    if (!isAuthenticated) {
-      const returnTo = buildReturnTo('/booking/review', {
-        providerId,
-        serviceCode,
-        ...(branchId ? { branchId } : {}),
-        ...(priceAtSelection ? { priceAtSelection } : {}),
-        dateKey,
-        dateLabel,
-        timeLabel,
-        patientId,
-        reason: activeReason,
-      });
-      requireAuth({
-        returnTo,
-        description: 'سجّل دخولك لتأكيد طلب الحجز وحفظه ضمن حجوزاتك، أو تابع التصفح كزائر.',
-      });
-      return;
-    }
 
     if (scenario.flags?.bookingRevalidationSlotUnavailable) {
       setRevalidationFailure('slot');

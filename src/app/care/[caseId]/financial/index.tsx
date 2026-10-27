@@ -1,4 +1,3 @@
-import { withAuthRequired } from '@/features/auth/components/with-auth-required';
 import { useLocalSearchParams } from 'expo-router';
 
 import { AcceptedFinancialTermsScreen } from '@/features/my-care';
@@ -9,4 +8,4 @@ function AcceptedFinancialTermsRoute() {
   return <AcceptedFinancialTermsScreen caseId={caseId} />;
 }
 
-export default withAuthRequired(AcceptedFinancialTermsRoute);
+export default AcceptedFinancialTermsRoute;

@@ -1,6 +1,7 @@
 import type { PropsWithChildren } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { CareDraftProvider } from '@/features/my-care/state/care-draft-provider';
 import { DoctorFavoritesProvider } from '@/features/discovery/state/doctor-favorites-provider';
@@ -29,8 +30,10 @@ function SessionData({ children }: PropsWithChildren) {
 
 export function AppProviders({ children }: PropsWithChildren) {
   return (
-    <KeyboardProvider statusBarTranslucent>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardProvider statusBarTranslucent>
       <SessionScopedProviders>{children}</SessionScopedProviders>
     </KeyboardProvider>
+    </GestureHandlerRootView>
   );
 }
