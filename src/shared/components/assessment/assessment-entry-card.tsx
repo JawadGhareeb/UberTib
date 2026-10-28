@@ -36,10 +36,10 @@ export function AssessmentEntryCard() {
       </View>
       <HeroButton
         variant="primary"
-        className="min-h-[48px] rounded-[12px] bg-action-primary"
+        className="min-h-[48px] w-full rounded-[12px] bg-action-primary"
         onPress={startAssessment}
       >
-        <HeroButton.Label className="font-ui-semibold text-content-on-action">
+        <HeroButton.Label className="shrink-0 text-center font-ui-semibold text-content-on-action">
           ساعدني أحدد حالتي
         </HeroButton.Label>
       </HeroButton>

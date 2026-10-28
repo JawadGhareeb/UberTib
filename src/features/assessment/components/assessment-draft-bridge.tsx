@@ -60,7 +60,7 @@ export function AssessmentDraftBridge({ children }: PropsWithChildren) {
     }
     if (!isAssessmentDraftRoute(pathname)) return;
     // Opening the introduction must not destroy an unfinished existing attempt.
-    if (pathname === '/assessment/start' && !resumeDraftId && !snapshot.complaint) {
+    if (pathname === '/assessment/start' && !resumeDraftId) {
       const existing = getDraft('assessment-' + snapshot.patient);
       if (existing?.assessment && existing.route !== '/assessment/start') return;
     }

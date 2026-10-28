@@ -43,7 +43,7 @@ export function AssessmentSaveLaterAction() {
     <View className="gap-1">
       <Button
         variant="outline"
-        label={saving ? 'عم نحفظ المرحلة...' : 'إكمال الحجز لاحقاً'}
+        label={saving ? 'عم نحفظ المرحلة...' : 'حفظ المسودة والإكمال لاحقاً'}
         endIcon={{ ios: 'bookmark', android: 'bookmark_border', web: 'bookmark_border' }}
         className="min-h-[46px] rounded-[12px]"
         disabled={!hydrated || saving}

@@ -19,7 +19,7 @@ export function getNonPastMockAvailability(
   return availability
     .filter(
       (day) =>
-        /^\\d{4}-\\d{2}-\\d{2}$/.test(day.dateKey) && day.dateKey >= dayKey && day.slots.length > 0,
+        /^\d{4}-\d{2}-\d{2}$/.test(day.dateKey) && day.dateKey >= dayKey && day.slots.length > 0,
     )
     .sort((a, b) => a.dateKey.localeCompare(b.dateKey));
 }
@@ -319,6 +319,24 @@ export const mockProviders: MockProvider[] = [
     ],
   },
 ];
+
+/** Rolling demo slots keep the UX testable after static fixture dates expire. */
+function futureDemoDay(daysAhead: number, slots: string[]): MockProviderAvailability {
+  const date = new Date();
+  date.setDate(date.getDate() + daysAhead);
+  const dateKey = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+  const dateLabel = date.toLocaleDateString('ar-SY-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' });
+  return { dateKey, dateLabel, slots };
+}
+for (const [index, provider] of mockProviders.entries()) {
+  // These times are fixtures, not clinic-confirmed availability.
+  provider.availability = [
+    futureDemoDay(1 + (index % 2), ['9:30 ص', '11:00 ص', '2:30 م']),
+    futureDemoDay(3 + (index % 3), ['10:00 ص', '12:30 م', '5:00 م']),
+    futureDemoDay(7, ['9:00 ص', '4:00 م']),
+  ];
+  provider.nextAvailable = `${provider.availability[0]!.dateLabel} · ${provider.availability[0]!.slots[0]}`;
+}
 
 /**
  * Stable example distances for the UI mock, not the user's measured GPS distance.

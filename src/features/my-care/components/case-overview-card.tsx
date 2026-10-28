@@ -119,7 +119,7 @@ export function CaseRow({
           className="min-h-[46px] min-w-0 flex-1 rounded-[12px] bg-action-primary"
           onPress={openDetails}
         >
-          <HeroButton.Label className="font-ui-semibold text-content-on-action">
+          <HeroButton.Label className="text-center text-[12px] font-ui-semibold text-content-on-action">
             {draft ? 'متابعة المسودة' : 'تفاصيل الحالة'}
           </HeroButton.Label>
         </HeroButton>
@@ -128,7 +128,7 @@ export function CaseRow({
           className="min-h-[46px] min-w-0 flex-1 rounded-[12px] border-action-primary"
           onPress={openPlanOrDelete}
         >
-          <HeroButton.Label className="font-ui-semibold text-content-link">
+          <HeroButton.Label className="text-center text-[12px] font-ui-semibold text-content-link">
             {draft ? 'حذف المسودة' : 'خطة العلاج'}
           </HeroButton.Label>
         </HeroButton>

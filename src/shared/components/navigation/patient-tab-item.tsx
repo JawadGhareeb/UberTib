@@ -27,9 +27,9 @@ export function PatientTabItem({
       accessibilityState={{ selected: focused }}
       className={cn(
         'min-h-[54px] flex-row-reverse items-center justify-center rounded-full',
-        focused ? 'bg-action-primary px-3' : 'bg-transparent',
+        focused ? 'bg-action-primary px-2' : 'bg-transparent',
       )}
-      style={{ flex: focused ? 1.95 : 1 }}
+      style={{ flex: focused ? 2.5 : 1, minWidth: focused ? 98 : 44 }}
       onLongPress={onLongPress}
       onPress={onPress}
     >
@@ -40,7 +40,7 @@ export function PatientTabItem({
         inactiveTintColor={colors.text.secondary}
       />
       {focused ? (
-        <View className="min-w-0 items-center justify-center">
+        <View className="shrink-0 items-center justify-center">
           <Text
             numberOfLines={1}
             style={{

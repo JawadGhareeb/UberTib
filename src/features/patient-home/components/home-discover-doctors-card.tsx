@@ -30,12 +30,12 @@ export function HomeDiscoverDoctorsCard() {
       </View>
       <HeroButton
         variant="outline"
-        className="min-h-[48px] rounded-[12px] border-action-primary"
+        className="min-h-[48px] w-full rounded-[12px] border-action-primary"
         onPress={() =>
           router.push({ pathname: '/discover/search', params: { browseDoctors: '1' } })
         }
       >
-        <HeroButton.Label className="font-ui-semibold text-content-link">
+        <HeroButton.Label className="shrink-0 text-center font-ui-semibold text-content-link">
           استكشف الأطباء
         </HeroButton.Label>
       </HeroButton>

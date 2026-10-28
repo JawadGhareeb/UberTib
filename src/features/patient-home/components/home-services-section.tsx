@@ -55,10 +55,10 @@ export function HomeServicesSection() {
       </View>
       <HeroButton
         variant="outline"
-        className="min-h-[48px] rounded-[12px] border-action-primary"
+        className="min-h-[48px] w-full rounded-[12px] border-action-primary"
         onPress={() => router.push('/(tabs)/discover')}
       >
-        <HeroButton.Label className="font-ui-semibold text-content-link">
+        <HeroButton.Label className="shrink-0 text-center font-ui-semibold text-content-link">
           استكشف جميع الخدمات
         </HeroButton.Label>
       </HeroButton>
