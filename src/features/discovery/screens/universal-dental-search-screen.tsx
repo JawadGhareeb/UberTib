@@ -81,7 +81,7 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
         filters={filters}
         comparison={comparison}
         onToggleComparison={toggleSearchComparison}
-        bottomPadding={comparison ? 128 : 52}
+        bottomPadding={comparison?.providerIds.length ? 128 : 52}
         header={
           <>
             <View className="items-end gap-1">
@@ -153,24 +153,22 @@ export function UniversalDentalSearchScreen({ asTab = false }: { asTab?: boolean
         }
       />
 
-      {comparison?.providerIds.length ? (
-        <ProviderComparisonBar
-          count={comparison.providerIds.length}
-          bottom={Math.max(insets.bottom, 12)}
-          onCompare={() => {
-            if (comparison.providerIds.length < 2) return;
-            Keyboard.dismiss();
-            router.push({
-              pathname: '/discover/providers/compare',
-              params: {
-                ...(comparison.serviceCode ? { serviceCode: comparison.serviceCode } : {}),
-                providerIds: comparison.providerIds.join(','),
-                fromSearch: isDoctorBrowse ? 'doctors' : asTab ? 'tab' : 'search',
-              },
-            });
-          }}
-        />
-      ) : null}
+      <ProviderComparisonBar
+        count={comparison?.providerIds.length ?? 0}
+        bottom={Math.max(insets.bottom, 12)}
+        onCompare={() => {
+          if (!comparison || comparison.providerIds.length < 2) return;
+          Keyboard.dismiss();
+          router.push({
+            pathname: '/discover/providers/compare',
+            params: {
+              ...(comparison.serviceCode ? { serviceCode: comparison.serviceCode } : {}),
+              providerIds: comparison.providerIds.join(','),
+              fromSearch: isDoctorBrowse ? 'doctors' : asTab ? 'tab' : 'search',
+            },
+          });
+        }}
+      />
 
       <DiscoverFilterSheet
         open={filterOpen}

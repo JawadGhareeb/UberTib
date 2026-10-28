@@ -143,22 +143,21 @@ export function DoctorFavoritesScreen() {
           })
         )}
       </ScrollView>
-      {chosen && selectedIds.length >= 2 ? (
-        <ProviderComparisonBar
-          count={selectedIds.length}
-          bottom={Math.max(insets.bottom, 12)}
-          onCompare={() =>
-            router.push({
-              pathname: '/discover/providers/compare',
-              params: {
-                serviceCode: chosen.serviceCode,
-                providerIds: selectedIds.join(','),
-                fromSearch: 'favorites',
-              },
-            })
-          }
-        />
-      ) : null}
+      <ProviderComparisonBar
+        count={selectedIds.length >= 2 ? selectedIds.length : 0}
+        bottom={Math.max(insets.bottom, 12)}
+        onCompare={() => {
+          if (!chosen || selectedIds.length < 2) return;
+          router.push({
+            pathname: '/discover/providers/compare',
+            params: {
+              serviceCode: chosen.serviceCode,
+              providerIds: selectedIds.join(','),
+              fromSearch: 'favorites',
+            },
+          });
+        }}
+      />
     </Screen>
   );
 }

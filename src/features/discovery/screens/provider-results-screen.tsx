@@ -317,25 +317,24 @@ function ProviderResultsContent({
         )}
       </ScrollView>
 
-      {selection.length > 0 ? (
-        <ProviderComparisonBar
-          count={selection.length}
-          bottom={Math.max(insets.bottom, 12)}
-          onCompare={() =>
-            router.push({
-              pathname: '/discover/providers/compare',
-              params: {
-                providerIds: selection.join(','),
-                serviceCode,
-                ...(params.patientId ? { patientId: params.patientId } : {}),
-                ...(params.origin === 'assessment'
-                  ? { origin: params.origin, assessmentDraftId: params.assessmentDraftId }
-                  : {}),
-              },
-            })
-          }
-        />
-      ) : null}
+      <ProviderComparisonBar
+        count={selection.length}
+        bottom={Math.max(insets.bottom, 12)}
+        onCompare={() => {
+          if (selection.length < 2) return;
+          router.push({
+            pathname: '/discover/providers/compare',
+            params: {
+              providerIds: selection.join(','),
+              serviceCode,
+              ...(params.patientId ? { patientId: params.patientId } : {}),
+              ...(params.origin === 'assessment'
+                ? { origin: params.origin, assessmentDraftId: params.assessmentDraftId }
+                : {}),
+            },
+          });
+        }}
+      />
 
       <DiscoverFilterSheet
         open={filtersOpen}
