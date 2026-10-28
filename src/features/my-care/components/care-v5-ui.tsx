@@ -3,6 +3,7 @@ import type { PropsWithChildren } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { AppIcon, AppText } from '@/shared/components/ui';
+import { CompactBadgeLabel } from '@/shared/components/ui/compact-badge-label';
 import type { AppIconName } from '@/shared/components/ui/app-icon';
 import { cn } from '@/shared/utils/cn';
 import { AppHeader } from '@/shared/components/navigation/app-header';
@@ -108,14 +109,8 @@ export function CareV5Card({ children, className }: PropsWithChildren<{ classNam
 
 export function CareV5Badge({ label, tone = 'primary' }: { label: string; tone?: Tone }) {
   return (
-    <View className={cn('rounded-[7px] px-1.5 py-0.5', toneClasses[tone])}>
-      <AppText
-        className={cn('font-ui-medium', textToneClasses[tone])}
-        numberOfLines={1}
-        variant="badge"
-      >
-        {label}
-      </AppText>
+    <View className={cn('max-w-full shrink rounded-[7px] px-1.5 py-0.5', toneClasses[tone])}>
+      <CompactBadgeLabel label={label} className={textToneClasses[tone]} />
     </View>
   );
 }

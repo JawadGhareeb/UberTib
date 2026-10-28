@@ -2,7 +2,7 @@ import { View } from 'react-native';
 
 import { useAppDirection } from '@/shared/utils/app-direction';
 import { AppIcon, type AppIconName, type AppIconTone } from '@/shared/components/ui/app-icon';
-import { AppText } from '@/shared/components/ui/app-text';
+import { CompactBadgeLabel } from '@/shared/components/ui/compact-badge-label';
 import { cn } from '@/shared/utils/cn';
 
 export type StatusTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'restricted';
@@ -73,21 +73,14 @@ export function StatusIndicator({
       accessible
       className={cn(
         rowClassName,
-        'self-start shrink-0 items-center gap-1 rounded-full px-2 py-0.5',
+        'max-w-full self-start shrink items-center gap-1 rounded-full px-2 py-0.5',
         classes.container,
         emphasisClasses[emphasis],
         className,
       )}
     >
       <AppIcon name={icon.name} size={11} tone={icon.tone} />
-      <AppText
-        align="center"
-        className={cn('shrink-0', classes.text)}
-        variant="badge"
-        style={{ minWidth: Math.max(42, label.length * 6.5) }}
-      >
-        {label}
-      </AppText>
+      <CompactBadgeLabel label={label} className={classes.text} />
     </View>
   );
 }
