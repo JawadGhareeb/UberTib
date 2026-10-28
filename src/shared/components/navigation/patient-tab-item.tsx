@@ -40,12 +40,13 @@ export function PatientTabItem({
         inactiveTintColor={colors.text.secondary}
       />
       {focused ? (
-        <View className="shrink-0 items-center justify-center">
+        <View className="w-[82px] shrink-0 items-center justify-center">
           <Text
             numberOfLines={1}
             style={{
               color: colors.text.onAction,
               fontFamily: theme.font.semibold,
+              width: '100%',
               fontSize: 14,
               lineHeight: 23,
               textAlign: 'center',

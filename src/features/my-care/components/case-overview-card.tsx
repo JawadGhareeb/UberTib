@@ -20,7 +20,14 @@ function CareProgressTrack({ progress }: { progress: number }) {
       accessibilityLabel={'تقدم العلاج ' + progress + ' بالمئة'}
       accessibilityValue={{ min: 0, max: 100, now: progress }}
       className="bg-surface-subtle"
-      style={{ width: '100%', height: 6, borderRadius: 99, overflow: 'hidden', flexShrink: 0 }}
+      style={{
+        width: '100%',
+        height: 6,
+        borderRadius: 99,
+        overflow: 'hidden',
+        flexShrink: 0,
+        alignItems: 'flex-end',
+      }}
     >
       <View
         className="bg-action-primary"
@@ -105,7 +112,14 @@ export function CaseRow({
             <AppText align="right" variant="caption" className="text-content-secondary">
               {summary.finished} من {summary.total} مراحل مكتملة
             </AppText>
-            <AppText variant="caption" className="font-ui-medium text-content-link">
+            <AppText
+              direction="ltr"
+              align="center"
+              variant="caption"
+              className="shrink-0 font-ui-medium text-content-link"
+              numberOfLines={1}
+              style={{ minWidth: 48 }}
+            >
               {progress}%
             </AppText>
           </View>
@@ -119,7 +133,10 @@ export function CaseRow({
           className="min-h-[46px] min-w-0 flex-1 rounded-[12px] bg-action-primary"
           onPress={openDetails}
         >
-          <HeroButton.Label className="text-center text-[12px] font-ui-semibold text-content-on-action">
+          <HeroButton.Label
+            className="w-full font-ui-semibold text-content-on-action"
+            style={{ textAlign: 'center', writingDirection: 'rtl', fontSize: 12, flexShrink: 1 }}
+          >
             {draft ? 'متابعة المسودة' : 'تفاصيل الحالة'}
           </HeroButton.Label>
         </HeroButton>
@@ -128,7 +145,10 @@ export function CaseRow({
           className="min-h-[46px] min-w-0 flex-1 rounded-[12px] border-action-primary"
           onPress={openPlanOrDelete}
         >
-          <HeroButton.Label className="text-center text-[12px] font-ui-semibold text-content-link">
+          <HeroButton.Label
+            className="w-full font-ui-semibold text-content-link"
+            style={{ textAlign: 'center', writingDirection: 'rtl', fontSize: 12, flexShrink: 1 }}
+          >
             {draft ? 'حذف المسودة' : 'خطة العلاج'}
           </HeroButton.Label>
         </HeroButton>

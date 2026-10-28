@@ -20,10 +20,10 @@ export function HomeDiscoverDoctorsCard() {
           />
         </View>
         <View className="min-w-0 flex-1 items-end gap-1">
-          <AppText align="right" variant="heading-4">
+          <AppText align="right" variant="heading-4" className="w-full">
             استكشف الأطباء
           </AppText>
-          <AppText align="right" variant="caption" numberOfLines={2}>
+          <AppText align="right" variant="caption" numberOfLines={2} className="w-full">
             تصفّح ملفات الأطباء وخدماتهم واختار الطبيب اللي بناسبك.
           </AppText>
         </View>
@@ -35,7 +35,10 @@ export function HomeDiscoverDoctorsCard() {
           router.push({ pathname: '/discover/search', params: { browseDoctors: '1' } })
         }
       >
-        <HeroButton.Label className="shrink-0 text-center font-ui-semibold text-content-link">
+        <HeroButton.Label
+          className="w-full shrink-0 font-ui-semibold text-content-link"
+          style={{ textAlign: 'center', writingDirection: 'rtl' }}
+        >
           استكشف الأطباء
         </HeroButton.Label>
       </HeroButton>

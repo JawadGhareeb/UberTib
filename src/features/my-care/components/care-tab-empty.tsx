@@ -48,10 +48,15 @@ export function CareTabEmpty({
       {!filterActive ? (
         <HeroButton
           variant="outline"
-          className="min-h-[44px] rounded-[12px]"
+          className="min-h-[44px] w-full rounded-[12px]"
           onPress={() => router.push('/(tabs)/discover')}
         >
-          <HeroButton.Label>استكشف الخدمات</HeroButton.Label>
+          <HeroButton.Label
+            className="w-full"
+            style={{ textAlign: 'center', writingDirection: 'rtl' }}
+          >
+            استكشف الخدمات
+          </HeroButton.Label>
         </HeroButton>
       ) : null}
     </View>

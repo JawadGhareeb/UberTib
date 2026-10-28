@@ -45,7 +45,7 @@ export function ServiceDetailScreen() {
         <View className="mt-6 gap-3">
           <HeroButton
             variant="primary"
-            className="min-h-[50px] rounded-[12px] bg-action-primary"
+            className="min-h-[50px] w-full rounded-[12px] bg-action-primary"
             onPress={() =>
               router.push({
                 pathname: '/discover/providers/results',
@@ -53,7 +53,10 @@ export function ServiceDetailScreen() {
               })
             }
           >
-            <HeroButton.Label className="font-ui-semibold text-content-on-action">
+            <HeroButton.Label
+              className="w-full font-ui-semibold text-content-on-action"
+              style={{ textAlign: 'center', writingDirection: 'rtl' }}
+            >
               ابحث عن طبيب مؤهّل
             </HeroButton.Label>
           </HeroButton>

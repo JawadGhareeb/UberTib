@@ -265,7 +265,10 @@ export function DiscoverFilterSheet({
               className="min-h-[48px] flex-1 rounded-[12px] bg-action-primary"
               onPress={apply}
             >
-              <HeroButton.Label className="font-ui-semibold text-content-on-action">
+              <HeroButton.Label
+                className="w-full font-ui-semibold text-content-on-action"
+                style={{ textAlign: 'center', writingDirection: 'rtl' }}
+              >
                 عرض النتائج
               </HeroButton.Label>
             </HeroButton>
@@ -274,7 +277,12 @@ export function DiscoverFilterSheet({
               className="min-h-[48px] flex-1 rounded-[12px]"
               onPress={reset}
             >
-              <HeroButton.Label>إعادة تعيين</HeroButton.Label>
+              <HeroButton.Label
+                className="w-full"
+                style={{ textAlign: 'center', writingDirection: 'rtl' }}
+              >
+                إعادة تعيين
+              </HeroButton.Label>
             </HeroButton>
           </View>
         </BottomSheet.Content>

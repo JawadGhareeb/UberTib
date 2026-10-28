@@ -37,7 +37,7 @@ export function BookingRow({ item, onPress }: { item: BookingItem; onPress: () =
             <AppText
               variant="caption"
               align="right"
-              className="text-content-secondary"
+              className="w-full text-content-secondary"
               numberOfLines={1}
             >
               {item.branch}

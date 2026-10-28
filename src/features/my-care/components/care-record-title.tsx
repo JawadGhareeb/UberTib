@@ -16,7 +16,7 @@ export function CareRecordTitle({
       align="right"
       direction="rtl"
       variant={prominent ? 'heading-4' : 'body-strong'}
-      className="font-ui-semibold"
+      className="w-full font-ui-semibold"
       numberOfLines={2}
     >
       {title}

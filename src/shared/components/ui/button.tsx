@@ -97,7 +97,7 @@ export function Button({
       accessibilityState={{ busy: loading, disabled: isDisabled }}
       className={cn(
         rowClassName,
-        'items-center justify-center gap-[8px] overflow-hidden',
+        'items-center justify-center gap-[8px]',
         sizeClasses[size],
         containerClasses[variant],
         isDisabled && 'border-border-subtle bg-surface-subtle',
@@ -110,7 +110,7 @@ export function Button({
       onPressOut={() => animatePressed(false)}
       onPress={onPress}
     >
-      <View className={cn('items-center gap-[10px]', rowClassName)}>
+      <View className={cn('w-full min-w-0 items-center justify-center gap-[10px]', rowClassName)}>
         {loading ? <ActivityIndicator color={labelColor} size="small" /> : null}
         <AppText
           align="center"
@@ -120,6 +120,8 @@ export function Button({
           )}
           style={{
             color: labelColor,
+            flexShrink: 1,
+            ...(endIcon ? { flex: 1 } : { width: '100%' as const }),
             ...(size === 'compact'
               ? { fontSize: 11, lineHeight: 17 }
               : size === 'sm'

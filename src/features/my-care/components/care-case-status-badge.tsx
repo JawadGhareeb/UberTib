@@ -20,7 +20,7 @@ export function CareCaseStatusBadge({
         'min-h-[29px] flex-row-reverse items-center self-start gap-1.5 rounded-full px-2.5 py-1 ' +
         (draft ? 'bg-surface-subtle' : completed ? 'bg-tone-success-fill' : 'bg-action-subtle')
       }
-      style={{ direction: 'ltr' }}
+      style={{ direction: 'ltr', minWidth: 92, flexShrink: 0 }}
     >
       <View
         className={
@@ -37,14 +37,13 @@ export function CareCaseStatusBadge({
         align="right"
         variant="badge"
         className={
-          'font-ui-semibold ' +
+          'min-w-[67px] shrink-0 text-center font-ui-semibold ' +
           (draft
             ? 'text-content-secondary'
             : completed
               ? 'text-tone-success-text'
               : 'text-content-link')
         }
-        numberOfLines={1}
       >
         {draft ? 'مسودة' : completed ? 'مكتملة' : 'قيد العلاج'}
       </AppText>

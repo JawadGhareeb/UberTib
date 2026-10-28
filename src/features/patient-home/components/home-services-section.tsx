@@ -45,7 +45,7 @@ export function HomeServicesSection() {
                 align="center"
                 numberOfLines={2}
                 variant="label"
-                className="font-ui-semibold"
+                className="w-full font-ui-semibold"
               >
                 {group.title}
               </AppText>
@@ -58,7 +58,10 @@ export function HomeServicesSection() {
         className="min-h-[48px] w-full rounded-[12px] border-action-primary"
         onPress={() => router.push('/(tabs)/discover')}
       >
-        <HeroButton.Label className="shrink-0 text-center font-ui-semibold text-content-link">
+        <HeroButton.Label
+          className="w-full shrink-0 font-ui-semibold text-content-link"
+          style={{ textAlign: 'center', writingDirection: 'rtl' }}
+        >
           استكشف جميع الخدمات
         </HeroButton.Label>
       </HeroButton>

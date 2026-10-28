@@ -40,8 +40,8 @@ export function SectionTabs<T extends string>({
             <View
               className={
                 stacked
-                  ? 'items-center gap-1'
-                  : 'flex-row-reverse items-center justify-center gap-1'
+                  ? 'w-full items-center gap-1'
+                  : 'w-full flex-row-reverse items-center justify-center gap-1'
               }
             >
               {item.icon ? (
@@ -52,7 +52,8 @@ export function SectionTabs<T extends string>({
                 />
               ) : null}
               <Tabs.Label
-                numberOfLines={1}
+                numberOfLines={2}
+                style={{ flexShrink: 1, textAlign: 'center', writingDirection: 'rtl' }}
                 className={
                   solidActive
                     ? value === item.value

@@ -215,6 +215,7 @@ export function DiscoverDoctorResultCard({
               tone={selected ? 'action' : 'secondary'}
             />
             <HeroButton.Label
+              style={{ flexShrink: 1, textAlign: 'center', writingDirection: 'rtl' }}
               className={
                 selected
                   ? 'font-ui-semibold text-content-link'

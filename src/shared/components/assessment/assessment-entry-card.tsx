@@ -26,10 +26,10 @@ export function AssessmentEntryCard() {
           />
         </View>
         <View className="min-w-0 flex-1 items-end gap-1">
-          <AppText align="right" variant="heading-4">
+          <AppText align="right" variant="heading-4" className="w-full">
             مو متأكد من حالتك؟
           </AppText>
-          <AppText align="right" variant="caption" numberOfLines={2}>
+          <AppText align="right" variant="caption" numberOfLines={2} className="w-full">
             جاوب على أسئلة بسيطة لنساعدك تختار الخطوة المناسبة.
           </AppText>
         </View>
@@ -39,7 +39,10 @@ export function AssessmentEntryCard() {
         className="min-h-[48px] w-full rounded-[12px] bg-action-primary"
         onPress={startAssessment}
       >
-        <HeroButton.Label className="shrink-0 text-center font-ui-semibold text-content-on-action">
+        <HeroButton.Label
+          className="w-full shrink-0 font-ui-semibold text-content-on-action"
+          style={{ textAlign: 'center', writingDirection: 'rtl' }}
+        >
           ساعدني أحدد حالتي
         </HeroButton.Label>
       </HeroButton>
