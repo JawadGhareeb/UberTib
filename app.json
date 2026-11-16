@@ -52,7 +52,7 @@
       "package": "com.upertib.patient",
       "adaptiveIcon": {
         "foregroundImage": "./src/shared/assets/adaptive-foreground.png",
-        "backgroundColor": "#111111"
+        "backgroundColor": "#ffffff"
       },
       "softwareKeyboardLayoutMode": "resize"
     },
